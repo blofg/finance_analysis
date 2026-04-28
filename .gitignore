@@ -5,3 +5,5 @@
 .RData
 .envinitialization/secrets.R
 database/rds/
+initialization/secrets.R
+database/rds/
