@@ -15,6 +15,7 @@ setwd(path_main)
 ################################################################################
 
 source("initialization/package.R")           # |Package|
+source("initialization/secrets.R")           # |Secrets|
 source("function/function_information.R")    # |Function price|
 source("function/function_format.R")         # |Function format|
 source("function/function_visualization.R")  # |Functions visualization|
@@ -127,91 +128,6 @@ source("stock_analysis.R")     # |stock analysis|
 
 
 
-
-
-################################################################################
-# LLM
-################################################################################
-
-library(devtools)
-library(tidyverse)
-library(tidychatmodels)
-library(dotenv)
-load_dot_env("/Users/benjaminlachavanne/Desktop/script/finance_analysis/.env")
-chat_openai <- create_chat('openai', Sys.getenv('OAI_DEV_KEY'))
-chat_openai %>% 
-  add_model("gpt-5.2")
-
-chat_openai <- create_chat("openai", Sys.getenv("OAI_DEV_KEY")) %>%
-  add_model("gpt-4o-mini") %>%                 # plus léger
-  add_params(temperature = 0.2, max_tokens = 50) %>%
-  add_message("Say hi in one word.") %>%
-  perform_chat()
-
-chat_openai %>% extract_chat()
-
-
-install.packages("rollama")
-library(rollama)
-
-prompt <- "Complete: 2 + 2 is 4, minus 1 that's 3, "
-cmd <- sprintf('ollama run mistral "%s"', prompt)
-cat(system(cmd, intern = TRUE), sep = "\n")
-
-
-library(devtools)
-library(tidyverse)
-library(tidychatmodels)
-library(dotenv)
-
-
-ollama_chat <- create_chat("ollama") |>
-  add_model("mistral:latest") |>
-  add_message("What is love? IN 10 WORDS.") |>
-  perform_chat()
-
-ollama_chat |> extract_chat()
-
-
-ollama_chat <- create_chat("ollama") |>
-  add_model("phi3") |>
-  add_message("What is love? IN 10 WORDS.") |>
-  perform_chat()
-
-ollama_chat |> extract_chat()
-
-
-
-
-################################################################################
-# Comments
-################################################################################
-
-# ╔════════════════════════════════════════════════════════════════════════════╗
-# ║                           VARIABLE SET METHODOLOGY                         ║
-# ╚════════════════════════════════════════════════════════════════════════════╝
-# ║ All macro-finance variables are structured with exactly 4 columns:         ║
-# ║                                                                            ║
-# ║ 1. date  : Dates in 'YYYY-MM-DD' format                                    ║
-# ║ 2. value : Numeric values representing the variable                        ║
-# ║ 3. name  : Name of the variable in the environment                         ║
-# ║ 4. id    : An alternative identifier or label for the variable             ║
-# ╚════════════════════════════════════════════════════════════════════════════╝
-
-
-
-
-
-
-
-url <- "https://api.alternative.me/fng/?limit=0"
-response <- GET(url)
-raw <- fromJSON(rawToChar(response$content))
-df <- raw$data
-
-# 2. Nettoyer
-df$value     <- as.numeric(df$value)
-df$date      <- as.Date(as.POSIXct(as.numeric(df$timestamp), origin = "1970-01-01"))
 
 
 
