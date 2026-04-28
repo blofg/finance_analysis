@@ -3,4 +3,5 @@
 .DS_Store
 .Rhistory
 .RData
-.env
+.envinitialization/secrets.R
+database/rds/

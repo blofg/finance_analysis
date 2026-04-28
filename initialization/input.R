@@ -24,11 +24,11 @@ path_finance_reports_output_folder  <- paste0(path_finance_reports_folder,"/repo
 ################################################################################
 
 # Marketsatck inputs
-marketstack_api_key <- "b608d7af50803823401818b9ae0fc45a" 
+marketstack_api_key <- Sys.getenv("MARKETSTACK_API_KEY")
 marketstack_url     <- "http://api.marketstack.com/v1/tickers"
 
 # Fred inputs 
-fred_api_key   <- "a80ad868e4ffd669699e0dde4c2f3625"
+fred_api_key    <- Sys.getenv("FRED_API_KEY")
 fredr_set_key(fred_api_key)
 fred_url       <- "https://fredaccount.stlouisfed.org/apikey"
 
