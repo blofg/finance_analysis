@@ -1,0 +1,330 @@
+---
+title: "Crypto Report"
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float:
+      collapsed: false
+      smooth_scroll: true
+    theme: flatly
+    highlight: kate
+    self_contained: true
+    css: "/Users/benjaminlachavanne/Desktop/script/finance_analysis/html/style/style.css"
+
+params:
+  llm_analysis: false
+
+---
+
+```{r setup, include=FALSE, warning=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+
+# Main path
+path_main <- file.path("~", "Desktop", "script", "finance_analysis")
+
+# Upload packages, functions and inputs
+source(paste0(path_main,"/initialization/package.R"))          # |Package|
+source(paste0(path_main,"/function/function_information.R"))   # |Function price|
+source(paste0(path_main,"/function/function_format.R"))        # |Function format|
+source(paste0(path_main,"/function/function_visualization.R")) # |Functions visualization|
+source(paste0(path_main,"/function/function_compute.R"))       # |Functions indicator|
+source(paste0(path_main,"/function/function_ai.R"))            # |Functions ai|
+source(paste0(path_main,"/initialization/input.R"))            # |Input|
+
+# Download all series from the RDS folder
+path_rds_folder    <- "/Users/benjaminlachavanne/Desktop/script/finance_analysis/database/rds/"
+path_rds_all <- paste0(path_rds_folder,"series_store_all.rds")
+series_database <- readRDS(path_rds_all)
+
+# Styled info box
+series_info_box <- function(source_html, frequency, adjustment, about) {
+  htmltools::HTML(paste0('
+  <div class="info-card">
+    <div class="info-grid">
+      <div class="info-row">
+        <span class="info-label">Source</span>
+        <span class="info-value">', source_html, '</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Frequency</span>
+        <span class="info-value">', frequency, '</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Adjustment</span>
+        <span class="info-value">', adjustment, '</span>
+      </div>
+    </div>
+    <div class="info-about">', about, '</div>
+  </div>
+  '))
+}
+
+# Section label helper
+section_label <- function(icon, text) {
+  htmltools::HTML(paste0(
+    '<div class="section-label"><span class="section-icon">', icon,
+    '</span><span class="section-text">', text, '</span></div>'))
+}
+
+# Subsection label helper
+subsection_label <- function(text) {
+  htmltools::HTML(paste0('<div class="subsection-label">', text, '</div>'))
+}
+
+# Chart note helper
+chart_note <- function(text) {
+  htmltools::HTML(paste0('<p class="chart-note">', text, '</p>'))
+}
+```
+
+<!-- ####################################################################### -->
+<!-- Head Title  -->
+<!-- ####################################################################### -->
+
+```{=html}
+<!-- ── MASTHEAD ─────────────────────────────────────────────────────────────── -->
+<div class="masthead">
+  <div class="masthead-eyebrow">Digital Assets Research · Cryptocurrency</div>
+  <div class="masthead-title">Crypto <span>Report</span></div>
+  <div class="masthead-date">Report date: `r format(Sys.Date(), '%B %d, %Y')`</div>
+</div>
+```
+
+<!-- ####################################################################### -->
+<!-- Abstract  -->
+<!-- ####################################################################### -->
+
+## Abstract
+
+```{=html}
+<div class="company-hero">
+  <div class="co-body">
+    <div class="masthead-title">Abstract</div>
+  </div>
+</div>
+```
+
+```{=html}
+<div class="abstract-box">
+<p>This report provides a focused overview of the cryptocurrency market through a structured set of sentiment and price indicators for the major digital assets.</p>
+
+<ul>
+  <li>The <strong>Crypto Fear &amp; Greed Index</strong> section captures the overall market sentiment through a composite score aggregating multiple signals, providing a real-time reading of investor psychology in the crypto space.</li>
+  <li>The <strong>Bitcoin</strong>, <strong>Ethereum</strong>, and <strong>Solana</strong> sections track the price dynamics of the three largest cryptocurrencies by market capitalization, including moving average overlays to contextualize short- and medium-term trends.</li>
+</ul>
+
+<p>Taken together, this report aims to offer a concise view of the crypto market cycle, combining sentiment signals with price-based analysis to support a comprehensive assessment of the current environment.</p>
+</div>
+```
+
+<!-- ####################################################################### -->
+<!-- Crypto Asset  -->
+<!-- ####################################################################### -->
+
+## Crypto Assets
+
+```{=html}
+<div class="company-hero">
+  <div class="co-body">
+    <div class="masthead-title">Crypto Asset</div>
+  </div>
+</div>
+```
+
+### Table
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r FIN IND TABLE, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+assets <- c("BTC-USD", "ETH-USD", "SOL-USD")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+   produce_performance_table(series = assets))
+```
+
+```{=html}
+</div>
+```
+
+### Bitcoin
+
+```{r BTC TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo Finance — <a href="https://finance.yahoo.com/quote/BTC-USD/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "Bitcoin is the first and largest decentralized digital currency by market capitalization, created in 2009 by the pseudonymous Satoshi Nakamoto and operating on a peer-to-peer blockchain network without a central authority or issuer. It operates on a proof-of-work consensus mechanism in which miners compete to validate transactions and add new blocks to the blockchain, earning newly issued Bitcoin as a reward, a process governed by a hard-coded issuance schedule that halves approximately every four years and limits total supply to 21 million coins. Bitcoin is widely considered a store of value and digital gold, sensitive to macroeconomic conditions such as real interest rates and dollar strength, regulatory developments across major jurisdictions, institutional adoption flows, on-chain metrics such as the stock-to-flow ratio and miner profitability, and cyclical dynamics driven by its four-year halving cycle. As the dominant reserve asset of the crypto ecosystem, Bitcoin price dynamics heavily influence broader cryptocurrency market sentiment. Quoted in US dollars per coin, updated daily with closing prices.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r BTC, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get serie
+data <- get_series(c("bitcoin"))
+
+# Compute sma
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+```
+
+```{=html}
+</div>
+```
+
+### Ethereum
+
+```{r ETH TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo Finance — <a href="https://finance.yahoo.com/quote/ETH-USD/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "Ethereum is the second-largest cryptocurrency by market capitalization and the leading programmable blockchain platform, launched in 2015 by Vitalik Buterin and a group of co-founders. Unlike Bitcoin, Ethereum functions as a decentralized computing infrastructure that supports smart contracts, self-executing programs stored on the blockchain, and decentralized applications across domains including decentralized finance, non-fungible tokens, and layer-2 scaling solutions. In September 2022, Ethereum completed The Merge, transitioning from a proof-of-work to a proof-of-stake consensus mechanism, dramatically reducing its energy consumption and introducing a deflationary supply dynamic through the EIP-1559 base fee burn mechanism. Ether, the native token, is used to pay for computational resources on the network and serves as collateral in the staking system that secures the blockchain. Its price is influenced by on-chain activity levels and gas fee dynamics, the growth of the DeFi and NFT ecosystems built on its infrastructure, competing layer-1 and layer-2 platforms, macroeconomic risk appetite, regulatory clarity around staking yields, and its correlation with Bitcoin as the dominant market driver. Quoted in US dollars per coin, updated daily with closing prices.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r ETH, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get serie
+data <- get_series(c("ethereum"))
+
+# Compute sma
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+```
+
+```{=html}
+</div>
+```
+
+### Solana
+
+```{r SOL TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo Finance — <a href="https://finance.yahoo.com/quote/SOL-USD/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "Solana is a high-performance proof-of-stake blockchain launched in 2020 by Anatoly Yakovenko and the Solana Foundation, designed to support high transaction throughput at low cost through a combination of its novel proof-of-history consensus mechanism, which creates a cryptographic timestamp to order events before they are confirmed by the network, and a tower BFT consensus algorithm that allows validators to reach agreement without constant communication. Solana is capable of processing thousands of transactions per second with sub-second finality and fees typically below one cent, positioning it as a primary infrastructure layer for high-frequency decentralized applications including DeFi protocols, NFT marketplaces, payments, and on-chain gaming. SOL, the native token, is used to pay transaction fees, participate in staking, and govern the network. Its price is influenced by developer activity and total value locked in Solana-based protocols, competition from Ethereum and other layer-1 and layer-2 platforms, network reliability given historical outages, the growth of its NFT and DeFi ecosystems, institutional interest, and broader crypto market sentiment driven by Bitcoin. Quoted in US dollars per coin, updated daily with closing prices.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r SOL, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get serie
+data <- get_series(c("solana"))
+
+# Compute sma
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+```
+
+```{=html}
+</div>
+```
+
+<!-- ####################################################################### -->
+<!-- Index  -->
+<!-- ####################################################################### -->
+
+## Index
+
+```{=html}
+<div class="company-hero">
+  <div class="co-body">
+    <div class="masthead-title">Index</div>
+  </div>
+</div>
+```
+
+### Crypto Fear & Greed Index
+
+```{r CCCFG TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Coin Market Cap — <a href="https://coinmarketcap.com/charts/fear-and-greed-index/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "Crypto Fear & Greed Index measures the prevailing emotional state of the cryptocurrency market on a scale from 0 to 100, where 0 represents extreme fear and 100 represents extreme greed, published daily by CoinMarketCap. It is a composite of multiple market signals, each capturing a distinct dimension of crypto investor sentiment: volatility (current Bitcoin volatility and maximum drawdowns compared to 30-day and 90-day averages), market momentum and volume (current Bitcoin trading volume and market momentum relative to recent averages, with high buying volume interpreted as greedy behavior), social media sentiment (analysis of hashtag usage and engagement on crypto-related posts across platforms such as Twitter and Reddit), surveys (weekly crypto polls aggregating retail investor sentiment), Bitcoin dominance (a rising Bitcoin dominance share is associated with fear as investors retreat to the relative safety of the largest cryptocurrency, while declining dominance signals increased risk appetite for altcoins), and Google Trends data (search volume for Bitcoin-related queries, including searches for terms such as Bitcoin price manipulation as a fear indicator). Each component is normalized and combined into a single composite score updated daily. The index is grounded in the behavioral finance observation that extreme fear can signal undervaluation and buying opportunities while extreme greed may signal market overheating, making it a useful contrarian sentiment gauge alongside on-chain and technical analysis. Reported as a score from 0 to 100, updated daily.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r CCCFG RATING, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get serie
+data <- get_series(c("ccc_fg"))
+
+# Take the last rating
+last_rating <- tail(data$rating, 1)
+
+# Attribute color to Crypto Fear & Greed Indicators
+color_fear_and_greed <- case_when(
+  last_rating == "extreme fear"  ~ "#FF0000",
+  last_rating == "fear"          ~ "#FF6B00",
+  last_rating == "neutral"       ~ "#FFD700",
+  last_rating == "greed"         ~ "#7CB900",
+  last_rating == "extreme greed" ~ "#008000",
+  TRUE                           ~ "#000000"
+)
+
+# Show Rating
+tagList(
+  div(style = "text-align: center; margin: 20px 0;",
+    span(style = paste0("font-size: 32px; font-weight: bold; color: ", color_fear_and_greed, ";"), toupper(last_rating))))
+```
+
+```{=html}
+</div>
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r CCCFG IND, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get serie
+data <- get_series(c("ccc_fg"))
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = FALSE)))
+```
+
+```{=html}
+</div>
+```

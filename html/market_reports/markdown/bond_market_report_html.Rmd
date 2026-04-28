@@ -1,0 +1,1225 @@
+---
+title: "Bond Market Report"
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float:
+      collapsed: false
+      smooth_scroll: true
+    theme: flatly
+    highlight: kate
+    self_contained: true
+    css: "/Users/benjaminlachavanne/Desktop/script/finance_analysis/html/style/style.css"
+
+params:
+  llm_analysis: false
+  
+---
+
+```{r setup, include=FALSE, warning=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+
+# Main path 
+path_main <- file.path("~", "Desktop", "script", "finance_analysis")
+
+# Upload packages, functions and inputs 
+source(paste0(path_main,"/initialization/package.R"))         # |Package|
+source(paste0(path_main,"/function/function_information.R"))  # |Function price|
+source(paste0(path_main,"/function/function_format.R"))       # |Function format|
+source(paste0(path_main,"/function/function_visualization.R"))        # |Functions visualization|
+source(paste0(path_main,"/function/function_compute.R"))      # |Functions indicator|
+source(paste0(path_main,"/function/function_ai.R"))           # |Functions ai|
+source(paste0(path_main,"/initialization/input.R"))           # |Input|
+
+# Download all series from the RDS folder
+path_rds_folder    <- "/Users/benjaminlachavanne/Desktop/script/finance_analysis/database/rds/"
+path_rds_all <- paste0(path_rds_folder,"series_store_all.rds")
+series_database <- readRDS(path_rds_all)
+
+# Styled info box
+series_info_box <- function(source_html, frequency, adjustment, about, interpretation) {
+  htmltools::HTML(paste0('
+  <div class="info-card">
+    <div class="info-grid">
+      <div class="info-row">
+        <span class="info-label">Source</span>
+        <span class="info-value">', source_html, '</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Frequency</span>
+        <span class="info-value">', frequency, '</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Adjustment</span>
+        <span class="info-value">', adjustment, '</span>
+      </div>
+    </div>
+    <div class="info-about">', about, '</div>
+    <div class="info-about" style="margin-top:0.6rem;"><strong style="color:var(--accent-gold);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;">Interpretation</strong><br>', interpretation, '</div>
+  </div>
+  '))
+}
+
+# Section label helper
+section_label <- function(icon, text) {
+  htmltools::HTML(paste0(
+    '<div class="section-label"><span class="section-icon">', icon,
+    '</span><span class="section-text">', text, '</span></div>'))
+}
+
+# Subsection label helper
+subsection_label <- function(text) {
+  htmltools::HTML(paste0('<div class="subsection-label">', text, '</div>'))
+}
+
+# Chart note helper
+chart_note <- function(text) {
+  htmltools::HTML(paste0('<p class="chart-note">', text, '</p>'))
+}
+```
+
+<!-- ####################################################################### -->
+<!-- Head Title  -->
+<!-- ####################################################################### -->
+
+```{=html}
+<!-- ── MASTHEAD ─────────────────────────────────────────────────────────────── -->
+<div class="masthead">
+  <div class="masthead-eyebrow">Yield · Ratings · Spread</div>
+  <div class="masthead-title">Bond <span>Market Report</span></div>
+  <div class="masthead-date">Report date: `r format(Sys.Date(), '%B %d, %Y')`</div>
+</div>
+```
+
+<!-- ####################################################################### -->
+<!-- Abstract  -->
+<!-- ####################################################################### -->
+
+## Abstract
+
+```{=html}
+<div class="company-hero">
+  <div class="co-body">
+    <div class="masthead-title">Abstract</div>
+  </div>
+</div>
+```
+
+```{=html}
+<div class="abstract-box">
+<p>This report provides a comprehensive overview of fixed income markets through a structured set of policy rate, interbank, and sovereign yield indicators covering the two major bond markets.</p>
+
+<ul>
+  <li>The <strong>Credit Ratings</strong> section opens with a cross-country comparison of sovereign credit ratings from S&amp;P, Moody's, and Fitch, offering a baseline assessment of government creditworthiness across the globe.</li>
+  <li>The <strong>Europe</strong> section covers the ECB's key policy rates alongside the full Euribor term structure (1W to 12M), followed by an in-depth analysis of the Euro Area yield curve through both <em>Spot Rates</em> and <em>Instantaneous Forward Rates</em> across a wide range of maturities (3M to 30Y), enabling a detailed reading of rate expectations and term premia across the euro area.</li>
+  <li>The <strong>United States</strong> section tracks the Federal Funds Rate and the SOFR rate family (overnight, 30-day, and 90-day averages), complemented by an analysis of the US Treasury yield curve across key maturities (1Y to 30Y), providing a comprehensive view of the US interest rate environment.</li>
+</ul>
+
+<p>Taken together, this report aims to offer a structured view of global bond market dynamics, linking central bank policy decisions to interbank funding conditions and sovereign yield curves to support a comprehensive assessment of the current fixed income environment.</p>
+</div>
+```
+
+## Credit Ratings
+
+```{=html}
+<div class="company-hero">
+  <div class="co-body">
+    <div class="masthead-title">Credit Ratings</div>
+  </div>
+</div>
+```
+
+```{r}
+HTML('
+  <div class="info-card">
+    <div class="info-about">
+      <strong style="color:var(--accent-gold);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;">What are Sovereign Credit Ratings?</strong><br><br>
+      Sovereign credit ratings are independent assessments of a government\'s ability and willingness to repay its debt obligations. They are issued by the three major agencies, S&P, Moody\'s and Fitch, and updated regularly based on economic, fiscal and political conditions.
+      <br><br>
+      <strong style="color:var(--accent-gold);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;">Why are they used?</strong><br><br>
+      Ratings determine the cost at which a country can borrow on international markets. A higher rating means lower borrowing costs and broader access to capital. Institutional investors such as pension funds and central banks use these ratings to assess risk and determine whether they are allowed to hold a country\'s debt in their portfolios.
+    </div>
+  </div>
+')
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+
+```{r RATINGS TABLE, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Source 
+url <- "https://countryeconomy.com/ratings"
+
+# Scrape the first table from the page
+ratings_ce <- read_html(url) %>%
+  html_node("table") %>%
+  html_table(fill = TRUE)
+
+# Rename columns
+colnames(ratings_ce) <- c("Country", "Moodys Rating", "S&P Rating", "Fitch Rating")
+
+# Remove [+] and other brackets left by the HTML
+ratings_ce <- ratings_ce %>%
+  filter(!is.na(Country), Country != "") %>%
+  mutate(across(everything(), ~str_trim(str_remove_all(as.character(.), "\\[\\+\\]|\\[.*?\\]"))))
+
+# Create the sovereign credit ratings table
+gt_table <- ratings_ce %>%
+  gt() %>%
+  tab_header(title = toupper("Sovereign Credit Ratings"), subtitle = "S&P, Moody's & Fitch — Source: countryeconomy.com") %>%
+  tab_style(style = cell_text(color = "#e6edf3"), locations = cells_body()) %>%
+  tab_style(style = cell_text(weight = "bold"), locations = cells_column_labels(columns = everything())) %>%
+  tab_style(style = cell_text(weight = "bold", transform = "uppercase"), locations = cells_body(columns = Country)) %>%
+  tab_options(table.font.size = px(13), table.border.top.style = "hidden", table.border.bottom.style = "hidden", heading.border.bottom.style = "hidden", column_labels.border.top.style = "hidden") %>%
+  tab_options(table.background.color = "#161b22", column_labels.background.color = "#161b22", heading.background.color = "#161b22", row.striping.include_table_body = TRUE, row.striping.background_color = "#161b22")
+
+gt_table
+```
+
+```{=html}
+</div>
+```
+
+## Europe 
+
+```{=html}
+<div class="company-hero">
+  <div class="co-body">
+    <div class="masthead-title">Europe</div>
+  </div>
+</div>
+```
+
+### ECB & Euribor Rates
+
+```{r ECB RATE TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'FRED — <a href="https://fred.stlouisfed.org/" target="_blank">link</a>  and EURIBOR — <a href="https://www.euribor-rates.eu/en/euribor-charts/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = paste0(
+  '1) <b> ECB Main Refinancing Operations Rate — <a href="https://fred.stlouisfed.org/series/ECBMRRFR" target="_blank">	ECBMRRFR</a></b>. ',
+  'ECB Main Refinancing Operations Rate: Fixed Rate Tenders for Euro Area measures the interest rate at which the European Central Bank provides the bulk of liquidity to the euro area banking system through its main refinancing operations, published by the European Central Bank from its Key ECB Interest Rates release. Main refinancing operations are weekly open market transactions through which the ECB lends funds to eligible counterparty banks against adequate collateral for a one-week maturity, with the fixed rate serving as the floor for the cost of short-term borrowing in the euro area interbank market. Changes to the MRO rate are decided by the ECB Governing Council at its monetary policy meetings and transmit to the broader economy through their influence on bank lending rates, mortgage rates, corporate borrowing costs, and asset prices across the euro area. Data reflect the changing composition of the euro area over time. Released daily on a 7-day basis.',
+  '<br><br>',
+  '2) <b>ECB Deposit Facility Rate — <a href="https://fred.stlouisfed.org/series/ECBDFR" target="_blank">ECBDFR</a></b>. ',
+  'ECB Deposit Facility Rate for Euro Area measures the interest rate at which eligible counterparty banks may make overnight deposits with the Eurosystem, published by the European Central Bank from its Key ECB Interest Rates release. It forms the lower bound of the ECB\'s interest rate corridor, the rate at which excess liquidity parked overnight at the central bank is remunerated. In periods of abundant excess reserves in the banking system, such as following large-scale asset purchase programs, the deposit facility rate effectively becomes the operative policy rate driving short-term money market rates and the euro short-term rate (€STR), as the marginal cost of funds in the interbank market is anchored to the rate banks can earn by depositing overnight at the ECB rather than lending to peers. Between June 2014 and September 2022, the rate was held in negative territory as part of the ECB\'s unconventional monetary policy toolkit, penalizing banks for holding excess reserves with the aim of incentivizing lending to the real economy. Changes to the deposit facility rate are decided by the ECB Governing Council at its monetary policy meetings and transmit to borrowing costs, credit conditions, and asset prices across the euro area. Data reflect the changing composition of the euro area over time. Released daily on a 7-day basis.',
+  '<br><br>',
+  '3) <b>ECB Marginal Lending Facility Rate — <a href="https://fred.stlouisfed.org/series/ECBMLFR" target="_blank">ECBMLFR</a></b>. ',
+  'ECB Marginal Lending Facility Rate for Euro Area measures the interest rate at which eligible counterparty banks may obtain overnight credit from the Eurosystem against adequate collateral, published by the European Central Bank from its Key ECB Interest Rates release. It is one of three key ECB policy rates alongside the deposit facility rate and the main refinancing operations rate, and forms the upper bound of the ECB\'s interest rate corridor, the ceiling beyond which short-term interbank borrowing rates cannot rise, as any bank in need of overnight liquidity can always obtain it from the Eurosystem at this rate rather than paying more in the open market. Access to the marginal lending facility is available on demand to eligible counterparties, making it a backstop liquidity instrument of last resort for banks facing short-term funding shortfalls at the end of the business day. Because it sets the hard ceiling on overnight money market rates, the spread between the marginal lending facility rate and the deposit facility rate defines the width of the ECB\'s policy corridor, which the Governing Council has periodically adjusted to influence money market volatility and the transmission of monetary policy. Changes to the rate are decided by the ECB Governing Council at its monetary policy meetings. Data reflect the changing composition of the euro area over time. Released daily on a 7-day basis.',
+  '<br><br>',
+      '4) <b>Euribor 1 week — <a href="https://www.euribor-rates.eu/en/euribor-rates-by-year/" target="_blank">EURIBOR1W</a></b>. ',
+  'Euro Interbank Offered Rate 1-Week measures the average interest rate at which a panel of leading European banks are willing to lend unsecured funds to one another in the euro interbank market for a one-week maturity, administered by the European Money Markets Institute (EMMI) and calculated daily on each TARGET2 business day. It is derived from the trimmed average of rate submissions from a panel of representative banks after excluding the highest and lowest 15% of contributions. As an unsecured interbank lending rate, EURIBOR reflects the marginal cost of short-term euro-denominated funding in the wholesale money market and is directly anchored to ECB monetary policy expectations, with the 1-week tenor sitting at the very short end of the euro yield curve and tracking closely the ECB deposit facility rate and overnight €STR fixings. It serves as a reference rate for a broad range of financial instruments including floating-rate loans, interest rate swaps, and money market products, and is widely used as a benchmark for short-term euro funding conditions across the euro area banking system. Published daily.',
+  '<br><br>',
+    '5) <b>Euribor 1 month — <a href="https://www.euribor-rates.eu/en/euribor-rates-by-year/" target="_blank">EURIBOR1M</a></b>. ',
+  'Euro Interbank Offered Rate 1-Month measures the average interest rate at which a panel of leading European banks are willing to lend unsecured funds to one another in the euro interbank market for a one-month maturity, administered by the European Money Markets Institute (EMMI) and calculated daily on each TARGET2 business day. It is derived from the trimmed average of rate submissions from a panel of representative banks after excluding the highest and lowest 15% of contributions. Sitting between the very short end of the euro yield curve represented by the 1-week tenor and the more widely referenced 3-month tenor, EURIBOR 1M captures market expectations of ECB monetary policy over a one-month horizon and is particularly sensitive to near-term central bank rate decisions, short-term liquidity conditions in the euro area banking system, and month-end balance sheet pressures that can temporarily distort interbank funding costs. It serves as a reference rate for floating-rate financial instruments with shorter reset periods than those indexed to the 3-month tenor, including certain floating-rate loans, revolving credit facilities, and short-dated interest rate derivatives, and is also used as a benchmark in money market funds and cash management products requiring a shorter-duration reference rate. Published daily.',
+  '<br><br>',
+    '6) <b>Euribor 3 months — <a href="https://www.euribor-rates.eu/en/euribor-rates-by-year/" target="_blank">EURIBOR3M</a></b>. ',
+  'Euro Interbank Offered Rate 3-Month measures the average interest rate at which a panel of leading European banks are willing to lend unsecured funds to one another in the euro interbank market for a three-month maturity, administered by the European Money Markets Institute (EMMI) and calculated daily on each TARGET2 business day. It is the most widely referenced EURIBOR tenor and is derived from the trimmed average of rate submissions from a panel of representative banks after excluding the highest and lowest 15% of contributions. As the benchmark rate for three-month unsecured euro funding, EURIBOR 3M occupies a central position in the euro area\'s short-term interest rate complex, more forward-looking than the overnight €STR or the 1-week tenor, it embeds market expectations of ECB monetary policy over a three-month horizon and therefore responds to shifts in rate expectations, central bank communication, and broader credit and liquidity conditions in the euro area banking system. It serves as the primary reference rate for a vast range of financial contracts including floating-rate mortgages and corporate loans, interest rate swaps, futures contracts traded on Euronext Amsterdam (formerly LIFFE), and other derivatives instruments, making it one of the most systemically important benchmark rates in global fixed income markets. Published daily.',
+  '<br><br>',
+    '7) <b>Euribor 6 months — <a href="https://www.euribor-rates.eu/en/euribor-rates-by-year/" target="_blank">EURIBOR6M</a></b>. ',
+  'Euro Interbank Offered Rate 6-Month measures the average interest rate at which a panel of leading European banks are willing to lend unsecured funds to one another in the euro interbank market for a six-month maturity, administered by the European Money Markets Institute (EMMI) and calculated daily on each TARGET2 business day. It is derived from the trimmed average of rate submissions from a panel of representative banks after excluding the highest and lowest 15% of contributions. As a six-month tenor, EURIBOR 6M embeds market expectations of ECB monetary policy over a longer horizon than the 1-month and 3-month tenors, making it more sensitive to the anticipated trajectory of the policy rate cycle rather than to immediate near-term rate decisions, and incorporating a somewhat larger term premium to compensate lenders for the additional duration and credit risk associated with a longer unsecured lending period. It serves as a widely used reference rate for floating-rate mortgages, particularly in Spain, Italy, and Portugal where retail mortgage contracts have historically been indexed to this tenor, as well as for medium-term corporate loans, interest rate swaps, and other floating-rate financial instruments with semi-annual reset periods. Its prominence in the retail mortgage market of several large euro area economies makes EURIBOR 6M an important transmission channel through which ECB monetary policy decisions pass through to household borrowing costs and real estate affordability. Published daily.',
+  '<br><br>',
+    '8) <b>Euribor 12 months — <a href="https://www.euribor-rates.eu/en/euribor-rates-by-year/" target="_blank">EURIBOR12M</a></b>. ',
+  'Euro Interbank Offered Rate 12-Month measures the average interest rate at which a panel of leading European banks are willing to lend unsecured funds to one another in the euro interbank market for a twelve-month maturity, administered by the European Money Markets Institute (EMMI) and calculated daily on each TARGET2 business day. It is derived from the trimmed average of rate submissions from a panel of representative banks after excluding the highest and lowest 15% of contributions. As the longest standard EURIBOR tenor, EURIBOR 12M sits at the far end of the short-term euro yield curve and incorporates market expectations of ECB monetary policy over a full year, making it the most sensitive of the EURIBOR family to medium-term rate cycle expectations, term premium dynamics, and longer-horizon credit and liquidity risk in the euro area banking system. Because it reflects anticipated funding conditions over twelve months rather than near-term policy decisions, it tends to exhibit smoother dynamics than shorter tenors during periods of rate volatility while being more reactive to shifts in the medium-term monetary policy outlook. It serves as a reference rate for longer reset-period floating-rate instruments including annual-reset mortgages, medium-term corporate credit facilities, and certain interest rate swap and cap structures, and is also used as a benchmark in structured finance and covered bond markets. Its position at the boundary between short-term money market rates and longer-term capital market rates gives it additional significance as an indicator of the overall shape and steepness of the short end of the euro yield curve. Published daily.'),
+  interpretation = "When the European Central Bank raises its policy rates, Euribor rates across tenors tend to rise quickly and move closely—though not perfectly—in line with policy rates, as they are strongly influenced by central bank conditions and market expectations. A 25bp ECB hike typically leads to a similar increase in Euribor, particularly if the move was not fully anticipated. This increase in Euribor then transmits to sovereign bond markets through two main channels. First, it directly reprices the short end of the yield curve, as short-dated government bonds must remain competitive with interbank rates. Second, higher discount rates applied to future cash flows reduce the present value of existing bonds, leading to lower prices and higher yields.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r ECB RATE, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = c("ea20_mrr_es","ea20_depfr_es","ea20_mlr_es","ea20_euribor1w", "ea20_euribor1m", "ea20_euribor3m", "ea20_euribor6m", "ea20_euribor12m" ))
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, title = "European Short-Term Interest Rates, ECB Short-Term Interest Rate vs. Euribor"))
+
+```
+
+```{=html}
+</div>
+```
+
+### Spot Rates
+
+#### *Yield Curves & Spreads*
+
+```{r YIELD SR EU TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'ECB — <a href="https://www.ecb.europa.eu/stats/financial_markets_and_interest_rates/euro_area_yield_curves/html/index.en.html" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "The Euro Area Spot Rate yield curve, estimated daily by the ECB using the Svensson parametric model, represents the zero-coupon yield for a given residual maturity, that is, the annualised return on a hypothetical bond that pays no coupons and matures at exactly that horizon. Because it strips out coupon reinvestment effects, the spot rate is the purest measure of the time value of money at each maturity and serves as the foundational input for pricing fixed income instruments, discounting future cash flows, and deriving forward rates and term premia across the euro area sovereign bond market. Two curves are published: the AAA-rated curve, which isolates the highest-rated sovereigns to approximate a risk-free benchmark, and the all-issuers curve, which incorporates the full range of euro area government debt regardless of credit rating and therefore embeds a small credit and liquidity spread over the AAA curve, making it more representative of actual borrowing conditions across the euro area as a whole.",
+  interpretation = "A normally upward-sloping spot curve, where longer maturities yield more than shorter ones, reflects expectations of stable or rising rates and healthy risk premia for duration. The curve flattens when the ECB tightens policy aggressively, compressing the spread between short and long rates as markets anticipate that high short-term rates will slow growth and eventually force cuts. An inversion, where short rates exceed long rates, is the most bearish signal, historically preceding recessions, as it implies the market expects the ECB to cut rates sharply in the future to offset economic weakness. A steepening from low levels, particularly at the long end, signals either improving growth expectations or rising inflation and term premium concerns. ECB rate hikes transmit directly to the short end of the curve within days, while the long end responds more slowly and is driven by medium-term inflation expectations, fiscal sustainability concerns, and global safe-haven flows, making the shape of the curve a real-time summary of how markets are pricing the entire monetary policy cycle. The spread between the AAA and all-issuers curves also carries independent information, as a widening gap signals rising perceived credit risk among non-AAA euro area sovereigns, typically in periods of fiscal stress or market fragmentation.")
+```
+
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r YIELD SR EU, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get the last value of all bonds rate for each maturity 
+data_all <- series_database[grepl("^ea_yc_all_sr_", names(series_database))] %>%
+  lapply(function(x) x %>% slice_tail(n = 1) %>% select(value, id)) %>%
+  bind_rows(.id = "name") %>%
+  mutate(maturity_raw = str_extract(name, "[^_]+$"), maturity_num = case_when(str_detect(maturity_raw, "m$") ~ as.numeric(str_extract(maturity_raw, "\\d+")), str_detect(maturity_raw, "y$") ~ as.numeric(str_extract(maturity_raw, "\\d+")) * 12), maturity = toupper(maturity_raw)) %>%
+  arrange(maturity_num) %>%
+  select(name, maturity, maturity_num, value, id)
+
+# Get the last value of aaa bonds rate for each maturity 
+data_aaa <- series_database[grepl("^ea_yc_aaa_sr_", names(series_database))] %>%
+  lapply(function(x) x %>% slice_tail(n = 1) %>% select(value, id)) %>%
+  bind_rows(.id = "name") %>%
+  mutate(maturity_raw = str_extract(name, "[^_]+$"), maturity_num = case_when(str_detect(maturity_raw, "m$") ~ as.numeric(str_extract(maturity_raw, "\\d+")), str_detect(maturity_raw, "y$") ~ as.numeric(str_extract(maturity_raw, "\\d+")) * 12), maturity = toupper(maturity_raw)) %>%
+  arrange(maturity_num) %>%
+  select(name, maturity, maturity_num, value, id)
+
+# Compute spread (all - aaa) on matching maturities
+data_spread <- inner_join(data_aaa %>% select(maturity, maturity_num, value) %>% rename(value_aaa = value), data_all %>% select(maturity, value) %>% rename(value_all = value), by = "maturity") %>%
+  mutate(spread = round((as.numeric(value_all) - as.numeric(value_aaa)), 2)) %>%
+  arrange(maturity_num)
+
+# Plot series
+hc <- highchart() %>%
+  hc_title(text = "EURO AREA YIELD CURVE, SPOT RATES") %>%
+  hc_chart(backgroundColor = "#161b22") %>%
+  hc_title(style = list(color = "#ffffff")) %>%
+  hc_xAxis(categories = data_aaa$maturity, labels = list(style = list(color = "#ffffff")), title = list(text = "Maturity", style = list(color = "#ffffff"))) %>%
+  hc_yAxis(labels = list(style = list(color = "#ffffff")), title = list(text = "Yield (%)", style = list(color = "#ffffff"))) %>%
+  hc_legend(itemStyle = list(color = "#ffffff")) %>%
+  hc_tooltip(shared = TRUE, valueDecimals = 2) %>%
+  hc_exporting(enabled = TRUE, buttons = list(contextButton = list(menuItems = c("downloadCSV", "downloadXLS", "separator", "downloadPNG", "downloadPDF")))) %>%
+  hc_add_series(data = as.numeric(data_aaa$value), name = "AAA Spot Rate", type = "line", dashStyle = "Solid", tooltip = list(valueSuffix = "%")) %>%
+  hc_add_series(data = as.numeric(data_all$value), name = "All Issuers Spot Rate", type = "line", dashStyle = "ShortDash", color = "#ff4444", tooltip = list(valueSuffix = "%")) %>%
+  hc_add_series(data = data_spread$spread, name = "Spread (All - AAA)", type = "column", color = "#aaaaaa", tooltip = list(valueSuffix = " %"))
+hc
+```
+
+```{=html}
+</div>
+```
+
+#### *Yields*
+
+##### 3-Month
+
+```{r YIELD SR 3M TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'European Central Bank — <a href="https://data.ecb.europa.eu/data/datasets/YC?dataset%5B0%5D=Financial+market+data+-+yield+curve+%28YC%29&filterSequence=dataset&advFilterDataset%5B0%5D=Financial+market+data+-+yield+curve+%28YC%29&layerType=AL" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "The 3-month AAA spot rate is the zero-coupon yield on the shortest end of the ECB yield curve, representing the annualised risk-free return for a 3-month horizon derived from the highest-rated euro area government bonds. It tracks very closely the ECB deposit facility rate and serves as the anchor for the entire short end of the euro area yield curve.",
+  interpretation = "A rising 3-month spot rate signals tighter monetary conditions and expectations of further ECB hikes, while a falling rate reflects easing expectations or actual rate cuts. Because it sits at the very short end of the curve, it moves almost in lockstep with ECB policy decisions and is the first point of the yield curve to reprice when the monetary policy outlook shifts.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r YIELD SR 3M, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "ea_yc_aaa_sr_3m")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE))
+
+```
+
+```{=html}
+</div>
+```
+
+##### 6-Month
+
+```{r YIELD SR 6M TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'European Central Bank — <a href="https://data.ecb.europa.eu/data/datasets/YC?dataset%5B0%5D=Financial+market+data+-+yield+curve+%28YC%29&filterSequence=dataset&advFilterDataset%5B0%5D=Financial+market+data+-+yield+curve+%28YC%29&layerType=AL" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "The 6-month AAA spot rate is the zero-coupon yield at the 6-month maturity of the ECB yield curve, derived from the highest-rated euro area government bonds. It sits between the very short end anchored by ECB policy rates and the medium-term maturities driven by rate cycle expectations, making it sensitive to both current policy settings and near-term ECB forward guidance.",
+  interpretation = "A rising 6-month rate signals that markets are pricing in sustained tight monetary conditions over the coming two quarters, while a decline reflects expectations of imminent ECB cuts. It is one of the first maturities to diverge from the overnight rate when the market begins to anticipate a turning point in the policy cycle.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r YIELD SR 6M, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "ea_yc_aaa_sr_3m")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE))
+
+```
+
+```{=html}
+</div>
+```
+
+##### 1-Year
+
+```{r YIELD SR 1Y TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'European Central Bank — <a href="https://data.ecb.europa.eu/data/datasets/YC?dataset%5B0%5D=Financial+market+data+-+yield+curve+%28YC%29&filterSequence=dataset&advFilterDataset%5B0%5D=Financial+market+data+-+yield+curve+%28YC%29&layerType=AL" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "The 1-year AAA spot rate is the zero-coupon yield at the 1-year maturity of the ECB yield curve, derived from the highest-rated euro area government bonds. It captures the full expected path of ECB policy over the next twelve months and is one of the most watched short-term benchmarks for money market instruments and floating-rate contracts.",
+  interpretation = "A rising 1-year rate indicates that markets expect the ECB to keep rates elevated or hike further over the next year, while a falling rate reflects growing confidence that cuts are coming. It is particularly sensitive to shifts in ECB communication and inflation data releases, and tends to lead movements further out the curve when the policy outlook changes sharply.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r YIELD SR 1Y, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "ea_yc_aaa_sr_3m")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE))
+
+```
+
+```{=html}
+</div>
+```
+
+##### 5-Year
+
+```{r YIELD SR 5Y TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'European Central Bank — <a href="https://data.ecb.europa.eu/data/datasets/YC?dataset%5B0%5D=Financial+market+data+-+yield+curve+%28YC%29&filterSequence=dataset&advFilterDataset%5B0%5D=Financial+market+data+-+yield+curve+%28YC%29&layerType=AL" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "The 5-year AAA spot rate is the zero-coupon yield at the 5-year maturity of the ECB yield curve, derived from the highest-rated euro area government bonds. It reflects medium-term rate expectations and is widely used as a benchmark for corporate borrowing, mortgage pricing, and sovereign debt issuance across the euro area.",
+  interpretation = "A rising 5-year rate signals that markets expect monetary conditions to remain tight over the medium term or that inflation expectations have shifted higher, while a decline reflects expectations of a sustained easing cycle. It is less reactive to individual ECB meetings than the short end and more influenced by the cumulative outlook for growth and inflation over a multi-year horizon.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r YIELD SR 5Y, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "ea_yc_aaa_sr_3m")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE))
+
+```
+
+```{=html}
+</div>
+```
+
+##### 10-Year
+
+```{r YIELD SR 10Y TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'European Central Bank — <a href="https://data.ecb.europa.eu/data/datasets/YC?dataset%5B0%5D=Financial+market+data+-+yield+curve+%28YC%29&filterSequence=dataset&advFilterDataset%5B0%5D=Financial+market+data+-+yield+curve+%28YC%29&layerType=AL" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "The 10-year AAA spot rate is the zero-coupon yield at the 10-year maturity of the ECB yield curve, derived from the highest-rated euro area government bonds. It is the most widely referenced maturity in the euro area fixed income market, serving as the primary benchmark for long-term sovereign borrowing costs, pension fund liability discounting, and the risk-free rate used in asset valuation models.",
+  interpretation = "A rising 10-year rate tightens financial conditions broadly across the economy by increasing the discount rate applied to equities, raising long-term borrowing costs for governments and corporates, and compressing the present value of future cash flows. A declining rate eases conditions, supports asset valuations, and signals either lower growth and inflation expectations or increased safe-haven demand for high-quality sovereign debt.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r YIELD SR 10Y, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "ea_yc_aaa_sr_3m")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE))
+
+```
+
+```{=html}
+</div>
+```
+
+##### 20-Year
+
+```{r YIELD SR 20Y TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'European Central Bank — <a href="https://data.ecb.europa.eu/data/datasets/YC?dataset%5B0%5D=Financial+market+data+-+yield+curve+%28YC%29&filterSequence=dataset&advFilterDataset%5B0%5D=Financial+market+data+-+yield+curve+%28YC%29&layerType=AL" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "The 20-year AAA spot rate is the zero-coupon yield at the 20-year maturity of the ECB yield curve, derived from the highest-rated euro area government bonds. At this horizon the rate is largely decoupled from near-term ECB policy decisions and instead reflects long-run structural factors including trend growth, long-term inflation expectations, fiscal sustainability, and the term premium demanded by investors for holding very long duration assets.",
+  interpretation = "A rising 20-year rate signals that investors are demanding greater compensation for long-duration risk, often driven by rising long-term inflation expectations, deteriorating fiscal outlooks, or reduced demand from structural buyers such as pension funds and insurers. A declining rate reflects structural disinflationary forces, strong institutional demand for long-duration assets, or a broad flight to quality.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r YIELD SR 20Y, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "ea_yc_aaa_sr_3m")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE))
+
+```
+
+```{=html}
+</div>
+```
+
+##### 30-Year
+
+```{r YIELD SR 30Y TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'European Central Bank — <a href="https://data.ecb.europa.eu/data/datasets/YC?dataset%5B0%5D=Financial+market+data+-+yield+curve+%28YC%29&filterSequence=dataset&advFilterDataset%5B0%5D=Financial+market+data+-+yield+curve+%28YC%29&layerType=AL" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "The 30-year AAA spot rate is the zero-coupon yield at the longest standard maturity of the ECB yield curve, derived from the highest-rated euro area government bonds. It is the purest expression of very long-run market expectations for growth, inflation, and fiscal conditions in the euro area, and is the primary benchmark for ultra-long sovereign bond issuance and long-duration liability matching by insurance companies and pension funds.",
+  interpretation = "A rising 30-year rate signals deteriorating long-term fiscal or inflation credibility, reduced structural demand from liability-driven investors, or a global repricing of very long duration assets. A declining rate reflects strong institutional demand, benign long-term inflation expectations, or a flight to the highest-quality sovereign assets during periods of broad market stress.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r YIELD SR 30Y, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "ea_yc_aaa_sr_3m")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE))
+
+```
+
+```{=html}
+</div>
+```
+
+### Instantaneous Forward Rates
+
+#### *Yield Curves & Spreads*
+
+```{r YIELD IF EU TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'ECB — <a href="https://www.ecb.europa.eu/stats/financial_markets_and_interest_rates/euro_area_yield_curves/html/index.en.html" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "The Euro Area Instantaneous Forward Rate, estimated daily by the ECB using the Svensson parametric model on AAA-rated and all-issuer euro area government bonds, represents the short-term interest rate implied by the spot curve for a specific future date, that is, the rate the market expects to prevail instantaneously at that horizon rather than over the entire period up to that maturity. Mathematically it is the derivative of the spot curve and therefore captures the marginal cost of extending duration by one infinitesimal period at each point along the curve. Because it is derived from market prices rather than survey expectations, it embeds both pure rate expectations and a term premium component that compensates investors for duration uncertainty. The AAA forward curve is constructed from the highest-rated sovereigns to isolate a near risk-free signal, while the all-issuers forward curve incorporates the full spectrum of euro area government debt and therefore reflects an additional layer of credit and liquidity risk at each horizon.",
+  interpretation = "The forward curve is the most direct market-based signal of where participants expect short-term rates to be at each future date, making it the primary tool for reading ECB rate cycle expectations across the full maturity spectrum. When the forward curve is upward sloping, markets are pricing in further rate hikes or a prolonged period of elevated rates. When it peaks and turns downward at some future horizon, that peak marks the market-implied terminal rate and the point at which cuts are expected to begin. An inversion of the forward curve, where near-term forward rates exceed long-term ones, signals that the market expects the ECB to cut aggressively after a tightening cycle, typically in response to anticipated economic weakness. A flattening or downward shift of the entire forward curve reflects easing expectations being brought forward. The spread between the AAA and all-issuers forward curves at each horizon reveals how much additional credit risk the market is pricing into non-AAA sovereigns at that specific future date, with widening spreads at longer horizons signalling concern about fiscal sustainability or sovereign fragmentation risk in the euro area.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r YIELD IF EU, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get the last value of all bonds forward rate for each maturity 
+data_all <- series_database[grepl("^ea_yc_all_if_", names(series_database))] %>%
+  lapply(function(x) x %>% slice_tail(n = 1) %>% select(value, id)) %>%
+  bind_rows(.id = "name") %>%
+  mutate(maturity_raw = str_extract(name, "[^_]+$"), maturity_num = case_when(str_detect(maturity_raw, "m$") ~ as.numeric(str_extract(maturity_raw, "\\d+")), str_detect(maturity_raw, "y$") ~ as.numeric(str_extract(maturity_raw, "\\d+")) * 12), maturity = toupper(maturity_raw)) %>%
+  arrange(maturity_num) %>%
+  select(name, maturity, maturity_num, value, id)
+
+# Get the last value of aaa bonds forward rate for each maturity 
+data_aaa <- series_database[grepl("^ea_yc_aaa_if_", names(series_database))] %>%
+  lapply(function(x) x %>% slice_tail(n = 1) %>% select(value, id)) %>%
+  bind_rows(.id = "name") %>%
+  mutate(maturity_raw = str_extract(name, "[^_]+$"), maturity_num = case_when(str_detect(maturity_raw, "m$") ~ as.numeric(str_extract(maturity_raw, "\\d+")), str_detect(maturity_raw, "y$") ~ as.numeric(str_extract(maturity_raw, "\\d+")) * 12), maturity = toupper(maturity_raw)) %>%
+  arrange(maturity_num) %>%
+  select(name, maturity, maturity_num, value, id)
+
+# Compute spread (all - aaa) on matching maturities
+data_spread <- inner_join(data_aaa %>% select(maturity, maturity_num, value) %>% rename(value_aaa = value), data_all %>% select(maturity, value) %>% rename(value_all = value), by = "maturity") %>%
+  mutate(spread = round((as.numeric(value_all) - as.numeric(value_aaa)), 2)) %>%
+  arrange(maturity_num)
+
+# Plot series
+hc <- highchart() %>%
+  hc_title(text = "EURO AREA YIELD CURVE, INSTANTANEOUS FORWARD") %>%
+  hc_chart(backgroundColor = "#161b22") %>%
+  hc_title(style = list(color = "#ffffff")) %>%
+  hc_xAxis(categories = data_aaa$maturity, labels = list(style = list(color = "#ffffff")), title = list(text = "Maturity", style = list(color = "#ffffff"))) %>%
+  hc_yAxis(labels = list(style = list(color = "#ffffff")), title = list(text = "Yield (%)", style = list(color = "#ffffff"))) %>%
+  hc_legend(itemStyle = list(color = "#ffffff")) %>%
+  hc_tooltip(shared = TRUE, valueDecimals = 2) %>%
+  hc_exporting(enabled = TRUE, buttons = list(contextButton = list(menuItems = c("downloadCSV", "downloadXLS", "separator", "downloadPNG", "downloadPDF")))) %>%
+  hc_add_series(data = as.numeric(data_aaa$value), name = "AAA Forward Rate", type = "line", dashStyle = "Solid", tooltip = list(valueSuffix = "%")) %>%
+  hc_add_series(data = as.numeric(data_all$value), name = "All Issuers Forward Rate", type = "line", dashStyle = "ShortDash", color = "#ff4444", tooltip = list(valueSuffix = "%")) %>%
+  hc_add_series(data = data_spread$spread, name = "Spread (All - AAA)", type = "column", color = "#aaaaaa", tooltip = list(valueSuffix = " %"))
+hc
+
+```
+
+```{=html}
+</div>
+```
+
+#### *Yields*
+
+##### 3-Month
+
+```{r YIELD IF 3M TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'European Central Bank — <a href="https://data.ecb.europa.eu/data/datasets/YC?dataset%5B0%5D=Financial+market+data+-+yield+curve+%28YC%29&filterSequence=dataset&advFilterDataset%5B0%5D=Financial+market+data+-+yield+curve+%28YC%29&layerType=AL" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "The 3-month AAA instantaneous forward rate is the short-term rate implied by the spot curve at the 3-month horizon, representing the rate the market expects to prevail instantaneously in 3 months derived from the highest-rated euro area government bonds. It tracks very closely the ECB deposit facility rate and serves as the market-implied anchor for the very near-term policy outlook.",
+  interpretation = "A rising 3-month forward rate signals that markets are pricing in tighter monetary conditions in the immediate future, while a falling rate reflects expectations of imminent ECB cuts. Because it sits at the very short end of the forward curve, it moves almost in lockstep with ECB policy decisions and reprices rapidly when the near-term monetary policy outlook shifts.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r YIELD IF 3M, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+data <- get_series(name = "ea_yc_aaa_if_3m")
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE))
+```
+
+```{=html}
+</div>
+```
+
+##### 6-Month
+
+```{r YIELD IF 6M TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'European Central Bank — <a href="https://data.ecb.europa.eu/data/datasets/YC?dataset%5B0%5D=Financial+market+data+-+yield+curve+%28YC%29&filterSequence=dataset&advFilterDataset%5B0%5D=Financial+market+data+-+yield+curve+%28YC%29&layerType=AL" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "The 6-month AAA instantaneous forward rate is the short-term rate implied by the spot curve at the 6-month horizon, derived from the highest-rated euro area government bonds. It sits between the very short end anchored by ECB policy rates and the medium-term maturities, making it sensitive to both current policy settings and near-term ECB forward guidance.",
+  interpretation = "A rising 6-month forward rate signals that markets are pricing in sustained tight monetary conditions over the coming two quarters, while a decline reflects expectations of imminent ECB cuts. It is one of the first points of the forward curve to diverge from the overnight rate when the market begins to anticipate a turning point in the policy cycle.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r YIELD IF 6M, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+data <- get_series(name = "ea_yc_aaa_if_6m")
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE))
+```
+
+```{=html}
+</div>
+```
+
+##### 1-Year
+
+```{r YIELD IF 1Y TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'European Central Bank — <a href="https://data.ecb.europa.eu/data/datasets/YC?dataset%5B0%5D=Financial+market+data+-+yield+curve+%28YC%29&filterSequence=dataset&advFilterDataset%5B0%5D=Financial+market+data+-+yield+curve+%28YC%29&layerType=AL" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "The 1-year AAA instantaneous forward rate is the short-term rate implied by the spot curve at the 1-year horizon, derived from the highest-rated euro area government bonds. It captures the market-implied ECB policy rate expected to prevail in one year and is one of the most watched benchmarks for near-term monetary policy pricing.",
+  interpretation = "A rising 1-year forward rate indicates that markets expect the ECB to keep rates elevated or hike further over the next year, while a falling rate reflects growing confidence that cuts are coming. It is particularly sensitive to shifts in ECB communication and inflation data releases, and tends to lead movements further out the forward curve when the policy outlook changes sharply.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r YIELD IF 1Y, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+data <- get_series(name = "ea_yc_aaa_if_1y")
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE))
+```
+
+```{=html}
+</div>
+```
+
+##### 5-Year
+
+```{r YIELD IF 5Y TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'European Central Bank — <a href="https://data.ecb.europa.eu/data/datasets/YC?dataset%5B0%5D=Financial+market+data+-+yield+curve+%28YC%29&filterSequence=dataset&advFilterDataset%5B0%5D=Financial+market+data+-+yield+curve+%28YC%29&layerType=AL" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "The 5-year AAA instantaneous forward rate is the short-term rate implied by the spot curve at the 5-year horizon, derived from the highest-rated euro area government bonds. It reflects medium-term rate expectations and is widely watched as an indicator of where the ECB policy rate is expected to settle once the current cycle has fully played out.",
+  interpretation = "A rising 5-year forward rate signals that markets expect monetary conditions to remain tight over the medium term or that inflation expectations have shifted higher, while a decline reflects expectations of a sustained easing cycle. It is less reactive to individual ECB meetings than the short end and more influenced by the cumulative outlook for growth and inflation over a multi-year horizon.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r YIELD IF 5Y, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+data <- get_series(name = "ea_yc_aaa_if_5y")
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE))
+```
+
+```{=html}
+</div>
+```
+
+##### 10-Year
+
+```{r YIELD IF 10Y TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'European Central Bank — <a href="https://data.ecb.europa.eu/data/datasets/YC?dataset%5B0%5D=Financial+market+data+-+yield+curve+%28YC%29&filterSequence=dataset&advFilterDataset%5B0%5D=Financial+market+data+-+yield+curve+%28YC%29&layerType=AL" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "The 10-year AAA instantaneous forward rate is the short-term rate implied by the spot curve at the 10-year horizon, derived from the highest-rated euro area government bonds. It is the most widely referenced point on the forward curve, embedding both long-run rate expectations and the term premium demanded by investors for uncertainty over a decade-long horizon.",
+  interpretation = "A rising 10-year forward rate signals that markets are pricing in higher long-run rates, driven by either persistent inflation expectations, fiscal concerns, or a rising term premium. A declining rate eases long-term financial conditions, supports asset valuations, and signals either lower long-run growth and inflation expectations or increased safe-haven demand for high-quality sovereign debt.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r YIELD IF 10Y, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+data <- get_series(name = "ea_yc_aaa_if_10y")
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE))
+```
+
+```{=html}
+</div>
+```
+
+##### 20-Year
+
+```{r YIELD IF 20Y TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'European Central Bank — <a href="https://data.ecb.europa.eu/data/datasets/YC?dataset%5B0%5D=Financial+market+data+-+yield+curve+%28YC%29&filterSequence=dataset&advFilterDataset%5B0%5D=Financial+market+data+-+yield+curve+%28YC%29&layerType=AL" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "The 20-year AAA instantaneous forward rate is the short-term rate implied by the spot curve at the 20-year horizon, derived from the highest-rated euro area government bonds. At this horizon the rate is largely decoupled from near-term ECB policy decisions and instead reflects long-run structural factors including trend growth, long-term inflation expectations, fiscal sustainability, and the term premium for very long duration exposure.",
+  interpretation = "A rising 20-year forward rate signals that investors are demanding greater compensation for long-duration risk, often driven by rising long-term inflation expectations, deteriorating fiscal outlooks, or reduced demand from structural buyers such as pension funds and insurers. A declining rate reflects structural disinflationary forces, strong institutional demand for long-duration assets, or a broad flight to quality.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r YIELD IF 20Y, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+data <- get_series(name = "ea_yc_aaa_if_20y")
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE))
+```
+
+```{=html}
+</div>
+```
+
+##### 30-Year
+
+```{r YIELD IF 30Y TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'European Central Bank — <a href="https://data.ecb.europa.eu/data/datasets/YC?dataset%5B0%5D=Financial+market+data+-+yield+curve+%28YC%29&filterSequence=dataset&advFilterDataset%5B0%5D=Financial+market+data+-+yield+curve+%28YC%29&layerType=AL" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "The 30-year AAA instantaneous forward rate is the short-term rate implied by the spot curve at the 30-year horizon, derived from the highest-rated euro area government bonds. It is the purest expression of very long-run market expectations for the ECB policy rate and embeds the maximum term premium for duration uncertainty, making it highly sensitive to structural shifts in long-run inflation and fiscal credibility.",
+  interpretation = "A rising 30-year forward rate signals deteriorating long-term fiscal or inflation credibility, reduced structural demand from liability-driven investors, or a global repricing of very long duration assets. A declining rate reflects strong institutional demand, benign long-term inflation expectations, or a flight to the highest-quality sovereign assets during periods of broad market stress.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r YIELD IF 30Y, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+data <- get_series(name = "ea_yc_aaa_if_30y")
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE))
+```
+
+```{=html}
+</div>
+```
+
+### BofA Rates
+
+#### *High Yield Spreads*
+
+```{r EU SPREAD ALLHY TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Federal Reserve Bank of St. Louis — <a href="https://fred.stlouisfed.org/series/BAMLHE00EHYIOAS" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "The ICE BofA Euro High Yield Index Option-Adjusted Spread measures the average yield spread of the European high yield corporate bond market over equivalent-maturity government bonds, adjusted for embedded optionality. It covers euro-denominated speculative grade corporate bonds issued primarily by European companies and is the primary benchmark for European HY credit conditions. Like its US counterpart, it aggregates all ratings below investment grade across all sectors and maturities into a single spread measure, providing a comprehensive read on risk appetite in the European leveraged credit market.",
+  interpretation = "The Euro HY OAS is a key indicator of credit conditions in the European leveraged finance market, reflecting both the idiosyncratic European macro environment, including ECB policy, euro area growth dynamics, and political risk, and the global risk-off or risk-on backdrop that drives correlation with US HY spreads. Divergences between Euro HY and US HY OAS are particularly informative, as they reveal relative regional credit conditions and can signal early stress in one geography that has not yet spread globally.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r EU SPREAD ALLHY, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+data <- get_series(name = "ice_bofa_allhy_eu")
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE))
+```
+
+```{=html}
+</div>
+```
+
+## United States
+
+```{=html}
+<div class="company-hero">
+  <div class="co-body">
+    <div class="masthead-title">United States</div>
+  </div>
+</div>
+```
+
+### FED & SOFR Rates
+
+```{r US FED RATE TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'FRED — <a href="https://fred.stlouisfed.org/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = paste0(
+  '1) <b> Effective Federal Funds Rate — <a href="https://fred.stlouisfed.org/series/EFFR" target="_blank">EFFR</a></b>. ',
+  'Effective Federal Funds Rate is the volume-weighted median of overnight federal funds transactions, calculated from domestic unsecured borrowings in US dollars between depository institutions and certain other entities, primarily government-sponsored enterprises. It is published by the Federal Reserve Bank of New York based on data reported in the FR 2420 Report of Selected Money Market Rates. It represents the actual market rate at which banks lend reserve balances to each other overnight, as opposed to the target rate set by the Federal Open Market Committee (FOMC). It is the most direct expression of US monetary policy and serves as a benchmark for a broad range of short-term interest rates across the economy. Reported as a percent, not seasonally adjusted, and released daily.',
+  '<br><br>',
+  '2) <b>Secured Overnight Financing Rate — <a href="https://fred.stlouisfed.org/series/SOFR" target="_blank">SOFR</a></b>. ',
+  'Secured Overnight Financing Rate is a broad measure of the cost of borrowing cash overnight collateralized by US Treasury securities, published daily by the Federal Reserve Bank of New York. Unlike the Effective Federal Funds Rate, which is based on unsecured interbank lending, SOFR is secured, backed by repurchase agreement (repo) transactions, making it virtually risk-free and grounded in a much larger and more liquid market. It was developed as the primary replacement for LIBOR following the LIBOR manipulation scandals, and officially became the dominant benchmark reference rate for US dollar-denominated derivatives and loans. It is widely used as the reference rate for floating-rate financial instruments, including interest rate swaps, syndicated loans, and structured products. Reported as a percent, not seasonally adjusted, and released daily.',
+  '<br><br>',
+  '3) <b>30-Day Average SOFR — <a href="https://fred.stlouisfed.org/series/SOFR30DAYAVG" target="_blank">SOFR30</a></b>. ',
+  '30-Day Average Secured Overnight Financing Rate is the compounded average of the Secured Overnight Financing Rate (SOFR) over a rolling 30-day period, published daily by the Federal Reserve Bank of New York. As an extension of SOFR, it smooths out the day-to-day volatility inherent in the overnight rate, providing a more stable and forward-looking reference rate over a one-month horizon. It is commonly used as a benchmark for floating-rate financial instruments, including loans, derivatives, and structured products, where a less volatile rate than the daily SOFR is preferred. Reported as a percent, not seasonally adjusted, and released daily.',
+  '<br><br>',
+  '4) <b>90-Day Average SOFR — <a href="https://fred.stlouisfed.org/series/SOFR90DAYAVG" target="_blank">SOFR90</a></b>. ',
+  '90-Day Average Secured Overnight Financing Rate is the compounded average of the Secured Overnight Financing Rate (SOFR) over a rolling 90-day period, published daily by the Federal Reserve Bank of New York. As an extension of SOFR, it smooths out short-term rate volatility over a three-month horizon, making it a more stable benchmark than both the daily SOFR and the 30-day average. It is particularly relevant for financial instruments with a quarterly reset cycle, such as floating-rate loans, interest rate swaps, and structured products tied to a 3-month reference rate, effectively serving as the SOFR-based equivalent of the former 3-month LIBOR. Reported as a percent, not seasonally adjusted, and released daily.'),
+  interpretation = "When the Federal Reserve raises its policy rates, overnight funding rates such as the Secured Overnight Financing Rate adjust rapidly and move closely, though not perfectly, in line with the new policy stance, as they are strongly influenced by central bank conditions and market expectations, with the transmission being sharpest when rate moves are not fully anticipated by markets. This increase in short-term reference rates then transmits to US Treasury markets through two channels: first, it directly reprices the short end of the yield curve, as short-dated government securities must remain competitive with overnight and near risk-free funding rates; second, the higher discount rate applied to future fixed cash flows mechanically reduces the present value of existing bonds, pushing their prices down and yields up, with longer-duration Treasuries suffering disproportionately, as a 1% rise in yields reduces a 10-year bond price by approximately 8-9% versus only 2% for a 2-year note.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US FED RATE, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = c("us_ffrvw_fd","us_sofr_fd", "us_sofr30_fd", "us_sofr90_fd"))
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, title = "US Short-Term Interest Rates, SOFR vs. Federal Funds Rate"))
+
+```
+
+```{=html}
+</div>
+```
+
+### Treasury Rates
+
+#### *Yield Curves*
+
+```{r YIELD TR US TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'ECB — <a href="https://www.ecb.europa.eu/stats/financial_markets_and_interest_rates/euro_area_yield_curves/html/index.en.html" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "The Euro Area Instantaneous Forward Rate, estimated daily by the ECB using the Svensson parametric model on AAA-rated and all-issuer euro area government bonds, represents the short-term interest rate implied by the spot curve for a specific future date, that is, the rate the market expects to prevail instantaneously at that horizon rather than over the entire period up to that maturity. Mathematically it is the derivative of the spot curve and therefore captures the marginal cost of extending duration by one infinitesimal period at each point along the curve. Because it is derived from market prices rather than survey expectations, it embeds both pure rate expectations and a term premium component that compensates investors for duration uncertainty. The AAA forward curve is constructed from the highest-rated sovereigns to isolate a near risk-free signal, while the all-issuers forward curve incorporates the full spectrum of euro area government debt and therefore reflects an additional layer of credit and liquidity risk at each horizon.",
+  interpretation = "The forward curve is the most direct market-based signal of where participants expect short-term rates to be at each future date, making it the primary tool for reading ECB rate cycle expectations across the full maturity spectrum. When the forward curve is upward sloping, markets are pricing in further rate hikes or a prolonged period of elevated rates. When it peaks and turns downward at some future horizon, that peak marks the market-implied terminal rate and the point at which cuts are expected to begin. An inversion of the forward curve, where near-term forward rates exceed long-term ones, signals that the market expects the ECB to cut aggressively after a tightening cycle, typically in response to anticipated economic weakness. A flattening or downward shift of the entire forward curve reflects easing expectations being brought forward. The spread between the AAA and all-issuers forward curves at each horizon reveals how much additional credit risk the market is pricing into non-AAA sovereigns at that specific future date, with widening spreads at longer horizons signalling concern about fiscal sustainability or sovereign fragmentation risk in the euro area.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r YIELD TR US, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get the last value of Treasury bonds rate for each maturity
+data_latest <- series_database[grepl("^us_dgs", names(series_database))] %>%
+  lapply(function(x) x %>% slice_tail(n = 1) %>% select(value, id)) %>%
+  bind_rows(.id = "name") %>%
+  mutate(maturity_raw = str_extract(name, "(?<=_dgs)\\d+"), maturity_num = as.numeric(maturity_raw) * 12, maturity = paste0(maturity_raw, "Y")) %>%
+  arrange(maturity_num) %>%
+  select(name, maturity, maturity_num, value, id)
+
+# Get the value of one month ago of Treasury bonds rate for each maturity
+data_1m <- series_database[grepl("^us_dgs", names(series_database))] %>%
+  lapply(function(x) x %>% filter(date <= max(date, na.rm = TRUE) - 30) %>% slice_tail(n = 1) %>% select(value, id)) %>%
+  bind_rows(.id = "name") %>%
+  mutate(maturity_raw = str_extract(name, "(?<=_dgs)\\d+"), maturity_num = as.numeric(maturity_raw) * 12, maturity = paste0(maturity_raw, "Y")) %>%
+  arrange(maturity_num) %>%
+  select(name, maturity, maturity_num, value, id)
+
+# Get the value of one year ago of Treasury bonds rate for each maturity
+data_1y <- series_database[grepl("^us_dgs", names(series_database))] %>%
+  lapply(function(x) x %>% filter(date <= max(date, na.rm = TRUE) - 365) %>% slice_tail(n = 1) %>% select(value, id)) %>%
+  bind_rows(.id = "name") %>%
+  mutate(maturity_raw = str_extract(name, "(?<=_dgs)\\d+"), maturity_num = as.numeric(maturity_raw) * 12, maturity = paste0(maturity_raw, "Y")) %>%
+  arrange(maturity_num) %>%
+  select(name, maturity, maturity_num, value, id)
+
+# Plot
+hc <- highchart() %>%
+  hc_title(text = "US TREASURY YIELD CURVE") %>%
+  hc_chart(backgroundColor = "#161b22") %>%
+  hc_title(style = list(color = "#ffffff")) %>%
+  hc_xAxis(categories = data_latest$maturity, labels = list(style = list(color = "#ffffff")), title = list(text = "Maturity", style = list(color = "#ffffff"))) %>%
+  hc_yAxis(labels = list(style = list(color = "#ffffff")), title = list(text = "Yield (%)", style = list(color = "#ffffff"))) %>%
+  hc_legend(itemStyle = list(color = "#ffffff")) %>%
+  hc_tooltip(shared = TRUE, valueDecimals = 2) %>%
+  hc_exporting(enabled = TRUE, buttons = list(contextButton = list(menuItems = c("downloadCSV", "downloadXLS", "separator", "downloadPNG", "downloadPDF")))) %>%
+  hc_add_series(data = as.numeric(data_latest$value), name = "Latest", type = "line", dashStyle = "Solid", tooltip = list(valueSuffix = "%")) %>%
+  hc_add_series(data = as.numeric(data_1m$value), name = "1 Month Ago", type = "line", dashStyle = "ShortDash", color = "#ff4444", tooltip = list(valueSuffix = "%")) %>%
+  hc_add_series(data = as.numeric(data_1y$value), name = "1 Year Ago", type = "line", dashStyle = "Dot", color = "#aaaaaa", tooltip = list(valueSuffix = "%"))
+hc
+
+
+```
+
+```{=html}
+</div>
+```
+
+#### *Yields*
+
+##### 1-Year
+
+```{r US YIELD 1Y TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Federal Reserve Bank of St. Louis — <a href="https://fred.stlouisfed.org/series/DGS1" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "The 1-year US Treasury yield is the market rate on a constant-maturity 1-year government bond, published daily by the Federal Reserve. It captures the full expected path of Fed policy over the next twelve months and serves as one of the most watched short-term benchmarks for money market instruments, floating-rate contracts, and near-term monetary policy pricing.",
+  interpretation = "A rising 1-year yield indicates that markets expect the Fed to keep rates elevated or hike further over the next year, while a falling yield reflects growing confidence that cuts are coming. It is particularly sensitive to Fed communication, CPI releases, and employment data, and tends to lead movements further out the curve when the policy outlook shifts sharply.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US YIELD 1Y, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+data <- get_series(name = "us_dgs1_fd")
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE))
+```
+
+```{=html}
+</div>
+```
+
+##### 5-Year
+
+```{r US YIELD 5Y TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Federal Reserve Bank of St. Louis — <a href="https://fred.stlouisfed.org/series/DGS5" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "The 5-year US Treasury yield is the market rate on a constant-maturity 5-year government bond, published daily by the Federal Reserve. It reflects medium-term rate expectations and is widely used as a benchmark for corporate borrowing, mortgage pricing, and sovereign debt issuance, sitting at the intersection of near-term policy expectations and longer-run structural rate dynamics.",
+  interpretation = "A rising 5-year yield signals that markets expect monetary conditions to remain tight over the medium term or that inflation expectations have shifted higher, while a decline reflects expectations of a sustained easing cycle. It is less reactive to individual Fed meetings than the short end and more influenced by the cumulative outlook for growth and inflation over a multi-year horizon.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US YIELD 5Y, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+data <- get_series(name = "us_dgs5_fd")
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE))
+```
+
+```{=html}
+</div>
+```
+
+##### 10-Year
+
+```{r US YIELD 10Y TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Federal Reserve Bank of St. Louis — <a href="https://fred.stlouisfed.org/series/DGS10" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "The 10-year US Treasury yield is the market rate on a constant-maturity 10-year government bond, published daily by the Federal Reserve. It is the single most referenced interest rate in global finance, serving as the primary benchmark for long-term sovereign borrowing costs, mortgage rates, corporate bond pricing, equity discount rates, and the global risk-free rate used in asset valuation models worldwide.",
+  interpretation = "A rising 10-year yield tightens financial conditions broadly by increasing the discount rate applied to equities, raising long-term borrowing costs for governments and corporates, and compressing the present value of future cash flows. A declining yield eases conditions, supports asset valuations, and signals either lower growth and inflation expectations or increased safe-haven demand for US government debt.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US YIELD 10Y, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+data <- get_series(name = "us_dgs10_fd")
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE))
+```
+
+```{=html}
+</div>
+```
+
+##### 20-Year
+
+```{r US YIELD 20Y TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Federal Reserve Bank of St. Louis — <a href="https://fred.stlouisfed.org/series/DGS20" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "The 20-year US Treasury yield is the market rate on a constant-maturity 20-year government bond, published daily by the Federal Reserve. At this horizon the rate is largely decoupled from near-term Fed policy decisions and instead reflects long-run structural factors including trend growth, long-term inflation expectations, fiscal sustainability, and the term premium demanded by investors for holding very long duration assets.",
+  interpretation = "A rising 20-year yield signals that investors are demanding greater compensation for long-duration risk, often driven by rising long-term inflation expectations, deteriorating fiscal outlooks, or reduced demand from structural buyers such as pension funds and insurers. A declining yield reflects structural disinflationary forces, strong institutional demand for long-duration assets, or a broad flight to quality into US Treasuries.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US YIELD 20Y, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+data <- get_series(name = "us_dgs20_fd")
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE))
+```
+
+```{=html}
+</div>
+```
+
+##### 30-Year
+
+```{r US YIELD 30Y TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Federal Reserve Bank of St. Louis — <a href="https://fred.stlouisfed.org/series/DGS30" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "The 30-year US Treasury yield is the market rate on a constant-maturity 30-year government bond, published daily by the Federal Reserve. It is the purest expression of very long-run market expectations for US growth, inflation, and fiscal conditions, and serves as the primary benchmark for ultra-long sovereign bond issuance and long-duration liability matching by insurance companies and pension funds.",
+  interpretation = "A rising 30-year yield signals deteriorating long-term fiscal or inflation credibility, reduced structural demand from liability-driven investors, or a global repricing of very long duration assets. A declining yield reflects strong institutional demand, benign long-term inflation expectations, or a flight to the highest-quality sovereign assets during periods of broad market stress.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US YIELD 30Y, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+data <- get_series(name = "us_dgs30_fd")
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE))
+```
+
+```{=html}
+</div>
+```
+
+### BofA Rates
+
+#### *Spreads By Rating*
+
+##### Investment Grade
+
+```{r US SPREAD IG RATING TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'FRED — <a href="https://fred.stlouisfed.org/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = paste0(
+    '1) <b>All IG — <a href="https://fred.stlouisfed.org/series/BAMLC0A0CM" target="_blank">BAMLC0A0CM</a></b>. ',
+    'The ICE BofA US Corporate Index OAS measures the average yield spread of the entire US investment grade corporate bond market over equivalent-maturity Treasuries, adjusted for embedded optionality. It aggregates all issuers rated BBB- or above across all sectors and maturities, providing the broadest and most representative snapshot of IG corporate credit conditions.',
+    '<br><br>',
+    '2) <b>AAA — <a href="https://fred.stlouisfed.org/series/BAMLC0A1CAAA" target="_blank">BAMLC0A1CAAA</a></b>. ',
+    'The ICE BofA AAA US Corporate Index OAS measures the yield spread of the highest-rated investment grade corporates over Treasuries. Structurally the tightest within IG, AAA spreads are driven almost entirely by liquidity and technical supply-demand dynamics rather than fundamental credit risk, given the negligible default probability of this tier.',
+    '<br><br>',
+    '3) <b>AA — <a href="https://fred.stlouisfed.org/series/BAMLC0A2CAA" target="_blank">BAMLC0A2CAA</a></b>. ',
+    'The ICE BofA AA US Corporate Index OAS measures the yield spread of AA-rated investment grade corporates over Treasuries. Sitting just below AAA, AA spreads incorporate both a liquidity premium and a small but meaningful fundamental credit premium, making them a balanced barometer of quality differentiation at the top of the IG stack.',
+    '<br><br>',
+    '4) <b>A — <a href="https://fred.stlouisfed.org/series/BAMLC0A3CA" target="_blank">BAMLC0A3CA</a></b>. ',
+    'The ICE BofA Single-A US Corporate Index OAS measures the yield spread of A-rated investment grade corporates over Treasuries. The Single-A tier is the largest and most sector-diverse segment of the IG universe, and its spreads are more directly influenced by earnings trends, sector dynamics, and the macro credit cycle than the top-rated tiers.',
+    '<br><br>',
+    '5) <b>BBB — <a href="https://fred.stlouisfed.org/series/BAMLC0A4CBBB" target="_blank">BAMLC0A4CBBB</a></b>. ',
+    'The ICE BofA BBB US Corporate Index OAS measures the yield spread of the lowest investment grade tier over Treasuries. BBB is the largest IG segment by notional and carries the highest fundamental credit premium within IG. Issuers in this tier face the greatest risk of fallen angel downgrades in a deteriorating credit environment, making BBB spreads the single most credit-cycle-sensitive indicator within the investment grade universe.'
+  ),
+  interpretation = "Reading the five rating tranches together reveals how credit stress propagates across the investment grade quality spectrum. In a benign environment, spreads compress across all ratings with the BBB-to-AAA differential narrow and stable. As conditions deteriorate, BBB spreads typically widen first and most aggressively, reflecting rising fallen angel concerns and forced selling risk from IG-only mandates, while AAA and AA spreads widen later and more modestly. A widening of the BBB-to-A differential is a reliable early warning of broader IG credit stress. Conversely, when the entire rating stack tightens uniformly, it reflects strong risk appetite and robust technical demand across the full corporate bond market. The spread hierarchy, BBB widest, AAA tightest, collapses or inverts only in extreme liquidity crises when safe-haven flows overwhelm credit fundamentals.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US SPREAD IG RATING, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+data <- get_series(name = c("ice_bofa_allig_us", "ice_bofa_aaa_us", "ice_bofa_aa_us", "ice_bofa_a_us", "ice_bofa_bbb_us"))
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, title = "US IG Corporate OAS by Rating, All IG, AAA, AA, A, BBB"))
+```
+
+```{=html}
+</div>
+```
+
+##### High Yield
+
+```{r US SPREAD HY RATING TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'FRED — <a href="https://fred.stlouisfed.org/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = paste0(
+    '1) <b>All HY — <a href="https://fred.stlouisfed.org/series/BAMLH0A0HYM2" target="_blank">BAMLH0A0HYM2</a></b>. ',
+    'The ICE BofA US High Yield Index OAS measures the average yield spread of the entire US speculative grade corporate bond market over equivalent-maturity Treasuries, adjusted for embedded optionality. It covers all bonds rated below investment grade across all sectors and maturities and is the primary benchmark for US HY credit conditions, widely used by investors, central banks, and risk managers to gauge stress in the leveraged credit market.',
+    '<br><br>',
+    '2) <b>BB — <a href="https://fred.stlouisfed.org/series/BAMLH0A1HYBB" target="_blank">BAMLH0A1HYBB</a></b>. ',
+    'The ICE BofA BB US High Yield Index OAS covers the highest-quality tier of the HY universe, just below investment grade. BB-rated issuers are often crossover names, fallen angels from IG or rising stars approaching IG, and their spreads are particularly sensitive to rating migration risk and relative value dynamics between the IG and HY markets.',
+    '<br><br>',
+    '3) <b>B — <a href="https://fred.stlouisfed.org/series/BAMLH0A2HYB" target="_blank">BAMLH0A2HYB</a></b>. ',
+    'The ICE BofA Single-B US High Yield Index OAS covers the core of the leveraged credit market, encompassing companies with meaningful leverage and limited financial flexibility. Single-B spreads are driven by a blend of default risk, recovery rate expectations, and broader risk appetite, and widen significantly more than BB spreads during credit stress episodes as investors price in higher default probabilities.',
+    '<br><br>',
+    '4) <b>CCC & Lower — <a href="https://fred.stlouisfed.org/series/BAMLH0A3HYC" target="_blank">BAMLH0A3HYC</a></b>. ',
+    'The ICE BofA CCC & Lower US High Yield Index OAS covers the most distressed tier of the corporate credit universe, including bonds rated CCC, CC, C, and D. Issuers in this tier face high default probabilities and limited market access. CCC spreads are the most volatile in all of corporate credit and serve as the most direct market-implied gauge of near-term default cycle risk.'
+  ),
+  interpretation = "The four HY rating tranches together tell the full story of the speculative grade credit cycle. In benign conditions, all tranches tighten and the CCC-to-BB differential stays compressed as broad risk appetite supports even the most distressed issuers. As the cycle turns, CCC spreads widen first and most violently, followed by Single-B and then BB, reflecting the sequential repricing of default risk from the most vulnerable issuers outward. The all-HY index, being a weighted average, tends to lag the most distressed tranches but leads the broader market as a summary risk signal. A spread above 500–600 basis points on the all-HY index has historically signalled recessionary credit conditions. The CCC-to-BB ratio is one of the most powerful real-time indicators of how far into the default cycle markets believe we are, with a rapidly widening ratio typically preceding a pick-up in actual default rates by several months.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US SPREAD HY RATING, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+data <- get_series(name = c("ice_bofa_allhy_us", "ice_bofa_bb_us", "ice_bofa_b_us", "ice_bofa_ccc_us"))
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, title = "US HY Corporate OAS by Rating, All HY, BB, B, CCC & Lower"))
+```
+
+```{=html}
+</div>
+```
+
+#### *Spreads By Maturity*
+
+```{r US SPREAD IG MAT TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'FRED — <a href="https://fred.stlouisfed.org/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = paste0(
+    '1) <b>1–3 Years — <a href="https://fred.stlouisfed.org/series/BAMLC1A0C13Y" target="_blank">BAMLC1A0C13Y</a></b>. ',
+    'The ICE BofA 1-3 Year US Corporate Index OAS covers short-dated IG bonds, the most liquid segment of the corporate market. These spreads are highly sensitive to near-term credit conditions, monetary policy expectations, and short-term funding dynamics, and are closely watched as a gauge of corporate refinancing risk at the short end.',
+    '<br><br>',
+    '2) <b>3–5 Years — <a href="https://fred.stlouisfed.org/series/BAMLC2A0C35Y" target="_blank">BAMLC2A0C35Y</a></b>. ',
+    'The ICE BofA 3-5 Year US Corporate Index OAS sits at the transition between short and medium-term credit risk. It reflects a blend of near-term fundamental conditions and medium-term macro expectations, and widening relative to the 1-3 year bucket often signals the start of a broader spread widening cycle.',
+    '<br><br>',
+    '3) <b>5–7 Years — <a href="https://fred.stlouisfed.org/series/BAMLC3A0C57Y" target="_blank">BAMLC3A0C57Y</a></b>. ',
+    'The ICE BofA 5-7 Year US Corporate Index OAS sits at the heart of the medium-term IG market, balancing interest rate duration risk with fundamental credit risk. It is closely monitored by portfolio managers navigating allocation decisions between short and long credit.',
+    '<br><br>',
+    '4) <b>7–10 Years — <a href="https://fred.stlouisfed.org/series/BAMLC4A0C710Y" target="_blank">BAMLC4A0C710Y</a></b>. ',
+    'The ICE BofA 7-10 Year US Corporate Index OAS is one of the most actively traded and benchmarked segments of the IG corporate market, widely used as the primary reference for new bond issuance and a key driver of total return volatility in IG portfolios.',
+    '<br><br>',
+    '5) <b>10–15 Years — <a href="https://fred.stlouisfed.org/series/BAMLC7A0C1015Y" target="_blank">BAMLC7A0C1015Y</a></b>. ',
+    'The ICE BofA 10-15 Year US Corporate Index OAS covers long-dated IG bonds primarily accessed by liability-driven investors such as pension funds and insurance companies. Spreads here are highly sensitive to structural changes in long-term inflation expectations, fiscal outlooks, and institutional buyer behaviour.',
+    '<br><br>',
+    '6) <b>15+ Years — <a href="https://fred.stlouisfed.org/series/BAMLC8A0C15PY" target="_blank">BAMLC8A0C15PY</a></b>. ',
+    'The ICE BofA 15+ Year US Corporate Index OAS covers the ultra-long end of the IG market, carrying the highest duration risk within the investment grade universe. It is the most sensitive maturity bucket to term premium dynamics and structural demand from institutions with very long-dated liabilities, and exhibits the largest total return swings across the IG maturity spectrum.'
+  ),
+  interpretation = "Reading the six maturity buckets together reveals the term structure of IG corporate credit spreads and how credit and duration risk are priced across the curve. In a normal credit environment, spreads are upward sloping across maturities, longer buckets command more spread, reflecting the higher uncertainty and duration risk of longer-dated cash flows. When the credit spread curve flattens or inverts at longer maturities, it typically signals strong institutional demand for long-duration assets or a market pricing in a benign long-term credit outlook. Conversely, a steepening of the spread curve at the long end signals rising term premium concerns, deteriorating long-term credit outlooks, or a reduction in structural buyer demand. Watching the dynamic between the short end (1-3Y) and the long end (15+Y) provides a real-time read on the shape of the IG credit curve and how duration risk is being priced relative to near-term credit risk.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US SPREAD IG MAT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+data <- get_series(name = c("ice_bofa_1_3y_us", "ice_bofa_3_5y_us", "ice_bofa_5_7y_us", "ice_bofa_7_10y_us", "ice_bofa_10_15y_us", "ice_bofa_15py_us"))
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, title = "US IG Corporate OAS by Maturity — 1-3Y, 3-5Y, 5-7Y, 7-10Y, 10-15Y, 15+Y"))
+```
+
+```{=html}
+</div>
+```
+
+### BofA Index
+
+```{r BOFA IDX TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'STOXX — <a href="https://fr.finance.yahoo.com/quote/%5EMOVE/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "ICE BofA MOVE Index (^MOVE) measures the implied volatility of U.S. Treasury bonds across the yield curve, published by ICE Data Indices and derived from the prices of one-month over-the-counter options on U.S. Treasury securities across four maturities (2-year, 5-year, 10-year, and 30-year) weighted by the outstanding amount of each maturity in the Treasury market. The resulting composite reflects the bond market\'s consensus expectation of near-term interest rate volatility, making the MOVE the fixed income equivalent of the VIX, which measures equity market implied volatility and earning it the informal designation of the bond market fear gauge. Elevated MOVE readings indicate that options markets are pricing significant uncertainty about the future path of interest rates, typically occurring during periods of monetary policy uncertainty, inflation surprises, fiscal stress, or broader financial market dislocation; low readings reflect calm rate expectations and stable monetary policy conditions. Because interest rate volatility transmits directly to borrowing costs, mortgage rates, credit spreads, and asset valuations across virtually every corner of the financial system, the MOVE is closely watched as a leading indicator of financial conditions tightness and systemic stress, often anticipating broader market dislocations before they materialize in equity volatility measures. Quoted in basis points of annualized yield volatility,updated daily with closing prices.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r VSTOXX, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "move_idx")
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = TRUE))
+
+```
+
+```{=html}
+</div>
+```
+
+
+## Emerging Markets 
+
+### BofA Rates
+
+#### *Spreads*
+
+```{r EM SPREAD TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = paste0(
+    'Federal Reserve Bank of St. Louis — ',
+    '1) EM Corporate <a href="https://fred.stlouisfed.org/series/BAMLEMCBPIOAS" target="_blank">BAMLEMCBPIOAS</a> · ',
+    '2) EM HY Corporate <a href="https://fred.stlouisfed.org/series/BAMLEMHBHYCRPIOAS" target="_blank">BAMLEMHBHYCRPIOAS</a>'
+  ),
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = paste0(
+    '1) <b>EM Corporate — <a href="https://fred.stlouisfed.org/series/BAMLEMCBPIOAS" target="_blank">BAMLEMCBPIOAS</a></b>. ',
+    'The ICE BofA Emerging Markets Corporate Plus Index OAS measures the yield spread of EM corporate bonds, spanning the full IG and HY rating spectrum, over equivalent-maturity US Treasuries, adjusted for embedded optionality. It is the primary benchmark for the EM corporate credit market and captures the combined credit risk, country risk, and liquidity risk premium embedded in bonds issued by companies domiciled in emerging market countries.',
+    '<br><br>',
+    '2) <b>EM HY Corporate — <a href="https://fred.stlouisfed.org/series/BAMLEMHBHYCRPIOAS" target="_blank">BAMLEMHBHYCRPIOAS</a></b>. ',
+    'The ICE BofA High Yield Emerging Markets Corporate Plus Index OAS isolates the speculative grade tier of the EM corporate universe. It embeds both the EM country risk premium and the HY default risk premium simultaneously, making it the most volatile and highest-spread index in the EM credit family. This index sits at the intersection of global risk appetite, EM-specific country and currency dynamics, and speculative grade credit risk.'
+  ),
+  interpretation = "Plotting both EM tranches together reveals the IG/HY split within the EM corporate universe and how each responds to global and regional risk factors. The EM corporate all-in OAS responds to a combination of global risk appetite, US dollar dynamics, commodity prices, and country-specific fundamentals; the EM HY corporate OAS amplifies all of these factors given the additional speculative grade credit risk layer. Divergences between the two, a widening of EM HY relative to EM all-corporate, signal rising default concerns concentrated in the most leveraged EM issuers and are typically associated with commodity price declines, dollar strength, or idiosyncratic country stress. Comparing EM corporate spreads to equivalent US HY spreads reveals the additional EM risk premium the market is demanding at any given point in the cycle.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r EM SPREAD, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+data <- get_series(name = c("ice_bofa_em_corp", "ice_bofa_em_hy_corp"))
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, title = "EM Corporate OAS — All EM Corporate vs. EM HY Corporate"))
+```
+
+```{=html}
+</div>
+```

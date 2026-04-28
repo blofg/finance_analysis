@@ -1,0 +1,432 @@
+---
+title: "World Financial and Macro Report"
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float:
+      collapsed: false
+      smooth_scroll: true
+    theme: flatly
+    highlight: kate
+    self_contained: true
+    css: "/Users/benjaminlachavanne/Desktop/script/finance_analysis/html/style/style.css"
+
+params:
+  llm_analysis: false
+  
+---
+
+```{r setup, include=FALSE, warning=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+
+# Main path 
+path_main <- file.path("~", "Desktop", "script", "finance_analysis")
+
+# Upload packages, functions and inputs 
+source(paste0(path_main,"/initialization/package.R"))         # |Package|
+source(paste0(path_main,"/function/function_information.R"))  # |Function price|
+source(paste0(path_main,"/function/function_format.R"))       # |Function format|
+source(paste0(path_main,"/function/function_visualization.R"))        # |Functions visualization|
+source(paste0(path_main,"/function/function_compute.R"))      # |Functions indicator|
+source(paste0(path_main,"/function/function_ai.R"))           # |Functions ai|
+source(paste0(path_main,"/initialization/input.R"))           # |Input|
+
+# Download all series from the RDS folder
+path_rds_folder    <- "/Users/benjaminlachavanne/Desktop/script/finance_analysis/database/rds/"
+path_rds_all <- paste0(path_rds_folder,"series_store_all.rds")
+series_database <- readRDS(path_rds_all)
+
+# Styled info box
+series_info_box <- function(source_html, frequency, adjustment, about) {
+  htmltools::HTML(paste0('
+  <div class="info-card">
+    <div class="info-grid">
+      <div class="info-row">
+        <span class="info-label">Source</span>
+        <span class="info-value">', source_html, '</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Frequency</span>
+        <span class="info-value">', frequency, '</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Adjustment</span>
+        <span class="info-value">', adjustment, '</span>
+      </div>
+    </div>
+    <div class="info-about">', about, '</div>
+  </div>
+  '))
+}
+
+# Section label helper
+section_label <- function(icon, text) {
+  htmltools::HTML(paste0(
+    '<div class="section-label"><span class="section-icon">', icon,
+    '</span><span class="section-text">', text, '</span></div>'))
+}
+
+# Subsection label helper
+subsection_label <- function(text) {
+  htmltools::HTML(paste0('<div class="subsection-label">', text, '</div>'))
+}
+
+# Chart note helper
+chart_note <- function(text) {
+  htmltools::HTML(paste0('<p class="chart-note">', text, '</p>'))
+}
+```
+
+
+
+<!-- ####################################################################### -->
+<!-- Head Title  -->
+<!-- ####################################################################### -->
+
+```{=html}
+<!-- ── MASTHEAD ─────────────────────────────────────────────────────────────── -->
+<div class="masthead">
+  <div class="masthead-eyebrow">Macro Research · Global Economy</div>
+  <div class="masthead-title">World <span>Financial &amp; Macro Report</span></div>
+  <div class="masthead-date">Latest update date: `r format(Sys.Date(), '%B %d, %Y')`</div>
+</div>
+```
+
+
+<!-- ####################################################################### -->
+<!-- Abstract  -->
+<!-- ####################################################################### -->
+
+## Abstract
+
+```{=html}
+<div class="section-title"><strong>Abstract</strong></div>
+```
+
+```{=html}
+<div class="company-hero">
+  <div class="co-body">
+    <div class="masthead-title">Abstract</div>
+  </div>
+</div>
+```
+
+```{=html}
+<div class="abstract-box">
+<p>This report provides a comprehensive overview of the global economy through a structured set of macroeconomic and market indicators, enabling cross-country comparisons across the world's major economies.</p>
+<ul>
+  <li>The <strong>macroeconomic</strong> section covers global output growth and inflation, with a country-level breakdown for the main economies including the United States, Europe, China, Japan, and emerging markets.</li>
+  <li>The <strong>indicator</strong> section tracks the global business cycle through leading and coincident indicators designed to anticipate economic turning points.</li>
+</ul>
+<p>Taken together, this report aims to offer a view of the global economic cycle, combining official statistics with forward-looking signals to support a comprehensive assessment of the current environment.</p>
+</div>
+```
+
+
+<!-- ####################################################################### -->
+<!-- Macro  -->
+<!-- ####################################################################### -->
+
+## Macro
+
+```{=html}
+<div class="company-hero">
+  <div class="co-body">
+    <div class="masthead-title">Macro</div>
+  </div>
+</div>
+```
+
+### World GDP
+
+```{r WRL TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'FRED — <a href="https://fred.stlouisfed.org/series/NYGDPMKTPCDWLD" target="_blank">link</a>',
+  frequency = "Annual",
+  adjustment = "Not Seasonally adjusted",
+  about = "GDP at purchaser's prices is the sum of gross value added by all resident producers in the economy plus any product taxes and minus any subsidies not included in the value of the products. It is calculated without making deductions for depreciation of fabricated assets or for depletion and degradation of natural resources. Data are in current US dollars. Dollar figures for GDP are converted from domestic currencies using single year official exchange rates. For a few countries where the official exchange rate does not reflect the rate effectively applied to actual foreign exchange transactions, an alternative conversion factor is used.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r WRL, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "wrl_gdp_fd")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+  produce_interactive_plot(df = data, sma = FALSE))
+
+# Get series
+data <- get_series(name = "wrl_gdp_pc1_fd")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+  produce_interactive_plot(df = data, sma = FALSE))
+
+
+```
+
+```{=html}
+</div>
+```
+
+### Real GDP Comparison
+
+```{r GLO GDP TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'FRED — <a href="https://fred.stlouisfed.org/" target="_blank">link</a> 
+                 and Eurostat — <a href="https://ec.europa.eu/eurostat/web/main/home" target="_blank">link</a>',
+  frequency = "Quarterly",
+  adjustment = "Seasonally adjusted",
+  about = "For the world, United States, Brazil, Japan, China, Canada, and United Kingdom series, the data are sourced from the FRED database. For the European series, including the euro area, the European Union aggregates, as well as Switzerland, the data are sourced from Eurostat database. Eurostat reports GDP at market prices under the national accounts item B1GQ, consistent with the ESA 2010 definition, where GDP equals gross value added (B.1G) plus taxes less subsidies on products (D.21 − D.31). FRED and Eurostat series are expressed in percent change from year ago.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r GL GDP COMP, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = c("us_rgdp_pc1_fd","eu27_rgdp_pc1_es","ea20_rgdp_pc1_es","ch_rgdp_pc1_es","cn_rgdp_pc1_fd","jp_rgdp_pc1_fd","uk_rgdp_pc1_fd", "br_rgdp_pc1_fd", "in_rgdp_pc1_fd", "ca_rgdp_pc1_fd"))
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, title = "GLOBAL COMPARISON, REAL GROSS DOMESTIC PRODUCT, Percent Change from Year Ago, Seasonally Adjusted"))
+
+```
+
+```{=html}
+</div>
+```
+
+### Inflation
+
+```{r GLO CPI TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'OECD — <a href="https://data-explorer.oecd.org/vis?tm=cpi&pg=0&snb=25&df[ds]=dsDisseminateFinalDMZ&df[id]=DSD_PRICES%40DF_PRICES_ALL&df[ag]=OECD.SDD.TPS&df[vs]=1.0&dq=.M.N.CPI.._T.N.GY%2B_Z&lom=LASTNPERIODS&lo=13&to[TIME_PERIOD]=false" target="_blank">link</a>',
+  frequency = "Monthly",
+  adjustment = "Not Adjusted",
+  about = "The OECD CPI is a harmonized measure of consumer price inflation published by the Organisation for Economic Cooperation and Development, covering its 38 member countries as well as several partner economies. It is constructed using a consistent statistical framework, the HICP methodology (Harmonised Index of Consumer Prices) for European members and standardized equivalents for others, ensuring cross-country comparability that national CPIs alone cannot provide. It aggregates individual country CPIs using harmonized basket abouts and weight structures, allowing direct inflation comparisons across the US, Eurozone, Japan, UK, and emerging OECD members. It is a key tool for international macro analysis, sovereign debt assessment, and global monetary policy comparison.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r GLO CPI, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = c("us_cpi_oecd", "eu27_cpi_oecd", "ea20_cpi_oecd", "ch_cpi_oecd", "cn_cpi_oecd", "jp_cpi_oecd", "uk_cpi_oecd", "br_cpi_oecd", "in_cpi_oecd", "ca_cpi_oecd"))
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, title = "GLOBAL COMPARISON, CPI/HICP, Percent Change from Year Ago"))
+
+```
+
+```{=html}
+</div>
+```
+
+<!-- ####################################################################### -->
+<!-- Index  -->
+<!-- ####################################################################### -->
+
+## Index
+
+```{=html}
+<div class="company-hero">
+  <div class="co-body">
+    <div class="masthead-title">Index</div>
+  </div>
+</div>
+```
+
+### Economic Policy Index
+
+```{r EPU TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'EPU — <a href="https://www.policyuncertainty.com/global_monthly.html" target="_blank">link</a>',
+  frequency = "Monthly",
+  adjustment = "Not Adjusted",
+  about = "Global Economic Policy Uncertainty Indices measure the degree of uncertainty surrounding economic policy across multiple countries and global aggregates, developed by Baker, Bloom, and Davis. Those indices are constructed by combining three components: the frequency of newspaper articles mentioning economic uncertainty and policy-related terms, the number of federal tax code provisions set to expire in coming years, and the dispersion of economic forecasts among professional forecasters, with the relative weighting of components varying by country based on data availability. There are two global composite indices: one weighted by purchasing power parity-adjusted GDP and one weighted by current nominal GDP, the latter giving greater weight to larger economies at current exchange rates.Elevated readings signal heightened uncertainty about the direction of fiscal, regulatory, monetary, or trade policy, which tends to suppress business investment, hiring, and consumer spending as firms and households delay decisions pending greater clarity, making the indices useful coincident-to-leading indicators of economic activity slowdowns and financial market volatility. All series are reported as diffusion indices normalized to a long-run mean of 100, not seasonally adjusted, released monthly.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r EPU, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("global_epu_ppp","global_epu")) %>% 
+  na.omit()
+
+# Plot series
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, title = "Global Economic Policy Uncertainty Index, PPP-Weighted and Current GDP-Weighted"))
+
+```
+
+```{=html}
+</div>
+```
+
+### Geopolitical Risk Index
+
+```{r GRP TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'GPR — <a href="https://www.matteoiacoviello.com/gpr.htm" target="_blank">link</a> ',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "Geopolitical Risk Index and its sub-components measure the level of geopolitical risk and associated uncertainty in the global environment, developed by Caldara and Iacoviello and published via their geopoliticalrisk.net platform. The headline daily GPR index (GPRD) is constructed by counting the frequency of articles in eleven major international newspapers that reference geopolitical tensions, conflicts, terrorism, and related threats, normalized to a historical baseline. It is decomposed into two distinct sub-indices: the Geopolitical Acts index, which captures realized adverse geopolitical events such as wars, terrorist attacks, and military escalations that have already materialized, and the Geopolitical Threats index, which captures forward-looking references to potential geopolitical risks and tensions not yet realizedx, the distinction between the two allowing users to separate the impact of actual geopolitical shocks from the effect of anticipated or feared ones. Two smoothed variants are also provided: a 30-day moving average that filters high-frequency noise to reveal the medium-term trend in geopolitical risk, and a 7-day moving average that preserves more near-term signal while reducing daily volatility. Elevated readings are associated with increased safe-haven demand, higher risk premia across financial markets, reduced business investment, and upward pressure on commodity prices including oil and gold. All series are reported as diffusion indices normalized to a historical mean of 100, not seasonally adjusted, updated daily.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r GRP 1, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("gpr","gpr_act","gpr_threat"))
+
+# Plot series
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, title = "Geopolitical Risk Index, Geopolitical Acts index and Geopolitical Risk Threats Index"))
+
+```
+
+```{=html}
+</div>
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r GRP 2, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("gpr", "gpr_ma30", "gpr_ma7"))
+
+# Plot series
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, title = "Geopolitical Risk Index with 7 and 30 days moving average"))
+
+```
+
+```{=html}
+</div>
+```
+
+<!-- ####################################################################### -->
+<!-- Index  -->
+<!-- ####################################################################### -->
+
+### MSCI World
+
+```{r MSCI TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'GPR — <a href="https://finance.yahoo.com/quote/%5E990100-USD-STRD/" target="_blank">link</a> ',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "MSCI World Index is a free-float market-capitalization-weighted index capturing large and mid-cap equity representation across 23 developed market countries, maintained by MSCI Inc. and constructed under the MSCI Global Investable Market Indexes methodology. With approximately 1,600 constituents, it covers roughly 85% of the free-float adjusted market capitalization in each of its member countries, which include the United States, United Kingdom, Japan, Canada, France, Germany, Switzerland, Australia, the Netherlands, and other developed economies across Europe and Asia-Pacific. The United States typically accounts for the largest single-country weight, reflecting the dominant size of its equity market within the developed world universe. The index is reviewed quarterly in February, May, August, and November, with full rebalancing and recalculation of size cutoffs conducted semi-annually in May and November. Because it covers only developed markets and explicitly excludes emerging and frontier market equities, it is distinct from the broader MSCI ACWI, which additionally incorporates emerging markets and is the most widely used benchmark for measuring the performance of global developed market equities among institutional investors worldwide. Quoted in U.S. dollars, updated daily with closing prices.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r FIN IND TABLE, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Mapping tickers to readable names
+labels <- c("^990100-USD-STRD" = "MSCI World")
+
+# Get series
+indices <- c("^990100-USD-STRD")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+   produce_performance_table(series = indices, label = labels))
+```
+
+```{=html}
+</div>
+```
+
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r FIN IND MSCI, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = c("msci_world"))
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+
+```
+
+```{=html}
+</div>
+```
+
+
+<!-- ####################################################################### -->
+<!-- Indicator  -->
+<!-- ####################################################################### -->
+
+## Indicator
+
+```{=html}
+<div class="company-hero">
+  <div class="co-body">
+    <div class="masthead-title">Indicator</div>
+  </div>
+</div>
+```
+
+### KOF Global Barometer 
+
+```{r KOF GL BAR TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'KOF — <a href="https://kof.ethz.ch/fr/previsions-indicateurs/indicateurs/kof-globalbaro.html" target="_blank">link</a>',
+  frequency = "Monthly",
+  adjustment = "Seasonally adjusted",
+  about = "KOF-FGV Global Economic Barometer measures the state and near-term trajectory of the global economy, published monthly by the KOF Swiss Economic Institute at ETH Zurich in collaboration with the Fundação Getúlio Vargas (FGV) in Brazil. The system comprises two sub-indicators: a coincident indicator, which tracks global economic conditions in real time, and a leading indicator, which anticipates global business cycle turning points by approximately six months. Both indicators draw primarily from business tendency surveys conducted across more than 50 countries, with the advantage that survey data are available in near real time and are not subject to significant subsequent revisions. The coincident indicator incorporates more than 1,000 time series and the leading indicator more than 600, with series selected on the basis of cross-correlation analysis against a reference series defined as the annual growth rate of world GDP, with national GDPs aggregated using purchasing power parity weights. Only series exhibiting both sufficient correlation and appropriate timing relative to the reference series, coincident or leading, are retained. The selected series are then aggregated using a Partial Least Squares methodology and calibrated so that the long-run mean equals 100 and the long-run standard deviation equals 10, facilitating intuitive interpretation of deviations from trend. Both barometers are recalculated in full each month, typically during the first week of the calendar month, which may produce minor revisions to previously published values. Reported as a composite index, released monthly.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r KOF GL BAR, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+# Get series
+data <- get_series(name = c("kof_bar_gl_coinci","kof_bar_gl_lead")) 
+
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, title = "KOF BAROMETER GLOBAL"))
+```
+
+```{=html}
+</div>
+```
+

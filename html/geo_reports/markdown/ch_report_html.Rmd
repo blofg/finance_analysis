@@ -1,0 +1,833 @@
+---
+title: "Swiss Financial and Macro Report"
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float:
+      collapsed: false
+      smooth_scroll: true
+    theme: flatly
+    highlight: kate
+    self_contained: true
+    css: "/Users/benjaminlachavanne/Desktop/script/finance_analysis/html/style/style.css"
+
+params:
+  llm_analysis: false
+  
+---
+
+```{r setup, include=FALSE, warning=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+
+# Main path 
+path_main <- file.path("~", "Desktop", "script", "finance_analysis")
+
+# Upload packages, functions and inputs 
+source(paste0(path_main,"/initialization/package.R"))         # |Package|
+source(paste0(path_main,"/function/function_information.R"))  # |Function price|
+source(paste0(path_main,"/function/function_format.R"))       # |Function format|
+source(paste0(path_main,"/function/function_visualization.R"))        # |Functions visualization|
+source(paste0(path_main,"/function/function_compute.R"))      # |Functions indicator|
+source(paste0(path_main,"/function/function_ai.R"))           # |Functions ai|
+source(paste0(path_main,"/initialization/input.R"))           # |Input|
+
+# Download all series from the RDS folder
+path_rds_folder    <- "/Users/benjaminlachavanne/Desktop/script/finance_analysis/database/rds/"
+path_rds_all <- paste0(path_rds_folder,"series_store_all.rds")
+series_database <- readRDS(path_rds_all)
+
+# Styled info box
+series_info_box <- function(source_html, frequency, adjustment, about) {
+  htmltools::HTML(paste0('
+  <div class="info-card">
+    <div class="info-grid">
+      <div class="info-row">
+        <span class="info-label">Source</span>
+        <span class="info-value">', source_html, '</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Frequency</span>
+        <span class="info-value">', frequency, '</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Adjustment</span>
+        <span class="info-value">', adjustment, '</span>
+      </div>
+    </div>
+    <div class="info-about">', about, '</div>
+  </div>
+  '))
+}
+
+# Section label helper
+section_label <- function(icon, text) {
+  htmltools::HTML(paste0(
+    '<div class="section-label"><span class="section-icon">', icon,
+    '</span><span class="section-text">', text, '</span></div>'))
+}
+
+# Subsection label helper
+subsection_label <- function(text) {
+  htmltools::HTML(paste0('<div class="subsection-label">', text, '</div>'))
+}
+
+# Chart note helper
+chart_note <- function(text) {
+  htmltools::HTML(paste0('<p class="chart-note">', text, '</p>'))
+}
+```
+
+
+<!-- ####################################################################### -->
+<!-- Head Title  -->
+<!-- ####################################################################### -->
+
+```{=html}
+<!-- ── MASTHEAD ─────────────────────────────────────────────────────────────── -->
+<div class="masthead">
+  <div class="masthead-eyebrow">Macro Research · Switzerland</div>
+  <div class="masthead-title">Swiss <span>Financial &amp; Macro Report</span></div>
+  <div class="masthead-date">Latest update date: `r format(Sys.Date(), '%B %d, %Y')`</div>
+</div>
+```
+
+
+<!-- ####################################################################### -->
+<!-- Abstract  -->
+<!-- ####################################################################### -->
+
+## Abstract
+
+```{=html}
+<div class="company-hero">
+  <div class="co-body">
+    <div class="masthead-title">Abstract</div>
+  </div>
+</div>
+```
+
+```{=html}
+<div class="abstract-box">
+<p>This report provides a comprehensive overview of the Swiss economy and financial markets through a structured set of macroeconomic, financial, and market indicators.</p>
+<ul>
+  <li>The <strong>macroeconomic</strong> section covers the key drivers of economic activity, including output growth, inflation, labor market conditions, consumption, investment, housing, and fiscal balances.</li>
+  <li>The <strong>index</strong> and <strong>indicator</strong> sections provide a broad reading of Swiss financial market conditions and business cycle dynamics, drawing notably on KOF indicators specific to Switzerland.</li>
+  <li>Finally, <strong>exchange rates</strong> against the Swiss franc reflect the international dimension of Swiss financial conditions.</li>
+</ul>
+<p>Taken together, this report aims to offer a 360° view of the Swiss economic and financial cycle, combining official statistics with market-based signals to support a comprehensive assessment of the current environment.</p>
+</div>
+```
+
+<!-- ####################################################################### -->
+<!-- Macro  -->
+<!-- ####################################################################### -->
+
+## Macro
+
+```{=html}
+<div class="company-hero">
+  <div class="co-body">
+    <div class="masthead-title">Macro</div>
+  </div>
+</div>
+```
+
+### Real GDP
+
+```{r CH GDP TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Eurostat — <a href="https://ec.europa.eu/eurostat/cache/metadata/en/namq_10_gdp_esms.htm" target="_blank">link</a>',
+  frequency = "Quarterly",
+  adjustment = "Seasonally Adjusted",
+  about = "Eurostat reports GDP at market prices under the national accounts item B1GQ, consistent with the ESA 2010 definition, where GDP equals gross value added (B.1G) plus taxes less subsidies on products (D.21 − D.31). Real GDP is measured using chain-linked volume indicators: <code>CLV20_MEUR</code>, which expresses GDP in chain-linked volumes with 2020 as the reference year (million euros), and <code>CLV_PCH_ANN</code>, which represents the annual percentage change of chain-linked volumes, capturing real GDP growth net of inflation effects.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r CH GDP, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "ch_rgdp_pc1_es")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE))
+
+```
+
+```{=html}
+</div>
+```
+
+### Inflation
+
+```{r CH HICP TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+series_info_box(
+  source_html = 'Eurostat — <a href="https://ec.europa.eu/eurostat/databrowser/view/PRC_HICP_MANR__custom_3761882/bookmark/table?lang=en&bookmarkId=4ad27e6f-358a-4a3d-82a0-587d69a833eb&c=1667558907980" target="_blank">link</a> and OECD — <a href="https://data-explorer.oecd.org/vis?tm=cpi&pg=0&snb=25&df[ds]=dsDisseminateFinalDMZ&df[id]=DSD_PRICES%40DF_PRICES_ALL&df[ag]=OECD.SDD.TPS&df[vs]=1.0&dq=.M.N.CPI.._T.N.GY%2B_Z&lom=LASTNPERIODS&lo=13&to[TIME_PERIOD]=false" target="_blank">link</a>',
+  frequency = "Monthly",
+  adjustment = "Not Adjusted",
+  about = paste0(
+  '1) <b> HICP</b> — Inflation measured by the Harmonised Index of Consumer Prices (HICP) reflects the change over time in the prices paid by households for a representative basket of goods and services. The HICP is compiled using a common methodology across European countries to ensure cross-country comparability. In the <code>PRC_HICP_MANR</code> dataset, inflation is expressed as the annual rate of change. This indicator is widely used to assess price stability and serves as the reference measure for monetary policy in the euro area.',
+  '<br><br>',
+  '2) <b>OECD Consumer Price Index</b> — ',
+  'The OECD CPI is a harmonized measure of consumer price inflation published by the Organisation for Economic Cooperation and Development, covering its 38 member countries as well as several partner economies. It is constructed using a consistent statistical framework, the HICP methodology (Harmonised Index of Consumer Prices) for European members and standardized equivalents for others, ensuring cross-country comparability that national CPIs alone cannot provide. It aggregates individual country CPIs using harmonized basket abouts and weight structures, allowing direct inflation comparisons across the US, Eurozone, Japan, UK, and emerging OECD members. It is a key tool for international macro analysis, sovereign debt assessment, and global monetary policy comparison.'))
+
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r CH HICP, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = c("ch_hicp_pc1_es", "ch_cpi_oecd"))
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, title = "Switzerland, Consumer Price Inflation Measures, Percent Change from Year Ago, Not Adjusted"))
+
+```
+
+```{=html}
+</div>
+```
+
+### Unemployment
+
+```{r CH UNEMP TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Eurostat — <a href="https://ec.europa.eu/eurostat/databrowser/bookmark/2feeff57-57c9-4278-a50b-7e2279d699c2?lang=en" target="_blank">link</a>',
+  frequency = "Monthly",
+  adjustment = "Not Adjusted",
+  about = "The unemployment rate measures the share of the labour force that is without work, actively seeking employment, and available to start working. It is calculated according to the International Labour Organization (ILO) definition to ensure international comparability. Expressed as a percentage of the total labour force, the indicator provides a key measure of labour market conditions and economic slack. It is widely used to assess the health of the economy and to inform economic and monetary policy decisions.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r CH UNEMP, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "ch_unemp_es")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, title = "Switzerland, Unemployment Rate, Percent of Active Population, Not Adjusted"))
+
+```
+
+```{=html}
+</div>
+```
+
+### Real Total Consumption
+
+```{r CH RTC TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Eurostat — <a href="https://ec.europa.eu/eurostat/cache/metadata/en/namq_10_gdp_esms.htm" target="_blank">link</a>',
+  frequency = "Quarterly",
+  adjustment = "Seasonally and Calendar Adjusted",
+  about = "Real total consumption measures the volume of goods and services purchased by households, adjusted for price changes to reflect real purchasing power rather than nominal expenditure. It is compiled according to national accounts standards to ensure cross-country comparability. Expressed in chain-linked volumes <code>CLV_PCH_ANN</code>, it removes the effects of inflation over time, while annual percentage changes capture the real growth rate of consumption. The indicator provides a key measure of domestic demand and is widely used to assess economic momentum and overall business cycle conditions.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r CH RTC, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "ch_rtc_pc1_es")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, title = "Switzerland, Real Total Consumption, Percent Change from Year Ago, Seasonally and Calendar Adjusted"))
+
+```
+
+```{=html}
+</div>
+```
+
+### Real Investment
+
+```{r CH RI TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Eurostat — <a href="https://ec.europa.eu/eurostat/cache/metadata/en/namq_10_gdp_esms.htm" target="_blank">link</a>',
+  frequency = "Quarterly",
+  adjustment = "Seasonally and Calendar Adjusted",
+  about = "Real gross fixed capital formation <code>P51G</code> refers to investment in fixed assets as defined in the European System of Accounts (ESA 2010). It measures the value of acquisitions less disposals of fixed assets by resident producers, including machinery, equipment, construction, and intellectual property products. In this dataset, the series is expressed in chain-linked volumes with 2020 as the reference year <code>CLV20_MEUR</code>, meaning values are reported in million euros and adjusted for price changes to reflect real investment over time. This indicator provides a key measure of capital accumulation and productive capacity, and is an essential component of overall GDP dynamics.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r EU CH TOT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "ch_ri_sca_es")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, title = "Switzerland, Real Investment, Millions of Chained 2020 Euros, Seasonally and Calendar Adjusted"))
+
+```
+
+```{=html}
+</div>
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r EU CH PCY, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "ch_ri_sca_es")
+
+# Compute Percent change from a Year ago
+suppressMessages({
+  data <- data %>% ts_pcy()
+})
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, title = "Switzerland, Real Investment, Percent Change from Year Ago, Seasonally and Calendar Adjusted"))
+
+```
+
+```{=html}
+</div>
+```
+
+### Governement Surplus/Deficit
+
+```{r CH GOVS TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Eurostat — <a href="https://ec.europa.eu/eurostat/databrowser/view/gov_10q_ggnfa/default/table?lang=en" target="_blank">link</a>',
+  frequency = "Quarterly",
+  adjustment = "Not Adjusted",
+  about = "General government net lending / net borrowing <code>B9</code> (sector <code>S13</code>) refers to the fiscal balance of the general government sector as defined in the European System of Accounts (ESA 2010). It measures the difference between total government revenues and total expenditures over a given period. A positive value indicates a surplus (net lending), while a negative value indicates a deficit (net borrowing).The series are expressed either in million euros <code>MIO_EUR</code>, reflecting the nominal fiscal balance, or as a percentage of GDP <code>PC_GDP</code>, allowing for cross-country comparability and assessment relative to the size of the economy. This indicator is a key measure of fiscal performance and is widely used to monitor public finances, fiscal sustainability, and compliance with European fiscal rules.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r CH GOVS PRC, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "ch_govdfsu_nsa_pg_es")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, title = "Switzerland, Governement Surplus/Deficit, Percentage of GDP, Not Adjusted"))
+
+```
+
+```{=html}
+</div>
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r CH GOVS TOT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "ch_govdfsu_nsa_es")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, title = "Switzerland, Governement Surplus/Deficit, Millions Euros, Not Adjusted"))
+
+```
+
+```{=html}
+</div>
+```
+
+### Housing prices
+
+```{r CH HP TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Eurostat — <a href="https://ec.europa.eu/eurostat/databrowser/view/prc_hpi_q/default/table?lang=en" target="_blank">link</a>',
+  frequency = "Quarterly",
+  adjustment = "Not Adjusted",
+  about = "House Price Index (HPI) <code>prc_hpi_q</code> measures the change over time in the transaction prices of residential properties purchased by households. It covers both new and existing dwellings and is compiled according to a harmonised methodology to ensure comparability across European countries. In this dataset, the series is expressed as an annual rate of change <code>RCH_A</code>, meaning it reflects the percentage change in house prices compared with the same quarter of the previous year. This indicator provides a key measure of developments in residential property markets and is widely used to assess housing market dynamics, wealth effects, and potential macroeconomic imbalances.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r CH HP, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "ch_hp_pc1_es")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, title = "Switzerland, Housing prices, Percent Change from Year Ago, Seasonally and Calendar Adjusted"))
+
+```
+
+```{=html}
+</div>
+```
+
+### KOF Forecast
+
+```{r CH KOF FOR TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'KOF Nowcasting Lab — <a href="https://nowcastinglab.org/map" target="_blank">link</a>',
+  frequency  = "Daily",
+  adjustment = "Seasonally Adjusted",
+  about = "KOF Nowcasting Lab provides continuously updated real-time estimates of current-quarter and next-quarter real GDP growth for a range of economies including Switzerland, the euro area, Germany, France, Italy, Spain, the United Kingdom, and several others, developed by the KOF Swiss Economic Institute at ETH Zurich. The platform is fully automated with no human judgmental input, updating estimates up to three times daily as new data releases enter the system. It combines four classes of mixed-frequency econometric models fed with approximately 250 daily and monthly macroeconomic and financial series, with individual model forecasts pooled using forecast combination techniques and weaker predictors filtered via elastic net regularization. The core premise is that high-frequency indicators such as business surveys, trade statistics, and financial data are published weeks ahead of the official quarterly GDP release, which arrives with a lag of six to eight weeks after quarter-end in most economies, allowing the models to progressively refine estimates as the information set expands throughout the quarter. The website displays uncertainty bands, individual model outputs, the contribution of each release to forecast revisions, and historical forecast errors.")
+
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r CH KOF FOR, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_kof_nowcast(id = "CHGDPNC", last_quarter = 2) %>% 
+  rename(date = publication_date, quarter_forecast = date) %>% 
+  mutate(name = paste0(name," ",target_period), id = paste0(id,"_",target_period))
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE,title = paste0("KOF Nowcast for Switzerland in ", paste0(unique(data$target_period), collapse = " / "), ", Percent Change from Previous Period, Seasonally Adjusted"))),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : The x-axis represents the forecast's date of publication for a specific quarter</em></small>")))
+
+```
+
+```{=html}
+</div>
+```
+
+<!-- ####################################################################### -->
+<!-- Index  -->
+<!-- ####################################################################### -->
+
+## Index
+
+```{=html}
+<div class="company-hero">
+  <div class="co-body">
+    <div class="masthead-title">Index</div>
+  </div>
+</div>
+```
+
+### Swiss Equity Indices
+
+```{r CH FIN IND TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo — <a href="https://finance.yahoo.com/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = paste0(
+  '1) <b>SMI — <a href="https://finance.yahoo.com/quote/%5ESSMI/" target="_blank">SMI</a></b>. ',
+  'Swiss Market Index is Switzerland\'s primary equity benchmark, a free-float market-capitalization-weighted index tracking the 20 largest and most liquid companies listed on the SIX Swiss Exchange, maintained by SIX Group and reviewed annually. The index is exceptionally concentrated in three defensive sectors that together typically account for the vast majority of total index weight: healthcare and pharmaceuticals (Novartis, Roche), consumer staples and food (Nestlé), and financials and insurance (UBS, Zurich Insurance, Swiss Re). This pronounced defensive tilt, driven by the global nature of its largest constituents and their focus on non-cyclical products, gives the SMI a distinctive risk profile relative to other major European benchmarks, making it historically more resilient during economic downturns and equity market selloffs but less sensitive to cyclical recoveries and risk-on environments. A defining characteristic of the SMI is that constituent companies generate the overwhelming majority of their revenues outside Switzerland, making the index essentially a portfolio of globally diversified multinationals that happen to be domiciled in Switzerland, and rendering it far more sensitive to global economic conditions, US dollar and euro dynamics, and international pharmaceutical and consumer spending trends than to the Swiss domestic economy. The Swiss franc\'s safe-haven status also introduces a persistent currency headwind for Swiss multinationals during periods of global stress, as franc appreciation erodes the value of foreign earnings when translated back into the reporting currency. Quoted in index points and updated daily with closing prices.',
+  '<br><br>',
+  '2) <b>SPI — <a href="https://finance.yahoo.com/quote/SPI20.SW/" target="_blank">SPI</a></b>. ',
+  'Swiss Performance Index is Switzerland\'s broadest equity benchmark, a free-float market-capitalization-weighted total return index tracking virtually all companies listed on the SIX Swiss Exchange, maintained by SIX Group and reviewed annually. Unlike the SMI which is restricted to the 20 largest blue-chip names, the SPI encompasses large, mid, and small-cap companies across all sectors, making it the standard reference for investors seeking comprehensive exposure to the Swiss equity market. As a total return index, dividends and other cash distributions are reinvested, making it more suitable for long-run performance comparisons than price-return benchmarks. The SPI shares many of the same structural characteristics as the SMI given the dominant weight of its largest constituents, but its broader composition introduces greater sensitivity to mid and small-cap dynamics, domestic Swiss economic conditions, and sectors underrepresented in the blue-chip universe such as technology, real estate, and specialty industrials.Quoted in index points and updated daily with closing prices.',
+  '<br><br>',
+  '3) <b>SLI — <a href="https://finance.yahoo.com/quote/SLI.SW/" target="_blank">SLI</a></b>. ',
+  'Swiss Leader Index is a mid-tier Swiss equity benchmark, a free-float market-capitalization-weighted index tracking the 30 largest and most liquid companies listed on the SIX Swiss Exchange, maintained by SIX Group and reviewed annually. The SLI is designed as a complement to the SMI by applying a weight cap of 9% on each constituent at each quarterly rebalancing, preventing the extreme concentration in the three largest defensive heavyweights — Novartis, Roche, and Nestlé — that characterises the SMI. This capping mechanism results in a more balanced sectoral and company-level exposure, giving greater relative weight to financials (UBS, Zurich Insurance, Swiss Re, Julius Baer), industrials (ABB, Geberit, Schindler), and specialty companies compared to the SMI. The SLI therefore offers a more diversified representation of Swiss large-cap equities, with a risk profile that is somewhat more cyclical and less defensively skewed than the SMI, while still excluding the mid and small-cap segment covered by the SPI. Quoted in index points and updated daily with closing prices.'))
+```
+
+#### *Table*
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r FIN IND TABLE, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Mapping tickers to readable names
+labels <- c(
+  "^SSMI"  = "SMI",
+  "^SSHI"  = "SPI",
+  "SLI.SW" = "SLI"
+)
+
+# Get series
+indices <- c("^SSMI", "^SSHI", "SLI.SW")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+   produce_performance_table(series = indices, label = labels))
+
+```
+
+```{=html}
+</div>
+```
+
+#### *SMI*
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r CH FIN SMI, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "smi")
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+
+```
+
+```{=html}
+</div>
+```
+
+#### *SPI*
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r CH FIN SPI, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "spi")
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+
+```
+
+```{=html}
+</div>
+```
+
+#### *SLI*
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r CH FIN SLI, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "sli")
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+
+```
+
+```{=html}
+</div>
+```
+
+#### *Comparison*
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r EU FIN IND ALL, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = c("smi", "spi", "sli"))
+
+# Compute index
+data <- compute_rebase(df = data, base_date = "2015-01-07")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, title = "Swiss Equity Indices – Indexed Performance (2015:01:07 = 100)"))
+
+```
+
+```{=html}
+</div>
+```
+
+<!-- ####################################################################### -->
+<!-- Indicator  -->
+<!-- ####################################################################### -->
+
+## Indicator
+
+```{=html}
+<div class="company-hero">
+  <div class="co-body">
+    <div class="masthead-title">Indicator</div>
+  </div>
+</div>
+```
+
+
+### KOF Swiss Barometer 
+
+```{r KOF CH BAR TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'KOF — <a href="https://kof.ethz.ch/fr/previsions-indicateurs/indicateurs/kof-barometre-conjoncturel.html" target="_blank">link</a>',
+  frequency = "Monthly",
+  adjustment = "Seasonally Adjusted",
+  about = "KOF Economic Barometer measures the near-term outlook for the Swiss economy, published monthly by the KOF Swiss Economic Institute at ETH Zurich. It is one of Switzerland\'s oldest and most closely watched leading indicators, with a history dating back to the 1970s and methodology revisions carried out in 1998, 2006, and 2014. In its current form, the barometer is anchored to a reference series measuring the month-on-month change in Swiss GDP, derived from quarterly national accounts data produced by the Swiss Federal Statistical Office and trimestrialized by the State Secretariat for Economic Affairs. It is constructed from a pool of more than 500 candidate economic indicators spanning manufacturing, construction, banking and financial services, retail trade, and foreign demand conditions. Each autumn, a transparent selection process retains only those variables that satisfy two criteria: a plausible economic relationship with Swiss GDP growth and a statistically significant cross-correlation with the reference series. On average, more than 300 variables are incorporated in any given year, with the composition varying annually to allow the barometer to adapt to structural changes in the Swiss economy. No smoothing is applied to the final indicator, preserving the timeliness of the cyclical signal. A reading above the long-run average of 100 signals above-average near-term economic momentum, while readings below 100 indicate below-average conditions. Reported as a diffusion index, not seasonally adjusted, released monthly.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r KOF CH BAR, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+# Get series
+data <- get_series(name = "kof_bar_ch")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE))
+```
+
+```{=html}
+</div>
+```
+
+### KOF Business Sentiment
+
+```{r KOF BS TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'KOF — <a href="https://kof.ethz.ch/fr/previsions-indicateurs/indicateurs/kof-indicateur-situation-affaires.html" target="_blank">link</a>',
+  frequency = "Monthly",
+  adjustment = "Seasonally Adjusted",
+  about = "KOF Business Situation Indicator measures the current assessment of business conditions across the Swiss private sector, published by the KOF Swiss Economic Institute at ETH Zurich from its monthly and quarterly business surveys covering more than 4,500 firms. Each month, companies in manufacturing, retail trade, construction, engineering and consulting services, financial and insurance services, and other services are surveyed; hospitality and wholesale trade firms are surveyed quarterly, in the first month of each new quarter. Respondents assess their current business situation as good, satisfactory, or poor, and the indicator is computed as the net balance, the difference between the share of good and poor responses, aggregated across all participating sectors and weighted to reflect their contribution to the Swiss economy. For sectors surveyed only quarterly, the reported value is held constant across intervening months. The published figures are seasonally adjusted. Because the indicator directly captures firm-level perceptions of current conditions rather than deriving them from hard activity data, it provides a timely and forward-looking signal of the state of the Swiss business cycle, typically available ahead of official output and activity statistics, and serves as a key input for anticipating near-term developments in Swiss GDP growth. Reported as a net balance in percentage points, seasonally adjusted, released monthly.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r KOF BS, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+# Get series
+data <- get_series(name = "kof_ind_busen") %>% 
+  na.omit()
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE))
+```
+
+```{=html}
+</div>
+```
+
+### KOF Economic Sentiment
+
+```{r KOF ES TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'KOF — <a href="https://kof.ethz.ch/fr/previsions-indicateurs/indicateurs/kof-indice-climat-economique.html" target="_blank">link</a>',
+  frequency = "Monthly",
+  adjustment = "Seasonally Adjusted",
+  about = "KOF Economic Sentiment Indicator measures the overall economic sentiment in Switzerland, published by the KOF Swiss Economic Institute at ETH Zurich from its business tendency surveys and from consumer surveys conducted by the State Secretariat for Economic Affairs (SECO). It is constructed using the methodology of the European Commission, the same framework applied to all EU member states and euro area aggregates, making it directly comparable to the Economic Sentiment Indicator published for the European Union and the euro area, and thereby allowing Swiss business cycle dynamics to be assessed against those of Switzerland\'s main trading partners on a consistent methodological basis. The composite is assembled from sector-level confidence indicators derived from individual survey responses across five components, weighted as follows: manufacturing (40%), other services (30%), consumer confidence as measured by SECO surveys (20%), construction (5%), and retail trade (5%). The dominant weight assigned to manufacturing reflects its central role in Swiss export activity and GDP, while the inclusion of consumer confidence introduces a demand-side dimension alongside the supply-side business survey components. Reported as a composite index, released monthly.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r KOF ES, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+# Get series
+data <- get_series(name = c("kof_ind_ch_es", "kof_ind_eu_es"))
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = TRUE, title = "KOF ECONOMIC SENTIMENT INDICATOR For switzerland and Europe"))
+```
+
+```{=html}
+</div>
+```
+
+<!-- ####################################################################### -->
+<!-- Exchange Rates  -->
+<!-- ####################################################################### -->
+
+## Exchange Rates
+
+```{=html}
+<div class="company-hero">
+  <div class="co-body">
+    <div class="masthead-title">Exchange Rates</div>
+  </div>
+</div>
+```
+
+### USD/CHF
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r USDCHF, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "chf_usd")
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+
+```
+
+```{=html}
+</div>
+```
+
+### GBP/CHF
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r GBPCHF, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "gbp_chf")
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+
+```
+
+```{=html}
+</div>
+```
+
+### EUR/CHF
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r EURCHF, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "eur_chf")
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+
+```
+
+```{=html}
+</div>
+```
+
+### CAD/CHF
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r CADCHF, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "cad_chf")
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+
+```
+
+```{=html}
+</div>
+```
+
+### JPY/CHF
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r JPYCHF, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "jpy_chf")
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+
+```
+
+```{=html}
+</div>
+```
+

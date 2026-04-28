@@ -1,0 +1,655 @@
+---
+title: "Magnificent 7 - Amazon"
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float:
+      collapsed: false
+      smooth_scroll: true
+    theme: flatly
+    highlight: kate
+    self_contained: true
+    css: "/Users/benjaminlachavanne/Desktop/script/finance_analysis/html/style/style.css"
+
+params:
+  llm_analysis: false
+---
+
+```{r setup, include=FALSE, warning=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+
+# Main path
+path_main <- file.path("~", "Desktop", "script", "finance_analysis")
+
+# Upload packages, functions and inputs
+source(paste0(path_main,"/initialization/package.R"))
+source(paste0(path_main,"/function/function_information.R"))
+source(paste0(path_main,"/function/function_format.R"))
+source(paste0(path_main,"/function/function_visualization.R"))
+source(paste0(path_main,"/function/function_compute.R"))
+source(paste0(path_main,"/function/function_ai.R"))
+source(paste0(path_main,"/initialization/input.R"))
+
+# Download all series from the RDS folder
+path_rds_folder <- "/Users/benjaminlachavanne/Desktop/script/finance_analysis/database/rds/"
+path_rds_all    <- paste0(path_rds_folder, "series_store_all.rds")
+series_database <- readRDS(path_rds_all)
+
+# Styled info box
+series_info_box <- function(source_html, frequency, adjustment, about) {
+  htmltools::HTML(paste0('
+  <div class="info-card">
+    <div class="info-grid">
+      <div class="info-row">
+        <span class="info-label">Source</span>
+        <span class="info-value">', source_html, '</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Frequency</span>
+        <span class="info-value">', frequency, '</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Adjustment</span>
+        <span class="info-value">', adjustment, '</span>
+      </div>
+    </div>
+    <div class="info-about">', about, '</div>
+  </div>
+  '))
+}
+
+# Section label helper
+section_label <- function(icon, text) {
+  htmltools::HTML(paste0(
+    '<div class="section-label"><span class="section-icon">', icon,
+    '</span><span class="section-text">', text, '</span></div>'))
+}
+
+# Subsection label helper
+subsection_label <- function(text) {
+  htmltools::HTML(paste0('<div class="subsection-label">', text, '</div>'))
+}
+
+# Chart note helper
+chart_note <- function(text) {
+  htmltools::HTML(paste0('<p class="chart-note">', text, '</p>'))
+}
+```
+
+<!-- ####################################################################### -->
+<!-- Head Title  -->
+<!-- ####################################################################### -->
+
+```{=html}
+<!-- ── MASTHEAD ─────────────────────────────────────────────────────────────── -->
+<div class="masthead">
+  <div class="masthead-eyebrow">Equity Research · Technology </div>
+  <div class="masthead-title">Magnificent 7 <span>Amazon</span></div>
+  <div class="masthead-date">Report date: `r format(Sys.Date(), '%B %d, %Y')`</div>
+</div>
+```
+
+<!-- ####################################################################### -->
+<!-- Abstract  -->
+<!-- ####################################################################### -->
+
+## Abstract
+
+```{=html}
+<div class="company-hero">
+  <div class="co-body">
+    <div class="masthead-title">Abstract</div>
+  </div>
+</div>
+```
+
+```{=html}
+<div class="abstract-box">
+<p>This report delivers a structured equity analysis of one of the <strong>Magnificent 7</strong>: Amazon. The seven mega-cap companies that collectively account for a disproportionate share of global equity index performance. Together, they represent a unique intersection of hardware, software, cloud infrastructure, artificial intelligence, and consumer platforms, making their dynamics essential reading for any equity investor.</p>
+
+<p>The report opens with two cross-sectional overviews before diving into each company individually:</p>
+
+<ul>
+  <li><strong>Performance Overview</strong> — A comparative table benchmarking all seven names on key return and risk metrics.</li>
+  <li><strong>Correlation Overview</strong> — Pairwise Pearson correlation of log-returns, computed over the full available history and the trailing twelve months, to assess co-movement and diversification properties within the group.</li>
+</ul>
+
+<p>Each company is then examined through a consistent seven-section framework:</p>
+
+<ul>
+  <li><strong>Price & Moving Averages</strong> — Long-term price history with SMA overlays (20, 50, 200-day) to contextualize short-, medium-, and long-term trend dynamics.</li>
+  <li><strong>Technical Analysis</strong> — Full indicator suite covering momentum (RSI, MACD), trend strength (ADX, Aroon), and volume flow (OBV, A/D Line), displayed over the full history and the trailing twelve months.</li>
+  <li><strong>Yield Distribution</strong> — Histogram of daily log-returns characterizing each stock's historical return distribution and tail behavior.</li>
+  <li><strong>Risk Metrics</strong> — A set of rolling risk indicators computed on a 252-day window: annualized volatility, Sharpe ratio, historical Value at Risk (1%), maximum drawdown, skewness, and excess kurtosis.</li>
+  <li><strong>Financial Statements</strong> — Annual and quarterly income statement, balance sheet, and cash flow statement (in millions of USD) for a complete fundamental assessment of earnings quality, leverage, and capital generation.</li>
+</ul>
+</div>
+```
+
+<!-- ####################################################################### -->
+<!-- Performance Overview  -->
+<!-- ####################################################################### -->
+
+## Performance Overview
+
+```{=html}
+<div class="company-hero">
+  <div class="co-body">
+    <div class="masthead-title">Performance Overview</div>
+  </div>
+</div>
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r M7 PERF, echo=FALSE, results='asis',warning=FALSE, message=FALSE}
+
+# Mapping tickers to readable names
+labels <- c(
+  "AAPL"  = "Apple",
+  "MSFT"  = "Microsoft",
+  "NVDA"  = "Nvidia",
+  "GOOGL" = "Google",
+  "AMZN"  = "Amazon",
+  "META"  = "Meta",
+  "TSLA"  = "Tesla"
+)
+# Get series
+indices <- c("AAPL", "MSFT", "NVDA", "GOOGL", "AMZN", "META", "TSLA")
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+   produce_performance_table(series = indices, label = labels))
+
+```
+
+```{=html}
+</div>
+```
+
+<!-- ####################################################################### -->
+<!-- Correlation Overview  -->
+<!-- ####################################################################### -->
+
+## Correlation Overview
+
+```{=html}
+<div class="company-hero">
+  <div class="co-body">
+    <div class="masthead-title">Correlation Overview</div>
+  </div>
+</div>
+```
+
+### Full
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r M7 CORR, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Produce Correlation Table
+produce_correlation_table(ids = c("AAPL", "MSFT", "NVDA", "GOOGL", "AMZN", "META", "TSLA"), method = "pearson", use_log_returns = TRUE, period = NULL)
+
+
+```
+
+```{=html}
+</div>
+```
+
+### Last Year
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r M7 CORR 2, echo=FALSE, results='asis',warning=FALSE, message=FALSE}
+
+# Produce Correlation Table
+produce_correlation_table(ids = c("AAPL", "MSFT", "NVDA", "GOOGL", "AMZN", "META", "TSLA"), method = "pearson", use_log_returns = TRUE, period = 252)
+
+
+```
+
+```{=html}
+</div>
+```
+
+<!-- ####################################################################### -->
+<!-- Amazon Section   -->
+<!-- ####################################################################### -->
+
+## Amazon
+
+```{=html}
+<div class="company-hero">
+  <div class="co-body">
+    <div class="masthead-title">Amazon</div>
+  </div>
+</div>
+```
+
+```{r AMZN TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo Finance — <a href="https://finance.yahoo.com/quote/AMZN/" target="_blank">link</a>',
+  frequency   = "Daily",
+  adjustment  = "Not Adjusted",
+  about       = "Amazon.com, Inc. (AMZN) is the world's largest e-commerce marketplace and cloud computing provider, headquartered in Seattle, Washington. Its business model spans three principal segments: North America and International e-commerce (online retail, third-party marketplace, advertising, and subscription services including Prime), and Amazon Web Services (AWS), the dominant global cloud infrastructure platform. AWS — despite representing a minority of total revenue — generates the vast majority of operating income and cash flow, effectively subsidizing the company's lower-margin retail and logistics operations. Amazon Advertising has emerged as a high-margin, fast-growing third revenue pillar, now one of the largest digital advertising platforms globally. Key valuation drivers include AWS revenue growth and market share dynamics relative to Azure and GCP, advertising revenue trajectory, e-commerce margin improvement through logistics network efficiency, and AI infrastructure investments (Bedrock, Trainium, Graviton). Quoted in US dollars per share, updated continuously during NASDAQ trading hours.")
+```
+
+### Price & Moving Averages
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r AMZN SMA, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("amazon"))
+
+# Compute moving average
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot series
+tagList(
+  div(style = "display:flex; justify-content:center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+ HTML('<p class="chart-note" style="color:white;">Simple Moving Averages computed on the last 20, 50, and 200 closing prices</p>'))
+```
+
+```{=html}
+</div>
+```
+
+### Technical Analysis
+
+#### *Full*
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r AMZN TI 1, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Plot series with technical indicators
+tagList(
+  div(style = "display:flex; justify-content:center; width:100%;",
+      produce_technical_indicators_plot(id = "AMZN", interval = "1Y", title = "Amazon, Share", technical_indicator = NULL, cut = FALSE) %>%
+        hc_size(height = 900) %>%
+        hc_chart(marginRight = 20, marginLeft = 100)),
+  HTML('<p class="chart-note" style="color:white;">Technical indicators computed on the full dataset — SMA 20/50/200, Volume, ADX, Aroon, MACD, RSI(14), Stochastic</p>'))
+
+```
+
+```{=html}
+</div>
+```
+
+#### *Last Year*
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r AMZN TI 2, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Plot series
+tagList(
+  div(style = "display:flex; justify-content:center; width:100%;",
+      produce_technical_indicators_plot(id = "AMZN", interval = "1Y", title = "Amazon, Share", technical_indicator = NULL, cut = TRUE) %>%
+        hc_size(height = 900) %>%
+        hc_chart(marginRight = 20, marginLeft = 100)),
+HTML('<p class="chart-note" style="color:white;">Technical indicators computed on the last year of data — SMA 20/50/200, Volume, OBV, A/D Line, ADX, Aroon, MACD, RSI(14), Stochastic</p>'))
+
+```
+
+```{=html}
+</div>
+```
+
+### Yield Distribution
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r AMZN YI, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- compute_risk_return(id = "AMZN", days = c(1), window = 252, rf = 0.04)
+data1 <- data %>%
+  select(id, time, logret_1d)
+
+# Plot series
+tagList(
+  div(style = "display:flex; justify-content:center;",
+      produce_histogram_plot(df = data1, date_col = "time", value_col = "logret_1d", title = "Amazon, 1-Day Yield, , across time")),
+HTML('<p class="chart-note" style="color:white; text-align:center;">The 1-day log return is a cornerstone metric in quantitative finance. Unlike simple returns, log returns are time-additive: \\(r_{t_1, t_n} = \\sum_{i=1}^{n} r_{t_i}\\), and they approximate normality for small daily moves — \\(r_t = \\ln\\left(\\frac{P_t}{P_{t-1}}\\right)\\).</p>'),
+      produce_distribution_plot(df = data1, value_col = "logret_1d", title = "Amazon, 1-Day Yield, , distribution"),
+HTML('<p class="chart-note" style="color:white; text-align:center;"<p class="chart-note" style="color:white; text-align:center;"> The 1-day log return captures the relative change in price: \\(r_t = \\ln\\left(\\frac{P_t}{P_{t-1}}\\right)\\). 
+Log returns are often analyzed as a distribution, which tends to be approximately symmetric and bell-shaped for small daily moves</p>'))
+```
+
+```{=html}
+</div>
+```
+
+### Annualized Volatility
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r AMZN VOL, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data1 <- data %>%
+  select(id, time, ann_vol_logret_1d_252d_rolling)
+
+# Plot series
+tagList(
+  div(style = "display:flex; justify-content:center;",
+      produce_histogram_plot(df = data1, date_col = "time", value_col = "ann_vol_logret_1d_252d_rolling", title = "Amazon, Annualized Volatility (1Y Rolling)")),
+HTML('<p class="chart-note" style="color:white; text-align:center;">Annualized volatility measures the dispersion of daily log returns scaled to a yearly horizon: \\(\\sigma_{ann} = \\sigma_{daily} \\times \\sqrt{252}\\). Computed on a 252-day rolling window, it captures how risk evolves over time, spikes signal periods of stress or uncertainty, while a low, stable level reflects calmer market conditions.</p>'))
+
+```
+
+```{=html}
+</div>
+```
+
+### Sharpe Ratio
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r AMZN SHARPE, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data1 <- data %>%
+  select(id, time, sharpe_1d_252d_rolling)
+
+# Plot series
+tagList(
+  div(style = "display:flex; justify-content:center;",
+      produce_histogram_plot(df = data1, date_col = "time", value_col = "sharpe_1d_252d_rolling", title = "Amazon, Sharpe Ratio (1Y Rolling), Rf = 4%")),
+  HTML('<p class="chart-note" style="color:white; text-align:center;">The Sharpe ratio measures risk-adjusted return, how much excess return is earned per unit of volatility: \\(S = \\frac{\\bar{r} - r_f}{\\sigma_{ann}}\\). Computed on a 252-day rolling window, values above 1 indicate attractive risk-adjusted performance, while negative values signal that the asset failed to compensate for its risk over the period.</p>'))
+
+```
+
+```{=html}
+</div>
+```
+
+### Value at Risk (1%)
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r AMZN VAR, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data1 <- data %>%
+  select(id, time, var1pct_logret_1d_252d_rolling)
+
+# Plot series
+tagList(
+  div(style = "display:flex; justify-content:center;",
+      produce_histogram_plot(df = data1, date_col = "time", value_col = "var1pct_logret_1d_252d_rolling", title = "Amazon, Historical VaR 1% (1Y Rolling)")),
+  HTML('<p class="chart-note" style="color:white; text-align:center;">Value at Risk at the 1% level estimates the worst expected daily loss in the bottom 1% of outcomes: \\(\\text{VaR}_{1\\%} = \\text{Quantile}_{1\\%}(r_t)\\). Computed on a 252-day rolling window, a VaR of −3% for example means that on 1 out of 100 trading days, the loss is expected to exceed 3%.</p>'))
+
+```
+
+```{=html}
+</div>
+```
+
+### Maximum Drawdown
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r AMZN MDD, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data1 <- data %>%
+  select(id, time, max_drawdown_1d_252d_rolling)
+
+# Plot series
+tagList(
+  div(style = "display:flex; justify-content:center;",
+      produce_histogram_plot(df = data1, date_col = "time", value_col = "max_drawdown_1d_252d_rolling", title = "Amazon, Maximum Drawdown (1Y Rolling)")),
+  HTML('<p class="chart-note" style="color:white; text-align:center;">Maximum Drawdown measures the largest peak-to-trough decline over the rolling window: \\(\\text{MDD} = \\frac{\\min(P_t) - \\max(P_s)}{\\max(P_s)}, \\; s \\leq t\\). Computed on a 252-day rolling window, a MDD of −20% for example means the asset lost up to 20% from its peak before recovering.</p>'))
+
+```
+
+```{=html}
+</div>
+```
+
+### Skewness
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r AMZN SKEW, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data1 <- data %>%
+  select(id, time, skew_logret_1d_252d_rolling)
+
+# Plot series
+tagList(
+  div(style = "display:flex; justify-content:center;",
+      produce_histogram_plot(df = data1, date_col = "time", value_col = "skew_logret_1d_252d_rolling", title = "Amazon, Skewness (1Y Rolling), across time")),
+   HTML('<p class="chart-note" style="color:white; text-align:center;">Skewness measures the asymmetry of the return distribution: \\(\\text{Skew} = \\frac{1}{n}\\sum_{t=1}^{n}\\left(\\frac{r_t - \\bar{r}}{\\sigma}\\right)^3\\). Computed on a 252-day rolling window, a negative skew (e.g. −0.5) signals that large losses occur more frequently than large gains, a left-tailed distribution typical of equities, while a positive skew suggests the opposite, with occasional large upside surprises.</p>'),
+    div(style = "display:flex; justify-content:center;",
+      produce_distribution_plot(df = data1, value_col = "skew_logret_1d_252d_rolling", title = "Amazon, Skewness (1Y Rolling), distribution")),
+   HTML('<p class="chart-note" style="color:white; text-align:center;">
+Skewness measures the asymmetry of a distribution: \\(\\text{Skew} = \\frac{1}{n}\\sum_{i=1}^{n}\\left(\\frac{x_i - \\bar{x}}{\\sigma}\\right)^3\\). 
+A negative skew (e.g. −0.5) means the distribution has a longer left tail, indicating more frequent extreme low values, while a positive skew indicates a longer right tail, with occasional large high values,
+</p>'))
+```
+
+```{=html}
+</div>
+```
+
+### Kurtosis
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r AMZN KURT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data1 <- data %>%
+  select(id, time, kurt_logret_1d_252d_rolling)
+
+# Plot series
+tagList(
+  div(style = "display:flex; justify-content:center;",
+      produce_histogram_plot(df = data1, date_col = "time", value_col = "kurt_logret_1d_252d_rolling", title = "Amazon, Excess Kurtosis (1Y Rolling)")),
+  HTML('<p class="chart-note" style="color:white; text-align:center;">Excess kurtosis measures the heaviness of the tails relative to a normal distribution: \\(\\text{Kurt} = \\frac{1}{n}\\sum_{t=1}^{n}\\left(\\frac{r_t - \\bar{r}}{\\sigma}\\right)^4 - 3\\). Computed on a 252-day rolling window, a value of 0 matches a normal distribution, while a positive excess kurtosis (e.g. +2) indicates fat tails.</p>'))
+```
+
+```{=html}
+</div>
+```
+
+### Financial Statements
+
+#### *Income Statement*
+
+<div class="perf-section">
+<ul>
+<li><strong>Total Revenue:</strong> The total amount of money earned from selling products and services during the period, before any costs are deducted. <em>Unit: Millions $</em></li>
+<li><strong>Gross Profit:</strong> What remains after subtracting the direct costs of producing goods and services from revenue, showing how efficiently the company produces its output. <em>Unit: Millions $</em></li>
+<li><strong>Research and Development:</strong> Money spent on developing new products, technologies and improving existing ones, a key indicator of future growth investment. <em>Unit: Millions $</em></li>
+<li><strong>Operating Income:</strong> Profit from core business operations after deducting all operating costs including R&D and SG&A, but before interest and taxes. <em>Unit: Millions $</em></li>
+<li><strong>Net Income Before Taxes:</strong> Total profit including non-operating items such as interest income and expenses, but before income tax is applied. <em>Unit: Millions $</em></li>
+<li><strong>Net Income:</strong> The final profit remaining after all expenses, interest and taxes have been deducted from revenue. <em>Unit: Millions $</em></li>
+<li><strong>EBITDA:</strong> Operating profit adding back depreciation and amortization, used to compare operational performance across companies regardless of capital structure and accounting choices. <em>Unit: Millions $</em></li>
+<li><strong>EPS (Diluted):</strong> Net income divided by the total number of shares including all potential shares from stock options and convertible instruments, giving the most conservative view of per-share earnings. <em>Unit: $ per share</em></li>
+<li><strong>EPS (Recurring):</strong> Net income per share after removing one-time exceptional items, reflecting the true underlying earning power of the business. <em>Unit: $ per share</em></li>
+<li><strong>Shares Outstanding:</strong> The total number of shares currently held by all shareholders including insiders and institutions. <em>Unit: Millions of shares</em></li>
+<li><strong>Gross Margin:</strong> Gross Profit divided by Revenue, expressing what percentage of each dollar of revenue the company retains after production costs. <em>Unit: %</em></li>
+<li><strong>Operating Margin:</strong> Operating Income divided by Revenue, showing what percentage of revenue translates into operating profit after all operating expenses. <em>Unit: %</em></li>
+<li><strong>Net Margin:</strong> Net Income divided by Revenue, the ultimate measure of how much of each dollar of revenue becomes final profit. <em>Unit: %</em></li>
+<li><strong>Price To Earnings Ratio:</strong> The stock price divided by EPS, indicating how many dollars investors are willing to pay for each dollar of earnings, reflecting growth expectations. <em>Unit: Ratio (x)</em></li>
+<li><strong>Market Capitalization:</strong> The total market value of the company calculated by multiplying the current stock price by the number of shares outstanding. <em>Unit: Millions $</em></li>
+</ul>
+</div>
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r AMZN FS IS A, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Produce table
+tryCatch(
+  produce_financial_statements_table(id = "AMZN", aq = "A", fs = "I", title = "Income Statement — Annual"),
+  error = function(e) message("No Income Statement available"))
+
+```
+
+```{=html}
+</div>
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r AMZN FS IS Q, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Produce table
+tryCatch(
+  produce_financial_statements_table(id = "AMZN", aq = "Q", fs = "I", title = "Income Statement — Quarter"),
+  error = function(e) message("No Income Statement available"))
+
+
+```
+
+```{=html}
+</div>
+```
+
+#### *Balance Sheet*
+
+<div class="perf-section">
+<ul>
+<li><strong>Cash & Short Term Investments:</strong> Cash on hand plus investments maturing within 90 days, representing the immediate liquidity available to the company for operations or emergencies. <em>Unit: Millions $</em></li>
+<li><strong>Total Assets:</strong> The sum of everything the company owns including cash, receivables, inventory, property, equipment and intangibles. <em>Unit: Millions $</em></li>
+<li><strong>Total Current Liabilities:</strong> All financial obligations the company must settle within the next 12 months including payables, short-term debt and accrued expenses. <em>Unit: Millions $</em></li>
+<li><strong>Long Term Debt:</strong> Borrowings and financial obligations that are due more than one year from now, reflecting the company's long-term leverage. <em>Unit: Millions $</em></li>
+<li><strong>Total Liabilities:</strong> The sum of all short and long-term financial obligations, representing everything the company owes to creditors. <em>Unit: Millions $</em></li>
+<li><strong>Total Equity:</strong> The net value belonging to shareholders, calculated as Total Assets minus Total Liabilities, also known as net worth or book value. <em>Unit: Millions $</em></li>
+<li><strong>Book Value Per Share:</strong> Total equity divided by shares outstanding, representing the theoretical liquidation value of the company per share. <em>Unit: $ per share</em></li>
+<li><strong>Return on Assets:</strong> Net Income divided by Total Assets, measuring how effectively the company converts its asset base into profit. <em>Unit: %</em></li>
+<li><strong>Return on Equity:</strong> Net Income divided by Total Equity, measuring the profit generated for each dollar of shareholders capital invested. <em>Unit: %</em></li>
+<li><strong>Return on Invested Capital:</strong> Operating profit after tax divided by total invested capital, measuring how efficiently the company generates returns on all the capital it employs. <em>Unit: %</em></li>
+<li><strong>Current Ratio:</strong> Current Assets divided by Current Liabilities, measuring the company's ability to pay all short-term obligations using its short-term assets. <em>Unit: Ratio (x)</em></li>
+<li><strong>Quick Ratio:</strong> Current Assets minus inventory divided by Current Liabilities, a stricter measure of liquidity that excludes assets that cannot be quickly converted to cash. <em>Unit: Ratio (x)</em></li>
+<li><strong>Cash Ratio:</strong> Cash and equivalents divided by Current Liabilities, the most conservative liquidity measure showing whether the company can cover immediate debts using only cash. <em>Unit: Ratio (x)</em></li>
+<li><strong>Price to Book Ratio:</strong> Market price per share divided by book value per share, indicating how much investors pay above the accounting value of the company. <em>Unit: Ratio (x)</em></li>
+<li><strong>EV / EBITDA:</strong> Enterprise Value divided by EBITDA, a valuation multiple that accounts for debt and cash, used to compare companies independently of their capital structure. <em>Unit: Ratio (x)</em></li>
+<li><strong>Debt-to-Equity:</strong> Total debt divided by total equity, measuring how much the company relies on borrowed money relative to shareholder funds to finance its operations. <em>Unit: Ratio (x)</em></li>
+<li><strong>Debt Ratio:</strong> Total debt divided by Total Assets, showing what proportion of the company's assets are financed through debt rather than equity. <em>Unit: Ratio (x)</em></li>
+<li><strong>Net Debt / EBITDA:</strong> Net debt (total debt minus cash) divided by EBITDA, indicating how many years of operational earnings would be needed to fully repay the net debt. <em>Unit: Ratio (x)</em></li>
+<li><strong>Full-Time Employees:</strong> The total headcount of permanent full-time employees, useful to track workforce growth and compute revenue or profit per employee. <em>Unit: Count</em></li>
+</ul>
+</div>
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r AMZN FS BS A, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Produce table
+tryCatch(
+  produce_financial_statements_table(id = "AMZN", aq = "A", fs = "B", title = "Balance Sheet — Annual"),
+  error = function(e) message("No Balance Sheet available"))
+
+```
+
+```{=html}
+</div>
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r AMZN FS BS Q, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Produce table
+tryCatch(
+  produce_financial_statements_table(id = "AMZN", aq = "Q", fs = "B", title = "Balance Sheet — Annual"),
+  error = function(e) message("No Balance Sheet available"))
+
+```
+
+```{=html}
+</div>
+```
+
+#### *Cash Flow*
+
+<div class="perf-section">
+<ul>
+<li><strong>Cash from Operating Activities:</strong> The actual cash generated by the core business after adjusting net income for non-cash items and working capital changes, considered more reliable than net income as a measure of business health. <em>Unit: Millions $</em></li>
+<li><strong>Free Cash Flow:</strong> Cash from operating activities minus capital expenditures, representing the cash the company can freely use for dividends, buybacks, acquisitions or debt repayment. <em>Unit: Millions $</em></li>
+<li><strong>Capital Expenditures:</strong> Cash spent on acquiring or maintaining physical assets such as property, plants and equipment, necessary to sustain and grow the business. Shown as a negative value as it is a cash outflow. <em>Unit: Millions $</em></li>
+<li><strong>Repurchase of Common Pref Stock:</strong> Cash used to buy back the company's own shares from the market, reducing shares outstanding and returning value to remaining shareholders. Shown as a negative value as it is a cash outflow. <em>Unit: Millions $</em></li>
+<li><strong>Change in Capital Stock:</strong> The net variation in share capital resulting from both share buybacks and new share issuances during the period. Shown as a negative value when buybacks exceed issuances. <em>Unit: Millions $</em></li>
+<li><strong>Price to Free Cash Flow:</strong> The stock price divided by free cash flow per share, measuring how much the market is willing to pay for each dollar of free cash flow generated by the company. <em>Unit: Ratio (x)</em></li>
+</ul>
+</div>
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r AMZN FS CF A, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+
+# Produce table
+tryCatch(
+  produce_financial_statements_table(id = "AMZN", aq = "A", fs = "C", title = "Cash Flow Statement — Annual"),
+  error = function(e) message("No Cash Flow Statement available"))
+
+```
+
+```{=html}
+</div>
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r AMZN FS CF Q, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Produce table
+tryCatch(
+  produce_financial_statements_table(id = "AMZN", aq = "Q", fs = "C", title = "Cash Flow Statement — Annual"),
+  error = function(e) message("No Cash Flow Statement available"))
+
+```
+
+```{=html}
+</div>
+```

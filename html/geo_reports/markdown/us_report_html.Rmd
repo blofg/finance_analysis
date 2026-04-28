@@ -1,0 +1,1830 @@
+---
+title: "US Financial and Macro Report"
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float:
+      collapsed: false
+      smooth_scroll: true
+    theme: flatly
+    highlight: kate
+    self_contained: true
+    css: "/Users/benjaminlachavanne/Desktop/script/finance_analysis/html/style/style.css"
+
+params:
+  llm_analysis: false
+  
+---
+
+```{r setup, include=FALSE, warning=FALSE, message=FALSE}
+opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+
+# Main path 
+path_main <- file.path("~", "Desktop", "script", "finance_analysis")
+
+# Upload packages, functions and inputs 
+source(paste0(path_main,"/initialization/package.R"))         # |Package|
+source(paste0(path_main,"/function/function_information.R"))  # |Function price|
+source(paste0(path_main,"/function/function_format.R"))       # |Function format|
+source(paste0(path_main,"/function/function_visualization.R"))        # |Functions visualization|
+source(paste0(path_main,"/function/function_compute.R"))      # |Functions indicator|
+source(paste0(path_main,"/function/function_ai.R"))           # |Functions ai|
+source(paste0(path_main,"/initialization/input.R"))           # |Input|
+
+# Download all series from the RDS folder
+path_rds_folder    <- "/Users/benjaminlachavanne/Desktop/script/finance_analysis/database/rds/"
+path_rds_all <- paste0(path_rds_folder,"series_store_all.rds")
+series_database <- readRDS(path_rds_all)
+
+# Styled info box
+series_info_box <- function(source_html, frequency, adjustment, about) {
+  htmltools::HTML(paste0('
+  <div class="info-card">
+    <div class="info-grid">
+      <div class="info-row">
+        <span class="info-label">Source</span>
+        <span class="info-value">', source_html, '</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Frequency</span>
+        <span class="info-value">', frequency, '</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Adjustment</span>
+        <span class="info-value">', adjustment, '</span>
+      </div>
+    </div>
+    <div class="info-about">', about, '</div>
+  </div>
+  '))
+}
+
+# Section label helper
+section_label <- function(icon, text) {
+  htmltools::HTML(paste0(
+    '<div class="section-label"><span class="section-icon">', icon,
+    '</span><span class="section-text">', text, '</span></div>'))
+}
+
+# Subsection label helper
+subsection_label <- function(text) {
+  htmltools::HTML(paste0('<div class="subsection-label">', text, '</div>'))
+}
+
+# Chart note helper
+chart_note <- function(text) {
+  htmltools::HTML(paste0('<p class="chart-note">', text, '</p>'))
+}
+```
+
+
+
+
+<!-- ####################################################################### -->
+<!-- Head Title  -->
+<!-- ####################################################################### -->
+
+```{=html}
+<!-- ── MASTHEAD ─────────────────────────────────────────────────────────────── -->
+<div class="masthead">
+  <div class="masthead-eyebrow">Macro Research · United States</div>
+  <div class="masthead-title">US <span>Financial &amp; Macro Report</span></div>
+  <div class="masthead-date">Latest update date: `r format(Sys.Date(), '%B %d, %Y')`</div>
+</div>
+```
+
+
+<!-- ####################################################################### -->
+<!-- Abstract  -->
+<!-- ####################################################################### -->
+
+## Abstract
+
+```{=html}
+<div class="company-hero">
+  <div class="co-body">
+    <div class="masthead-title">Abstract</div>
+  </div>
+</div>
+```
+
+```{=html}
+<div class="abstract-box">
+<p>This report provides a comprehensive overview of the United States economy and financial markets through a structured set of macroeconomic, financial, and market indicators.</p>
+<ul>
+  <li>The <strong>macroeconomic</strong> section covers the key drivers of economic activity, including output growth, inflation, labor market conditions, household behavior, investment, housing, and fiscal balances.</li>
+  <li>The <strong>monetary policy</strong> section tracks the Federal Reserve's stance through interest rates and balance sheet dynamics.</li>
+  <li>The <strong>index</strong>, <strong>ratio</strong>, <strong>commodity</strong>, and <strong>advanced indicator</strong> sections provide a broad reading of US financial market conditions.</li>
+  <li>Finally, <strong>exchange rates</strong> against the US dollar reflect the international dimension of US financial conditions.</li>
+</ul>
+<p>Taken together, this report aims to offer a 360° view of the US economic and financial cycle, combining official statistics with market-based signals to support a comprehensive assessment of the current environment.</p>
+</div>
+```
+
+<!-- ####################################################################### -->
+<!-- Macro  -->
+<!-- ####################################################################### -->
+
+## Macro
+
+```{=html}
+<div class="company-hero">
+  <div class="co-body">
+    <div class="masthead-title">Macro</div>
+  </div>
+</div>
+```
+
+### Real GDP
+
+```{r US GDP TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'FRED — <a href="https://fred.stlouisfed.org/series/GDPC1" target="_blank">link</a>',
+  frequency = "Quarterly",
+  adjustment = "Seasonally Adjusted",
+  about = "US Real GDP series published by the Bureau of Economic Analysis (BEA) and hosted on the FRED (Federal Reserve Bank of St. Louis) database. It measures US real output in chained 2017 dollars, eliminating inflationary distortion. It follows the expenditure approach: GDP = C + I + G + (X − M), where C (personal consumption, ~70% of GDP) is the largest driver, followed by I (private investment), G (government expenditure), and net exports (X − M), which is typically negative for the US given its persistent trade deficit. The chained methodology links price indexes across consecutive years rather than using a fixed base-year basket, making it more accurate for long-run comparisons. Released quarterly, with an advance estimate ~30 days after quarter-end, followed by two revisions. Data goes back to Q3 1947, and serves as an important benchmark for recession dating by the NBER and for Fed monetary policy calibration.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US GDP, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "us_rgdp_fd")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, is_quarterly = TRUE))
+
+```
+
+```{=html}
+</div>
+```
+
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US GDP PC1, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "us_rgdp_pc1_fd")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, is_quarterly = TRUE))
+
+```
+
+```{=html}
+</div>
+```
+
+### Inflation
+
+```{r US INF TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'FRED — <a href="https://fred.stlouisfed.org/" target="_blank">link</a> and OECD — <a href="https://data-explorer.oecd.org/vis?tm=cpi&pg=0&snb=25&df[ds]=dsDisseminateFinalDMZ&df[id]=DSD_PRICES%40DF_PRICES_ALL&df[ag]=OECD.SDD.TPS&df[vs]=1.0&dq=.M.N.CPI.._T.N.GY%2B_Z&lom=LASTNPERIODS&lo=13&to[TIME_PERIOD]=false" target="_blank">link</a>',
+  frequency = "Monthly",
+  adjustment = "Seasonally Adjusted for FRED series and Not Seasonally Adjusted for OECD series",
+  about = paste0(
+  '1) <b>CPI — <a href="https://fred.stlouisfed.org/series/CPIAUCSL" target="_blank">CPIAUCSL</a></b>. ',
+  'US Consumer Price Index is published by the Bureau of Labor Statistics (BLS), measuring monthly price changes paid by urban consumers (~88% of the total US population) for a fixed basket of goods and services. The basket covers food, clothing, shelter, fuels, transportation fares, service fees, and sales taxes. Prices are collected monthly from about 4,000 housing units and approximately 26,000 retail establishments across 87 urban areas. It uses a Laspeyres methodology (fixed base-year basket), which can overstate inflation by not accounting for substitution effects. Released monthly, indexed to 1982–84 = 100, seasonally adjusted. It is the primary benchmark for cost-of-living adjustments (COLA), Social Security indexation, and inflation-linked bond pricing (TIPS).',
+  'and serves as the headline inflation indicator. Name of the series on the graph: <code>us_cpi_pc1_fd</code>.',
+  '<br><br>',
+  '2) <b>Core CPI — <a href="https://fred.stlouisfed.org/series/CPILFESL" target="_blank">CPILFESL</a></b>. ',
+  'US Core CPI is also published by the BLS, which strips out food and energy prices from the headline CPI due to their high volatility and supply-shock sensitivity. It captures the more persistent, demand-driven component of inflation and is a cleaner signal of underlying price pressure. It retains the same Laspeyres methodology and urban consumer coverage as CPIAUCSL, with shelter remaining the dominant component. Released monthly alongside headline CPI. Closely watched by the Fed as a policy signal, though the Fed officially targets PCE, Core CPI nonetheless remains a key cross-reference for inflation assessment and market expectations on rate decisions. Name of the series on the graph: <code>us_ccpi_pc1_fd</code>.',
+  '<br><br>',
+  '3) <b>PCE Price Index — <a href="https://fred.stlouisfed.org/series/PCEPI" target="_blank">PCEPI</a></b>. ',
+  'US Personal Consumption Expenditures Price Index is published by the Bureau of Economic Analysis (BEA). Unlike CPI, it uses a chain-weighted (Fisher index) methodology, meaning the consumption basket updates dynamically with actual spending behavior, capturing substitution effects and making it less prone to upward bias. Its coverage is broader than CPI, including expenditures made on behalf of consumers (e.g., employer-sponsored healthcare), giving healthcare a significantly higher weight than in CPI. It is the Fed\'s official inflation target (2%), making it the single most policy-relevant price index in the US Released monthly, data goes back to 1959. Core PCE (excluding food & energy) is particularly scrutinized at every FOMC meeting. Name of the series on the graph: <code>us_pce_pc1_fd</code>.',
+  'and uses a chain-weighted methodology, making it particularly relevant for monetary policy analysis. ',
+  '<br><br>',
+  '4) <b>OECD Consumer Price Index — <a href="https://data-explorer.oecd.org/vis?tm=cpi&pg=0&snb=25&df[ds]=dsDisseminateFinalDMZ&df[id]=DSD_PRICES%40DF_PRICES_ALL&df[ag]=OECD.SDD.TPS&df[vs]=1.0&dq=.M.N.CPI.._T.N.GY%2B_Z&lom=LASTNPERIODS&lo=13&to[TIME_PERIOD]=false">OECD CPI</a></b>. ',
+  'The OECD CPI is a harmonized measure of consumer price inflation published by the Organisation for Economic Cooperation and Development, covering its 38 member countries as well as several partner economies. It is constructed using a consistent statistical framework, the HICP methodology (Harmonised Index of Consumer Prices) for European members and standardized equivalents for others, ensuring cross-country comparability that national CPIs alone cannot provide. It aggregates individual country CPIs using harmonized basket abouts and weight structures, allowing direct inflation comparisons across the US, Eurozone, Japan, UK, and emerging OECD members. It is a key tool for international macro analysis, sovereign debt assessment, and global monetary policy comparison. Name of the series on the graph: <code>us_cpi_oecd</code>.'))
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US INF, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = c("us_cpi_oecd","us_cpi_pc1_fd", "us_ccpi_pc1_fd", "us_pce_pc1_fd"))
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, title = "US, Consumer Price Inflation Measures, Percent Change from Year Ago, Seasonally Adjusted"))
+
+```
+
+```{=html}
+</div>
+```
+
+### Unemployment
+
+```{r US EMP TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'FRED — <a href="https://fred.stlouisfed.org/series/UNRATE" target="_blank">link</a>',
+  frequency = "Monthly",
+  adjustment = "Seasonally Adjusted",
+  about = "Unemployment Rate is a measure of the number of unemployed as a percentage of the labor force, published by the Bureau of Labor Statistics from the Current Population Survey (Household Survey). It is restricted to people 16 years of age and older, residing in one of the 50 states or the District of Columbia, who do not reside in institutions (e.g., penal and mental facilities, homes for the aged), and who are not on active duty in the Armed Forces. Also defined as the U-3 measure of labor underutilization, the narrowest of the Bureau of Labor Statistics\'s labor underutilization measures. Reported as a percent, seasonally adjusted, and released monthly. It is one of the most watched macroeconomic indicators, serving as a key input for Fed monetary policy decisions and business cycle analysis.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US EMP, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "us_unrate_fd")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE))
+
+```
+
+```{=html}
+</div>
+```
+
+### Non Farm Payroll 
+
+```{r US NFP TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'FRED — <a href="https://fred.stlouisfed.org/series/PAYEMS" target="_blank">link</a>',
+  frequency = "Monthly",
+  adjustment = "Seasonally Adjusted",
+  about = "All Employees, Total Nonfarm is a measure of the total number of US workers in the economy, published by the Bureau of Labor Statistics from the Current Employment Statistics (Establishment Survey). It excludes proprietors, private household employees, unpaid volunteers, farm employees, and the unincorporated self-employed, and accounts for approximately 80% of the workers who contribute to GDP. Reported in thousands of persons, seasonally adjusted, and released monthly. It is one of the most closely watched labor market indicators, as it directly reflects the number of jobs added or lost in the economy each month, a key input for Fed monetary policy decisions, business cycle analysis, and recession dating by the NBER.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US NFP NBR, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "us_nfp_fd")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE))
+
+```
+
+```{=html}
+</div>
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US NFP PCY, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "us_nfp_pc1_fd")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE))
+
+```
+
+```{=html}
+</div>
+```
+
+### AFP Non Farm Payroll (Private)
+
+```{r US NFP AFPTXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'FRED — <a href="https://fred.stlouisfed.org/series/ADPWNUSNERSA" target="_blank">link</a>',
+  frequency = "Weekly",
+  adjustment = "Seasonally Adjusted",
+  about = "Total Nonfarm Private Payroll Employment is a measure of total US. private-sector employment published by Automatic Data Processing, Inc. (ADP) from its National Employment Report (NER). Unlike the Bureau of Labor Statistics\' establishment survey, which covers both public and private workers, this series is restricted to private-sector nonfarm payroll employment only, derived from ADP\'s proprietary payroll processing data covering a large sample of US businesses, it covers private-sector workers across all major industries, including goods-producing sectors such as manufacturing and construction, and service-providing sectors such as trade, education, healthcare, and leisure and hospitality, while explicitly excluding government employees and farm workers. The series is benchmarked annually to Quarterly Census of Employment and Wages (QCEW) data through the prior year\'s March figures, a standard revision process carried out each February. Reported in number of persons, seasonally adjusted, released weekly. Widely used as a high-frequency, private-sector complement to the official BLS monthly employment report, providing more timely signals on labor market conditions between official government releases.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US NFP AFP NBR, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "us_adpnfp_fd")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE))
+
+```
+
+```{=html}
+</div>
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US NFP AFP PCY, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "us_adpnfp_pc1_fd")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE))
+
+```
+
+```{=html}
+</div>
+```
+
+### Job Openings
+
+```{r US JO TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'FRED — <a href="https://fred.stlouisfed.org/series/JTSJOL" target="_blank">link</a>',
+  frequency = "Monthly",
+  adjustment = "Seasonally Adjusted",
+  about = "Total Nonfarm Job Openings are a measure of all jobs that are not filled on the last business day of the month. A job is considered open if a specific position exists and there is work available for it, the job can be started within 30 days, and there is active recruiting for the position.Total Nonfarm Job Openings are measured by the Job Openings and Labor Turnover Survey (JOLTS) and published by the Bureau of Labor Statistics (BLS). These data are a unique economic indicator of unmet demand for labor and labor shortages. Economists, government officials, and researchers use Job Openings as a measure of tightness within job markets.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US JO, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "us_jtsjo_fd")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE))
+
+```
+
+```{=html}
+</div>
+```
+
+### Unemployment Claims 
+
+```{r US UNEMPC TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'FRED — <a href="https://fred.stlouisfed.org/series/CCSA" target="_blank">link</a>',
+  frequency = "Weekly",
+  adjustment = "Seasonally Adjusted",
+  about = "Continued Claims (Insured Unemployment) is the number of people who have already filed an initial unemployment claim and who have experienced a week of unemployment and then filed a continued claim to receive benefits for that week. Unlike initial claims which capture new job losses, continued claims reflect the stock of people remaining on unemployment benefits, making it a measure of how difficult it is for displaced workers to find new employment. Data are based on the week of unemployment, not the week the initial claim was filed. Published by the US Employment and Training Administration, reported as a number of persons, seasonally adjusted, and released weekly (ending Saturday). It is a high-frequency labor market indicator closely watched alongside initial claims to assess the persistence of unemployment and the overall health of the labor market.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US UNEMPC, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "us_unemplcla_fd")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE))
+
+```
+
+```{=html}
+</div>
+```
+
+<!-- ### Personal Consumption Expenditures -->
+
+<!-- ```{r US PCETOT TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE} -->
+<!-- series_info_box( -->
+<!--   source_html = 'FRED — <a href="https://fred.stlouisfed.org/series/USPCE" target="_blank">link</a>', -->
+<!--   frequency = "Annual", -->
+<!--   adjustment = "Not Adjusted", -->
+<!--   about = "Personal Consumption Expenditures is a measure of total household spending on goods and services published by the US Bureau of Economic Analysis from its Personal Consumption Expenditures by State release. It covers spending by households based on their state of residence across all fifty states and the District of Columbia, encompassing three broad categories: durable goods (e.g., vehicles, appliances), nondurable goods (e.g., food, clothing, energy), and services (e.g., healthcare, housing, transportation), with services representing the largest share. Reported in millions of dollars, not seasonally adjusted, released annually.") -->
+<!-- ``` -->
+
+<!-- ```{=html} -->
+<!-- <div class="perf-section"> -->
+<!-- ``` -->
+
+<!-- ```{r US PCETOT, echo=FALSE, results='asis', warning=FALSE, message=FALSE} -->
+
+<!-- # Get series -->
+<!-- data <- get_series(name = "us_pcetot_pc1_fd") -->
+
+<!-- # Plot serie -->
+<!-- div(style = "display: flex; justify-content: center;", -->
+<!--     produce_interactive_plot(df = data, sma = FALSE)) -->
+
+<!-- ``` -->
+
+<!-- ```{=html} -->
+<!-- </div> -->
+<!-- ``` -->
+
+### Real Investment
+
+```{r US RI TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'FRED — <a href="https://fred.stlouisfed.org/" target="_blank">link</a>',
+  frequency  = "Quarterly",
+  adjustment = "Seasonally Adjusted",
+  about = paste0(
+    '<b>1) Real Gross Private Domestic Investment</b> — ',
+    '<a href="https://fred.stlouisfed.org/series/GPDIC1" target="_blank">GPDIC1</a>. ',
+    'Real Gross Private Domestic Investment measures the inflation-adjusted value of private-sector investment spending in the United States, published by the US Bureau of Economic Analysis from its Gross Domestic Product release. It covers three main components: nonresidential fixed investment (business spending on structures, equipment, and intellectual property), residential fixed investment (construction and improvement of housing), and changes in private inventories (fluctuations in goods held by businesses). As the most volatile component of real gross domestic product, it is closely watched as a leading indicator of business confidence and economic momentum. Reported in billions of chained 2017 dollars, seasonally adjusted annual rate, released quarterly. Name of the series on the graphs: <code>us_rgdi_fd</code> and <code>us_rgdi_pc1_fd</code>. ',
+    '<br><br>',
+    '<b>2) Real Private Nonresidential Fixed Investment</b> — ',
+    '<a href="https://fred.stlouisfed.org/series/PNFIC1" target="_blank">PNFIC1</a>. ',
+    'Real Private Nonresidential Fixed Investment measures the inflation-adjusted value of private-sector business spending on fixed assets excluding housing, published by the US Bureau of Economic Analysis from its Gross Domestic Product release. It covers three main sub-components: structures (commercial buildings, factories, utilities, and other non-residential construction), equipment (machinery, vehicles, computers, and industrial tools), and intellectual property products (software, research and development, and entertainment originals). As a direct measure of business capital expenditure, it is a key indicator of corporate investment appetite, productive capacity expansion, and long-run economic growth potential. Reported in billions of chained 2017 dollars, seasonally adjusted annual rate, released quarterly. Name of the series on the graphs: <code>us_rpnfi_fd</code> and <code>us_rpnfi_pc1_fd</code>.',
+    '<br><br>',
+    '<b>3) Real Private Residential Fixed Investment</b> — ',
+    '<a href="https://fred.stlouisfed.org/series/PRFIC1" target="_blank">PRFIC1</a>. ',
+    'Real Private Residential Fixed Investment measures the inflation-adjusted value of private-sector spending on housing, published by the US Bureau of Economic Analysis from its Gross Domestic Product release. It covers new construction of single-family and multi-family homes, improvements and renovations to existing residential structures, manufactured homes, and brokers\' commissions on the sale of residential properties. As one of the most interest-rate-sensitive components of real gross domestic product, it is a key indicator of housing market conditions and a reliable leading signal of broader economic cycles, typically declining sharply ahead of recessions and recovering early in expansionary phases. Reported in billions of chained 2017 dollars, seasonally adjusted annual rate, released quarterly. Name of the series on the graphs: <code>us_rpfi_fd</code> and <code>us_rpfi_pc1_fd</code>.',
+    '<br><br>',
+    '<b>4) Real Government Consumption Expenditures & Gross Investment</b> — ',
+    '<a href="https://fred.stlouisfed.org/series/GCEC1" target="_blank">GCEC1</a>. ',
+    'Real Government Consumption Expenditures and Gross Investment measures the inflation-adjusted value of spending by all levels of government, federal, state, and local, on goods, services, and fixed assets, published by the US Bureau of Economic Analysis from its Gross Domestic Product release. It encompasses two broad components: consumption expenditures (day-to-day government spending on goods and services such as compensation of government employees, defense operations, and public services) and gross investment (government spending on fixed assets such as infrastructure, public buildings, military equipment, and intellectual property). It explicitly excludes transfer payments such as Social Security and Medicare, which do not represent direct purchases of goods or services. Represents the G component in the standard gross domestic product expenditure identity. Reported in billions of chained 2017 dollars, seasonally adjusted annual rate, released quarterly. Name of the series on the graphs: <code>us_rgcegi_fd</code> and <code>us_rgcegi_pc1_fd</code>.'))
+
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US RI, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = c("us_rgdi_fd", "us_rpnfi_fd", "us_rpfi_fd", "us_rgcegi_fd"))
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, title = "USA, US Real Investment Dynamics, Billions of chained 2017 dollars, Seasonally Adjusted", is_quarterly = TRUE))
+
+```
+
+```{=html}
+</div>
+```
+
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US RI PC1, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = c("us_rgdi_pc1_fd", "us_rpnfi_pc1_fd", "us_rpfi_pc1_fd", "us_rgcegi_pc1_fd"))
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, title = "USA, US Real Investment Dynamics, Percent Change from Year Ago, Seasonally Adjusted", is_quarterly = TRUE))
+
+```
+
+```{=html}
+</div>
+```
+
+### Household Savings
+
+```{r US HS TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'FRED — <a href="https://fred.stlouisfed.org/series/PSAVERT" target="_blank">link</a>',
+  frequency  = "Monthly",
+  adjustment = "Seasonally Adjusted",
+  about = "Personal Saving Rate measures the proportion of disposable personal income that households save rather than spend in a given period. It is calculated as personal saving (income remaining after consumption, taxes, and other outlays) divided by disposable personal income, and is expressed as a percentage. The personal saving rate provides insight into household financial behaviour, indicating how much income is set aside for future use or investment versus current consumption.")
+
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US HS, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "us_hs_sa_fd")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE))
+
+```
+
+```{=html}
+</div>
+```
+
+### Governement Surplus/Deficit
+
+```{r US GOVS TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'FRED — <a href="https://fred.stlouisfed.org/series/MTSDS133FMS" target="_blank">link</a>',
+  frequency  = "Monthly",
+  adjustment = "Not Adjusted",
+  about = "Federal Surplus or Deficit measures the monthly difference between total federal government receipts and total federal government outlays, published by the US Department of the Treasury Fiscal Service from its Monthly Treasury Statement. Receipts encompass individual and corporate income taxes, payroll taxes, excise taxes, estate and gift taxes, customs duties, and miscellaneous revenues, while outlays cover mandatory spending programs (including Social Security, Medicare, and Medicaid), discretionary spending (defense and non-defense), net interest payments on the federal debt, and other federal expenditures. A positive value indicates a monthly surplus; a negative value indicates a monthly deficit. Unlike the quarterly National Income and Product Accounts measure of the federal budget balance (M318501Q027NBEA), this series is derived directly from the Treasury\'s own cash-basis accounting of actual government receipts and payments, providing the most timely and granular available read on federal fiscal conditions. Because monthly figures are highly sensitive to the timing of tax collection cycles, benefit payment schedules, and end-of-fiscal-year dynamics, individual monthly observations can be volatile and are best interpreted in the context of rolling twelve-month cumulative totals. Reported in millions of dollars, not seasonally adjusted, released monthly.")
+
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US GOVS, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "us_govdfsu_nsa_fd")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE), is_quarterly = TRUE)
+
+```
+
+```{=html}
+</div>
+```
+
+### Governement Debt 
+
+```{r US GOVD TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'FRED — <a href="https://fred.stlouisfed.org/series/GFDEBTN" target="_blank">link</a>',
+  frequency  = "Quarterly",
+  adjustment = "Not Adjusted",
+  about = "Federal Debt: Total Public Debt. measures the total outstanding debt obligations of the US federal government, published by the US Department of the Treasury Fiscal Service from its Treasury Bulletin. It comprises two components: debt held by the public (Treasury securities such as bills, notes, bonds, and inflation-protected securities held by domestic and foreign investors, the Federal Reserve, and other external entities) and intragovernmental debt (obligations held by federal government trust funds such as Social Security and Medicare). As the cumulative stock of all past federal deficits net of surpluses, it is a key measure of sovereign fiscal sustainability and a primary input for assessing the US debt-to-gross domestic product ratio. Reported in millions of dollars, not seasonally adjusted, released quarterly at end of period.")
+
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US GOVD TOT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "us_govde_nsa_fd")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, is_quarterly = TRUE))
+
+```
+
+```{=html}
+</div>
+```
+
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US GOVD PCY, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "us_govde_pc1_nsa_fd")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, is_quarterly = TRUE))
+
+```
+
+```{=html}
+</div>
+```
+
+### Housing prices
+
+```{r US HP TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'FRED — <a href="https://fred.stlouisfed.org/series/USSTHPI" target="_blank">link</a>',
+  frequency  = "Quarterly",
+  adjustment = "Not Adjusted",
+  about = "All-Transactions House Price Index measures changes in residential property prices across the United States, published by the US Federal Housing Finance Agency from its House Price Index release. It is estimated using both sales prices and appraisal data from mortgages purchased or securitized by Fannie Mae and Freddie Mac, making it a repeat-transactions index that tracks price changes on the same properties over time. Coverage spans single-family residential properties nationwide. Unlike purchase-only indices, the inclusion of appraisal data from refinance transactions broadens the sample size and geographic coverage, particularly in areas with fewer home sales. Indexed to the first quarter of 1980 equal to 100, not seasonally adjusted, released quarterly.")
+
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US HP IDX, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "us_hp_fd")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, is_quarterly = TRUE))
+
+```
+
+```{=html}
+</div>
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US HP PCY, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "us_hp_pc1_fd")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, is_quarterly = TRUE))
+
+```
+
+```{=html}
+</div>
+```
+
+### KOF Forecast
+
+```{r US KOF FOR TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'KOF Nowcasting Lab — <a href="https://nowcastinglab.org/map" target="_blank">link</a>',
+  frequency  = "Daily",
+  adjustment = "Seasonally Adjusted",
+  about = "KOF Nowcasting Lab provides continuously updated real-time estimates of current-quarter and next-quarter real GDP growth for a range of economies including Switzerland, the euro area, Germany, France, Italy, Spain, the United Kingdom, and several others, developed by the KOF Swiss Economic Institute at ETH Zurich. The platform is fully automated with no human judgmental input, updating estimates up to three times daily as new data releases enter the system. It combines four classes of mixed-frequency econometric models fed with approximately 250 daily and monthly macroeconomic and financial series, with individual model forecasts pooled using forecast combination techniques and weaker predictors filtered via elastic net regularization. The core premise is that high-frequency indicators such as business surveys, trade statistics, and financial data are published weeks ahead of the official quarterly GDP release, which arrives with a lag of six to eight weeks after quarter-end in most economies, allowing the models to progressively refine estimates as the information set expands throughout the quarter. The website displays uncertainty bands, individual model outputs, the contribution of each release to forecast revisions, and historical forecast errors.")
+
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US KOF FOR, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_kof_nowcast(id = "USGDPNC", last_quarter = 2) %>% 
+  rename(date = publication_date, quarter_forecast = date) %>% 
+  mutate(name = paste0(name," ",target_period), id = paste0(id,"_",target_period))
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE,title = paste0("KOF Nowcast for US in ", paste0(unique(data$target_period), collapse = " / "), ", Percent Change from Previous Period, Seasonally Adjusted"))),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : The x-axis represents the forecast's date of publication for a specific quarter</em></small>")))
+
+```
+
+```{=html}
+</div>
+```
+
+<!-- ####################################################################### -->
+<!-- Federal Rerserve  -->
+<!-- ####################################################################### -->
+
+## Monetary Policy
+
+```{=html}
+<div class="company-hero">
+  <div class="co-body">
+    <div class="masthead-title">Monetary Policy</div>
+  </div>
+</div>
+```
+
+### FED & SOFR Rates
+
+```{r US FED RATE TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'FRED — <a href="https://fred.stlouisfed.org/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = paste0(
+  '1) <b> Effective Federal Funds Rate — <a href="https://fred.stlouisfed.org/series/EFFR" target="_blank">EFFR</a></b>. ',
+  'Effective Federal Funds Rate is the volume-weighted median of overnight federal funds transactions, calculated from domestic unsecured borrowings in US dollars between depository institutions and certain other entities, primarily government-sponsored enterprises. It is published by the Federal Reserve Bank of New York based on data reported in the FR 2420 Report of Selected Money Market Rates. It represents the actual market rate at which banks lend reserve balances to each other overnight, as opposed to the target rate set by the Federal Open Market Committee (FOMC). It is the most direct expression of US monetary policy and serves as a benchmark for a broad range of short-term interest rates across the economy. Reported as a percent, not seasonally adjusted, and released daily.',
+  '<br><br>',
+  '2) <b>Secured Overnight Financing Rate — <a href="https://fred.stlouisfed.org/series/SOFR" target="_blank">SOFR</a></b>. ',
+  'Secured Overnight Financing Rate is a broad measure of the cost of borrowing cash overnight collateralized by US Treasury securities, published daily by the Federal Reserve Bank of New York. Unlike the Effective Federal Funds Rate, which is based on unsecured interbank lending, SOFR is secured, backed by repurchase agreement (repo) transactions, making it virtually risk-free and grounded in a much larger and more liquid market. It was developed as the primary replacement for LIBOR following the LIBOR manipulation scandals, and officially became the dominant benchmark reference rate for US dollar-denominated derivatives and loans. It is widely used as the reference rate for floating-rate financial instruments, including interest rate swaps, syndicated loans, and structured products. Reported as a percent, not seasonally adjusted, and released daily.',
+  '<br><br>',
+  '3) <b>30-Day Average SOFR — <a href="https://fred.stlouisfed.org/series/SOFR30DAYAVG" target="_blank">SOFR30</a></b>. ',
+  '30-Day Average Secured Overnight Financing Rate is the compounded average of the Secured Overnight Financing Rate (SOFR) over a rolling 30-day period, published daily by the Federal Reserve Bank of New York. As an extension of SOFR, it smooths out the day-to-day volatility inherent in the overnight rate, providing a more stable and forward-looking reference rate over a one-month horizon. It is commonly used as a benchmark for floating-rate financial instruments, including loans, derivatives, and structured products, where a less volatile rate than the daily SOFR is preferred. Reported as a percent, not seasonally adjusted, and released daily.',
+  '<br><br>',
+  '4) <b>90-Day Average SOFR — <a href="https://fred.stlouisfed.org/series/SOFR90DAYAVG" target="_blank">SOFR90</a></b>. ',
+  '90-Day Average Secured Overnight Financing Rate is the compounded average of the Secured Overnight Financing Rate (SOFR) over a rolling 90-day period, published daily by the Federal Reserve Bank of New York. As an extension of SOFR, it smooths out short-term rate volatility over a three-month horizon, making it a more stable benchmark than both the daily SOFR and the 30-day average. It is particularly relevant for financial instruments with a quarterly reset cycle, such as floating-rate loans, interest rate swaps, and structured products tied to a 3-month reference rate, effectively serving as the SOFR-based equivalent of the former 3-month LIBOR. Reported as a percent, not seasonally adjusted, and released daily.'))
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US FED RATE, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = c("us_ffrvw_fd","us_sofr_fd", "us_sofr30_fd", "us_sofr90_fd"))
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, title = "US Short-Term Interest Rates, SOFR vs. Federal Funds Rate"))
+
+```
+
+```{=html}
+</div>
+```
+
+### FED Total Assets 
+
+```{r US FED ASS TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'FRED — <a href="https://fred.stlouisfed.org/series/WALCL" target="_blank">link</a>',
+  frequency = "Weekly",
+  adjustment = "Not Adjusted",
+  about = "Federal Reserve Total Assets is the consolidated total assets of all Federal Reserve Banks, published by the Board of Governors of the Federal Reserve System from the H.4.1 release (Factors Affecting Reserve Balances). It represents the size of the Federal Reserve\'s balance sheet and is primarily composed of US Treasury securities and agency mortgage-backed securities acquired through quantitative easing programs. An expanding balance sheet reflects accommodative monetary policy (quantitative easing), while a shrinking balance sheet reflects tightening (quantitative tightening). It is one of the most direct measures of the Federal Reserve\'s unconventional monetary policy stance, closely watched alongside the federal funds rate to assess the full scope of monetary conditions. Reported in millions of US dollars, not seasonally adjusted, and released weekly.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US FED ASS, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "us_fed_total_asset_fd")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE))
+
+```
+
+```{=html}
+</div>
+```
+
+<!-- ####################################################################### -->
+<!-- Index  -->
+<!-- ####################################################################### -->
+
+## Index
+
+```{=html}
+<div class="company-hero">
+  <div class="co-body">
+    <div class="masthead-title">Index</div>
+  </div>
+</div>
+```
+
+### US Equity Indices
+
+```{r US FIN IND TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo — <a href="https://finance.yahoo.com/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = paste0(
+  '1) <b> S&P 500 — <a href="https://finance.yahoo.com/quote/%5EGSPC/" target="_blank">S&P 500</a></b>. ',
+  'Standard & Poor\'s 500 is a market-capitalization-weighted index tracking the performance of 500 of the largest publicly traded companies listed on US stock exchanges, maintained by S&P Dow Jones Indices. It covers approximately 11 sectors of the US economy including information technology, healthcare, financials, consumer discretionary, industrials, and others, making it the broadest and most representative benchmark of the US large-cap equity market. Companies are selected by a committee based on criteria including market capitalization, liquidity, financial viability, and sector representation. Because it is market-cap weighted, the largest companies (e.g., Apple, Microsoft, Nvidia) exert a disproportionate influence on index movements. It is widely considered the single most important benchmark for US equities, used as a reference for the vast majority of institutional portfolios, mutual funds, and exchange-traded funds. It is quoted in index points and publish daily with closing prices.',
+  '<br><br>',
+  '2) <b>Dow Jones — <a href="https://finance.yahoo.com/quote/%5EDJI/" target="_blank">DOW JONES</a></b>. ',
+  'Dow Jones Industrial Average is a price-weighted index tracking 30 large, publicly traded US companies selected by the editors of The Wall Street Journal as representative of the broader US economy, maintained by S&P Dow Jones Indices. Unlike the S&P 500 which is market-cap weighted, the Dow is price-weighted, meaning higher-priced stocks exert a greater influence on index movements regardless of the company\'s total market capitalization. Its 30 components span multiple sectors including technology, financials, healthcare, industrials, and consumer goods, and are among the most established blue-chip companies in the US It is one of the oldest and most widely recognized equity indices in the world, often used as a broad barometer of US economic and market health, though its narrow composition of only 30 stocks makes it a less comprehensive benchmark than the S&P 500. It is quoted in index points and updated daily with closing prices.',
+  '<br><br>',
+    '3) <b>NASDAQ 100 — <a href="https://finance.yahoo.com/quote/%5ENDX/" target="_blank">NASDAQ 100</a></b>. ',
+  'NASDAQ-100 is a market-capitalization-weighted index tracking the 100 largest non-financial companies listed on the Nasdaq Stock Market, maintained by Nasdaq Inc. It explicitly excludes financial sector companies such as banks, insurers, and investment firms, distinguishing it from the broader NASDAQ Composite. Its composition is heavily concentrated in technology, communication services, and consumer discretionary, with significant weights assigned to large-cap constituents such as Apple, Microsoft, Nvidia, Amazon, Alphabet, and Meta. Due to this concentration, the index is subject to periodic rebalancing rules that cap the weight of individual securities to prevent a small number of stocks from dominating overall index performance. Quoted in index points and updated daily with closing prices.',
+  '<br><br>',
+  '4) <b>NASDAQ Composite — <a href="https://finance.yahoo.com/quote/%5EIXIC/" target="_blank">NASDAQ COMPOSITE</a></b>. ',
+  'NASDAQ Composite is a market-capitalization-weighted index tracking all common stocks listed on the Nasdaq Stock Market, covering over 3,000 securities across a wide range of sectors. It has a strong concentration in technology, communication services, and consumer discretionary companies, making it the primary benchmark for the US technology and growth equity market. Unlike the S&P 500 which spans all major sectors broadly, the NASDAQ Composite\'s heavy tech weighting means it is significantly more sensitive to interest rate changes, earnings revisions in the technology sector, and shifts in growth vs. value investor sentiment. It includes both domestic and international companies listed on the Nasdaq exchange. It is quoted in index points and updated daily with closing prices.',
+  '<br><br>',
+  '5) <b>Russell 2000 Index — <a href="https://finance.yahoo.com/quote/%5ERUT/" target="_blank">RUSSELL 2000</a></b>. ',
+  'Russell 2000 Index is a market-capitalization-weighted index tracking the 2,000 smallest companies within the broader Russell 3000 Index, maintained by FTSE Russell. It is the most widely used benchmark for US small-cap equities, covering companies with market capitalizations generally ranging from approximately $300 million to $2 billion. Its composition spans all major sectors of the US economy, with relatively higher weights in financials, healthcare, industrials, and consumer discretionary compared to large-cap indices. Because its constituents are predominantly domestically focused businesses with limited international revenue exposure, the index is considered a more direct barometer of the US domestic economy than the S&P 500 or NASDAQ Composite. Small-cap companies also tend to carry more floating-rate debt, making the index particularly sensitive to changes in interest rates and credit conditions. Quoted in index points and updated daily with closing prices.'))
+```
+
+#### *Table*
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r FIN IND TABLE, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Mapping tickers to readable names
+labels <- c(
+  "^GSPC"  = "S&P 500",
+  "^DJI"   = "Dow Jones",
+  "^NDX"   = "Nasdaq 100",
+  "^IXIC"  = "Nasdaq Composite",
+  "^RUT"   = "Russell 2000")
+
+# Get series
+indices <- c("^GSPC","^DJI","^NDX","^IXIC","^RUT")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+   produce_performance_table(series = indices, label = labels))
+```
+
+```{=html}
+</div>
+```
+
+#### *S&P 500*
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US FIN IND SP500, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = c("sp500"))
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+
+```
+
+```{=html}
+</div>
+```
+
+#### *Dow Jones*
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US FIN IND DOWJONES, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = c("dowjones"))
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+
+```
+
+```{=html}
+</div>
+```
+
+#### *Nasdaq 100*
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US FIN IND NASDAQ 100, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = c("nasdaq100"))
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+
+```
+
+```{=html}
+</div>
+```
+
+#### *Nasdaq Composite*
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US FIN IND NASDAQ COMP, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = c("nasdaqcomposite"))
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+
+```
+
+```{=html}
+</div>
+```
+
+#### *Russell 2000*
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US FIN IND RUSSELL2000, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = c("russell2000"))
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+
+```
+
+```{=html}
+</div>
+```
+
+#### *Comparison*
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US FIN IND ALL, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = c("russell2000", "sp500", "dowjones", "nasdaq100", "nasdaqcomposite"))
+
+# Compute index
+data <- compute_rebase(df = data, base = "2015-01-01")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, title = "US Equity Indices – Indexed Performance (2015:01:01 = 100)"))
+
+```
+
+```{=html}
+</div>
+```
+
+### CBOE Volatility Index
+
+```{r CBOE VIX TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo — <a href="https://finance.yahoo.com/quote/%5EVIX/" target="_blank">link</a> and FRED — <a href="https://fred.stlouisfed.org/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = 
+    paste0(
+  '1) <b> CBOE Volatility Index — <a href="https://finance.yahoo.com/quote/%5EVIX/" target="_blank">CBOE VOLATILITY INDEX</a></b>. ',
+  'CBOE Volatility Index measures the market\'s expectation of near-term volatility in the S&P 500, published by Cboe Global Markets. It is derived from real-time prices of S&P 500 options across a wide range of strike prices and two nearest-term expiration dates, aggregating the implied volatilities embedded in those options to produce a single forward-looking estimate of annualized volatility over the next 30 calendar days. Because it rises sharply when investors bid up the cost of protective options during periods of uncertainty or market stress, it is widely known as the \"fear gauge\" of equity markets, elevated readings historically correspond to periods of heightened risk aversion, while low readings reflect investor complacency and stable market conditions. Quoted in annualized percentage points, updated in real time during market hours.',
+  '<br><br>',
+  '2) <b>CBOE S&P 500 3-Month Volatility Index — <a href="https://fred.stlouisfed.org/series/VXVCLS" target="_blank">CBOE VOLATILITY INDEX 3M</a></b>. ',
+  'CBOE S&P 500 3-Month Volatility Index measures the market\'s expectation of volatility in the S&P 500 over a 90-day horizon, published by the Chicago Board Options Exchange from its CBOE Market Statistics release. It is derived from real-time prices of S&P 500 options, aggregating implied volatilities across a range of strike prices to produce a forward-looking estimate of annualized volatility over the next three months. Relative to the standard 30-day VIX, the 3-month horizon makes this index less sensitive to immediate short-term shocks and more reflective of medium-term uncertainty in equity markets, making it a useful complement for assessing whether near-term fear is expected to persist or dissipate. Quoted in annualized percentage points, not seasonally adjusted, released daily at close.'))
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r CBOE VIX 1M, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "cboevix_1m")
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+
+```
+
+```{=html}
+</div>
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r CBOE VIX 3M, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "cboevix_3m_fd")
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)))
+
+```
+
+```{=html}
+</div>
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US CBOE ALL, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = c("cboevix_1m", "cboevix_3m_fd"))
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, title = "CBOE VIX INDEX - 1M vs 3M"))
+
+```
+
+```{=html}
+</div>
+```
+
+### St. Louis Financial Stress Index 
+
+```{r US FED FINS TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'FRED — <a href="https://fred.stlouisfed.org/series/STLFSI4" target="_blank">link</a>',
+  frequency = "Weekly",
+  adjustment = "Not Adjusted",
+  about = "St. Louis Fed Financial Stress Index (version 4.0) measures the degree of financial stress in US markets and is constructed from 18 weekly data series: seven interest rate series, six yield spreads, and five other indicators, each capturing a distinct aspect of financial stress. It is published by the Federal Reserve Bank of St. Louis and designed so that its average value equals zero, representing normal financial market conditions. Values below zero indicate below-average financial stress, while values above zero indicate above-average stress. The current version (version 4.0) uses the 90-day forward-looking Secured Overnight Financing Rate in its yield spread calculations, replacing the backward-looking 90-day average used in the prior version. Released weekly ending Friday, not seasonally adjusted, and available from late 1993.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US FED FINS, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "fina_stress_idx_fd")
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+
+```
+
+```{=html}
+</div>
+```
+
+### Cass Freight Indices
+
+```{r CFI TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'FRED — <a href="https://finance.yahoo.com/quote/%5EVIX/" target="_blank">link</a>',
+  frequency = "Monthly",
+  adjustment = "Not Adjusted",
+  about = 
+    paste0(
+  '1) <b> Cass Freight Index Shipments — <a href="https://fred.stlouisfed.org/series/FRGSHPUSM649NCIS"target="_blank" target="_blank">CFI SHIPMENTS</a></b>. ',
+  'Cass Freight Index for Shipments measures the volume of North American domestic for-hire freight shipments, published by Cass Information Systems from its Cass Freight Index Report. It is derived from freight invoices processed by Cass on behalf of its client base of hundreds of large shippers spanning industries including consumer packaged goods, food, automotive, chemical, pharmaceutical, retail, and heavy equipment. Coverage encompasses all domestic freight modes, with truckload accounting for more than half of shipment volumes, less-than-truckload roughly a quarter, and the remainder distributed across rail, parcel, and other modes. The index is benchmarked to January 1990 equal to 1.00, with each subsequent month\'s value reflecting shipment volumes relative to that baseline; monthly figures are adjusted to a standardized 21-day work month and corrected for additions and deletions to the client base to ensure comparability over time. Because it tracks the physical movement of goods ranging from raw materials to finished products across the domestic supply chain, it is closely watched as a coincident-to-leading indicator of broader economic activity and industrial demand conditions. Reported as an index, not seasonally adjusted, released monthly.',
+  '<br><br>',
+  '2) <b>Cass Freight Index Shipments Expenditures — <a href="https://fred.stlouisfed.org/series/FRGEXPUSM649NCIS" target="_blank">CFI EXPENDITURES</a></b>. ',
+  'Cass Freight Index for Expenditures measures the total dollar value of North American domestic for-hire freight expenditures, published by Cass Information Systems from its Cass Freight Index Report. It is derived from freight invoices processed by Cass on behalf of its client base of large shippers spanning industries including consumer packaged goods, food, automotive, chemical, pharmaceutical, retail, and heavy equipment, and covers all domestic freight modes including truckload, less-than-truckload, rail, parcel, and other modes. Whereas the companion Shipments index tracks the physical volume of freight movements, the Expenditures index captures the amounts actually paid to ship those goods, making it sensitive to both changes in shipment volumes and changes in freight rates, including fuel surcharges, capacity constraints, and broader pricing dynamics across the transportation sector. Indexed to January 1990 equal to 1.00, with monthly figures adjusted to a standardized 21-day work month and corrected for client base additions and deletions. Reported as an index, not seasonally adjusted, released monthly.'))
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r CFI SHIP x, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "cassfrei_ship_idx_fd")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)))
+
+```
+
+```{=html}
+</div>
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r CFI EXP x, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "cassfrei_exp_idx_fd")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)))
+
+```
+
+```{=html}
+</div>
+```
+
+### Nominal Broad US Dollar Index
+
+```{r NBUSI TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'FRED — <a href="https://fred.stlouisfed.org/series/DTWEXBGS" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "Nominal Broad US Dollar Index measures the value of the US dollar against a broad basket of foreign currencies, published by the Board of Governors of the Federal Reserve System from its H.10 Foreign Exchange Rates release. It is a trade-weighted index in which each foreign currency\'s weight reflects the corresponding country\'s share of US goods and services trade, encompassing both exports and imports, making it a more comprehensive gauge of overall dollar strength than narrower indices limited to major advanced-economy currencies. The basket covers currencies of both advanced and emerging market economies that are significant US trading partners, including the euro, Chinese renminbi, Canadian dollar, Mexican peso, Japanese yen, and British pound, among others. Because weights are based on trade flows rather than financial market volumes, the index more directly captures the competitiveness implications of dollar movements for US exporters and importers. A rising index indicates that the US. dollar is appreciating against its trading partners\' currencies, which tends to make US exports more expensive and less competitive abroad while reducing the cost of imports, and simultaneously exerts downward pressure on dollar-denominated commodity prices including gold and oil. A declining index signals dollar depreciation, improving US export competitiveness, increasing import costs, and typically supporting commodity prices. Indexed to January 2006 equal to 100, not seasonally adjusted, released daily.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r NBUSI, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "trade_dol_idx_fd")
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+
+```
+
+```{=html}
+</div>
+```
+
+### Semiconductor Index
+
+```{r SOX TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo — <a href="https://finance.yahoo.com/quote/%5ESOX/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "Philadelphia Semiconductor Index measures the performance of companies primarily involved in the design, distribution, manufacture, and sale of semiconductors, maintained by Nasdaq and calculated as a modified market-capitalization-weighted index of 30 of the largest US-listed semiconductor companies. Constituents span the full semiconductor value chain, including fabless chip designers (such as Nvidia, Qualcomm, and AMD), integrated device manufacturers (such as Intel and Texas Instruments), pure-play foundries (such as TSMC), and semiconductor equipment makers (such as Applied Materials and Lam Research). Because semiconductors are a foundational input across virtually every technology-intensive sector of the modern economy, including consumer electronics, data centers, automotive, industrial automation, defense, and telecommunications, demand for chips is highly sensitive to forward-looking capital expenditure plans and inventory cycle dynamics rather than current consumption alone. As a leading indicator, the SOX index anticipates broader economic and industrial turning points because semiconductor orders and production ramp-ups precede the delivery of finished goods by several months; chipmakers\' order books, book-to-bill ratios, and guidance therefore signal shifts in business investment, technology spending, and manufacturing activity well ahead of official data releases. Elevated SOX performance historically correlates with accelerating technology capital expenditure cycles, while sustained weakness tends to foreshadow inventory corrections and broader industrial slowdowns. Quoted in index points.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r SOX, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "sox_idx")
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+
+```
+
+```{=html}
+</div>
+```
+
+### ISM PMI
+
+```{r ISM PMI TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Investing — <a href="https://www.investing.com/economic-calendar/ism-manufacturing-pmi-173" target="_blank">link</a>',
+  frequency = "Monthly",
+  adjustment = "Not Adjusted",
+  about = "ISM Manufacturing Purchasing Managers Index (PMI) measures the prevailing direction of economic trends in the US manufacturing sector, published monthly by the Institute for Supply Management from surveys of purchasing and supply executives at over 400 industrial companies. The composite is a weighted diffusion index of five sub-components: new orders (30%), production (25%), employment (20%), supplier deliveries (15%), and inventories (10%). A reading above 50 indicates expansion and below 50 contraction, with the distance from 50 reflecting the pace of change. Released on the first business day of each month for the prior month, it is one of the most timely leading indicators of US industrial activity, business investment, and supply chain conditions ahead of official hard data, with the prices paid sub-component serving additionally as an early inflation signal. Reported as a diffusion index, seasonally adjusted, released monthly.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r ISM PMI, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "ism_pmi_idx_inv")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE))
+
+```
+
+```{=html}
+</div>
+```
+
+### Economic Policy Index
+
+```{r EPU TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'EPU — <a href="https://www.policyuncertainty.com/us_monthly.html" target="_blank">link</a>',
+  frequency = "Monthly",
+  adjustment = "Not Adjusted",
+  about = "Economic Policy Uncertainty Index for US measures the degree of uncertainty surrounding economic policy across multiple countries and global aggregates, developed by Baker, Bloom, and Davis. Each national index is constructed by combining three components: the frequency of newspaper articles mentioning economic uncertainty and policy-related terms, the number of federal tax code provisions set to expire in coming years, and the dispersion of economic forecasts among professional forecasters, with the relative weighting of components varying by country based on data availability. Elevated readings signal heightened uncertainty about the direction of fiscal, regulatory, monetary, or trade policy, which tends to suppress business investment, hiring, and consumer spending as firms and households delay decisions pending greater clarity, making the indices useful coincident-to-leading indicators of economic activity slowdowns and financial market volatility. All series are reported as diffusion indices normalized to a long-run mean of 100, not seasonally adjusted, released monthly.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r EPU, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "us_epu")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE))
+
+```
+
+```{=html}
+</div>
+```
+
+<!-- ####################################################################### -->
+<!-- Ratio  -->
+<!-- ####################################################################### -->
+
+## Ratio
+
+```{=html}
+<div class="company-hero">
+  <div class="co-body">
+    <div class="masthead-title">Ratio</div>
+  </div>
+</div>
+```
+
+### Shiller
+
+```{r SHILLER TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Shiller — <a href="https://www.multpl.com/shiller-pe" target="_blank">link</a>',
+  frequency = "Monthly",
+  adjustment = "Cyclically Adjusted",
+  about = "Shiller Price-to-Earnings Ratio (CAPE Ratio) measures the valuation of the S&P 500 relative to its inflation-adjusted earnings, calculated by dividing the current level of the S&P 500 by the average of its real (inflation-adjusted) reported earnings over the preceding ten years. Developed by economist Robert Shiller and popularized in his book Irrational Exuberance, the ten-year earnings averaging window smooths out the distortions caused by business cycle peaks and troughs, a limitation of the standard trailing twelve-month price-to-earnings ratio, providing a more stable long-run measure of equity market valuation. A reading substantially above the long-run historical mean of approximately 17 is generally interpreted as indicating that the market is richly valued relative to its earnings history, while readings well below that level suggest undervaluation. Because it compares current prices to a decade of real earnings rather than a single year\'s results, it is widely used as a predictor of long-run prospective equity returns rather than a short-term timing indicator. Reported as a dimensionless ratio, updated monthly.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r SHILLER, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "shiller_ratio") %>% 
+  na.omit()
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE))
+
+```
+
+```{=html}
+</div>
+```
+
+### Buffet Ratio 
+
+```{r US BUFFET TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Buffet — <a href="https://www.longtermtrends.com/market-cap-to-gdp-the-buffett-indicator/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = paste0(
+  '1) <b> S&P 500 — <a href="https://finance.yahoo.com/quote/%5EGSPC/" target="_blank">S&P 500</a> and GDP — <a href="https://fred.stlouisfed.org/series/GDP" target="_blank">GDP</a> </b> S&P 500 to GDP Ratio measures the price level of the S&P 500, imported from Yahoo, relative to US gross domestic product, published by the Federal Reserve Bank of St. Louis. Unlike the Wilshire 5000 to GDP ratio, which targets total market capitalization, this ratio uses the S&P 500 price index, covering the 500 largest US-listed companies and representing approximately 80% of total domestic market capitalization, as a proxy for large-cap equity market valuation. The denominator is annualized nominal gross domestic product as measured quarterly by the Bureau of Economic Analysis. While less exhaustive than the Wilshire 5000 variant, it is widely used given the visibility and historical availability of the S&P 500, and produces valuation signals that are historically consistent with other variants of the Buffett indicator. Expressed as a ratio, not seasonally adjusted, released quarterly.',
+  '<br><br>',
+  '2) <b>Dow Jones — <a href="https://finance.yahoo.com/quote/%5EDJI/" target="_blank">DOW JONES</a> and GDP — <a href="https://fred.stlouisfed.org/series/GDP" target="_blank">GDP</a> </b> Dow Jones to GDP Ratio measures the level of the Dow Jones Industrial Average, imported from Yahoo, relative to US gross domestic product, published by the Federal Reserve Bank of St. Louis. The numerator is the Dow Jones Industrial Average, a price-weighted index covering 30 large US-listed industrial companies, making it the least representative market proxy among the price-index variants within the Buffett indicator family. The denominator is annualized nominal gross domestic product as measured quarterly by the Bureau of Economic Analysis. Expressed as a ratio, not seasonally adjusted, released quarterly.',
+  '<br><br>',
+    '3) <b>Wilshire 5000 — <a href="https://finance.yahoo.com/quote/%5EFTW5000/" target="_blank">WILSHIRE 5000</a> and GDP — <a href="https://fred.stlouisfed.org/series/GDP" target="_blank">GDP</a> </b> Wilshire 5000 to GDP Ratio measures the total market capitalization of the US equity market, imported from Yahoo, relative to US gross domestic product, published by the Federal Reserve Bank of St. Louis. The numerator is the Wilshire 5000 Full Cap Price Index, which covers all publicly traded US-headquartered common stocks with available price data, making it the broadest available proxy for total domestic equity market capitalization. The denominator is annualized nominal gross domestic product as measured quarterly by the Bureau of Economic Analysis. Popularized by Warren Buffett, who described it in 2001 as probably the best single measure of where valuations stand at any given moment, the ratio is interpreted as the degree to which the market value of listed companies exceeds or falls short of the country\'s total economic output, readings substantially above 100% signaling elevated valuation relative to historical norms. Expressed as a ratio, not seasonally adjusted, released quarterly.',
+  '<br><br>',
+  '4) <b> Corporate Equities — <a href="https://fred.stlouisfed.org/series/BOGZ1LM893064105Qtarget="_blank">CORPEQUITIES</a> and GDP — <a href="https://fred.stlouisfed.org/series/GDP" target="_blank">GDP</a> </b> Value of Public and Private Equities to GDP Ratio measures the total value of both publicly listed and privately held US corporate equities relative to US gross domestic product, published by the Federal Reserve Bank of St. Louis. Those two series are published each quarter. Unlike the three other variants in the Buffett indicator family, which use listed equity price indices as their numerator, this ratio includes estimated valuations of privately held companies, making it the most comprehensive measure of total corporate equity wealth in the US economy. This broader coverage comes at the cost of a longer publication lag relative to market-based variants, with data availability extending back to the 1940s. Expressed as a ratio, not seasonally adjusted, released quarterly..'))
+```
+
+#### *S&P 500*
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US BUFFET SP500, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = c("buff_sp500_ratio"))
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE))
+
+```
+
+```{=html}
+</div>
+```
+
+#### *Dow Jones*
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US BUFFET DJ, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = c("buff_dj_ratio"))
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE))
+
+```
+
+```{=html}
+</div>
+```
+
+#### *Wilshire 5000*
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US BUFFET WIL5000, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = c("buff_wilshire_ratio"))
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE))
+
+```
+
+```{=html}
+</div>
+```
+
+#### *Corporate Equity*
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US BUFFET COR, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = c("buff_corpequity_ratio"))
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, is_quarterly = TRUE))
+
+```
+
+```{=html}
+</div>
+```
+
+#### *Comparison*
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US BUFFET ALL, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = c("buff_sp500_ratio", "buff_dj_ratio", "buff_wilshire_ratio"))
+
+# Compute index
+data <- compute_rebase(df = data, base = "2015-01-01")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, title = "Buffet Ratios – Indexed Comparison (2015:01:01 = 100)"))
+
+```
+
+```{=html}
+</div>
+```
+
+<!-- ####################################################################### -->
+<!-- Commodity  -->
+<!-- ####################################################################### -->
+
+## Commodity
+
+```{=html}
+<div class="company-hero">
+  <div class="co-body">
+    <div class="masthead-title">Commodity</div>
+  </div>
+</div>
+```
+
+### Oil
+
+```{r OIL TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo — <a href="https://finance.yahoo.com/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = 
+    paste0(
+  '1) <b> Brent — <a href="https://finance.yahoo.com/quote/BZ=F/" target="_blank">BRENT CRUDE</a></b>. ',
+  'Brent Crude Oil Futures measures the price of Brent crude oil for future delivery as traded on the Intercontinental Exchange (ICE), serving as the primary international benchmark for crude oil pricing. Each standard contract represents 1,000 barrels of Brent blend crude oil, a light, sweet crude extracted from fields in the North Sea including the Brent, Forties, Oseberg, Ekofisk, and Troll fields, collectively referred to as the BFOET basket, with a sulfur content of approximately 0.37% and an API gravity of around 38 degrees. Brent is the reference price for approximately two-thirds of globally traded crude oil, making it the dominant international pricing benchmark relative to its US counterpart West Texas Intermediate. Futures prices are sensitive to global supply and demand dynamics, OPEC and OPEC+ production decisions, geopolitical developments in major producing regions, refinery throughput, global inventories, and macroeconomic conditions affecting energy consumption. The front-month contract, the nearest active expiration, serves as the primary market reference for spot Brent pricing. Quoted in US dollars per barrel and updated daily with closing prices.',
+  '<br><br>',
+  '2) <b>WTI — <a href="https://finance.yahoo.com/quote/CL=F/" target="_blank">WTI CRUDE</a></b>. ',
+  'West Texas Intermediate Crude Oil Futures measures the price of WTI crude oil for future delivery as traded on the New York Mercantile Exchange (NYMEX), operated by CME Group, serving as the primary US benchmark for crude oil pricing. Each standard contract represents 1,000 barrels of West Texas Intermediate crude, a light, sweet crude oil characterized by low sulfur content of approximately 0.24% and an API gravity of around 39.6 degrees, making it particularly well-suited for refining into gasoline and other light petroleum products. Delivery is specified at Cushing, Oklahoma, a major pipeline crossroads and storage hub that serves as the physical pricing point for the US domestic crude market. Relative to its international counterpart Brent crude, WTI has historically traded at a slight premium owing to its superior refining characteristics, though the spread between the two benchmarks fluctuates with US production levels, pipeline capacity constraints, and storage conditions at Cushing. Futures prices are sensitive to US and global supply and demand dynamics, OPEC and OPEC+ production decisions, domestic inventory levels reported by the Energy Information Administration, refinery utilization, and broader macroeconomic conditions affecting energy consumption. The front-month contract, the nearest active expiration, serves as the primary market reference for spot WTI pricing. Quoted in US dollars per barrel and updated daily with closing prices.'))
+```
+
+#### *Brent*
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r BRENT1, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "fut_brent_crude")
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+
+
+```
+
+```{=html}
+</div>
+```
+
+#### *WTI*
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r WTI1, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "fut_wti_crude")
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+
+
+```
+
+```{=html}
+</div>
+```
+
+<!-- ####################################################################### -->
+<!-- Advanced Indicators  -->
+<!-- ####################################################################### -->
+
+## Advanced Indicators
+
+```{=html}
+<div class="company-hero">
+  <div class="co-body">
+    <div class="masthead-title">Advanced Indicators</div>
+  </div>
+</div>
+```
+
+
+### Walmart
+
+```{r WALM TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo — <a href="https://finance.yahoo.com/quote/WMT/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "Walmart Inc. is the world\'s largest retailer by revenue, operating a global network of discount stores, supercenters, and e-commerce platforms across the United States and international markets including China, India, Canada, and South Africa. Its core US segment encompasses Walmart stores and Walmart.com, offering grocery, general merchandise, health and wellness, and apparel products at everyday low prices, complemented by the Sam\'s Club membership warehouse segment and international operations including a majority stake in Indian e-commerce platform Flipkart. Because Walmart\'s customer base spans all income levels but skews heavily toward price-sensitive middle- and lower-income households, its same-store sales, customer traffic, and management guidance are closely watched as a real-time barometer of US consumer financial health. As a leading indicator, Walmart\'s quarterly results provide early signals of shifts in consumer confidence, discretionary versus non-discretionary spending trade-offs, food price inflation at the shelf level, and private-label substitution trends, dynamics that often foreshadow movements in official personal consumption expenditure data by several weeks. Quoted in US dollars per share and updated daily with closing prices.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r WALM, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "walmart")
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+
+```
+
+```{=html}
+</div>
+```
+
+### UPS
+
+```{r UPS TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo — <a href="https://finance.yahoo.com/quote/UPS/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "United Parcel Service, Inc. is the world\'s largest package delivery company by revenue, operating an integrated global logistics network spanning over 200 countries and territories through its US Domestic Package, International Package, and Supply Chain Solutions segments. Its core domestic segment handles the pickup, transportation, and delivery of letters, documents, and packages across the United States via ground and air services, while the international segment covers cross-border small package delivery with particular strength in trans-Atlantic and trans-Pacific trade lanes. Because UPS processes tens of millions of shipments daily on behalf of businesses and consumers across virtually every sector of the economy, including retail, manufacturing, healthcare, technology, and financial services, its volume trends, revenue per piece, and management commentary on shipping demand serve as a broad-based coincident indicator of US and global economic activity. As a leading indicator, UPS\'s quarterly results and forward guidance provide early signals of shifts in business-to-business shipping demand, e-commerce fulfillment volumes, inventory restocking cycles, and cross-border trade flows, dynamics that closely track industrial production, retail sales, and global trade conditions ahead of many official data releases. Quoted in US dollars per share and updated daily with closing prices.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r UPS, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "ups")
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+
+```
+
+```{=html}
+</div>
+```
+
+<!-- ### Paypal -->
+
+<!-- ```{r PAYPAL TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE} -->
+<!-- series_info_box( -->
+<!--   source_html = 'Yahoo — <a href="https://finance.yahoo.com/quote/PYPL/" target="_blank">link</a>', -->
+<!--   frequency = "Daily", -->
+<!--   adjustment = "Not Adjusted", -->
+<!--   about = "PayPal Holdings, Inc. (PYPL) is one of the world\'s largest digital payments platforms, operating a two-sided network connecting hundreds of millions of active consumer accounts and merchant accounts across more than 200 markets globally. Its core platform enables online and in-store payments, peer-to-peer money transfers, and buy-now-pay-later financing through its flagship PayPal wallet, the Venmo social payments app, the Braintree payment processing gateway, and the Xoom international remittance service. Because PayPal processes hundreds of billions of dollars in total payment volume annually across a broad range of consumer and business transactions, spanning e-commerce checkout, digital goods, travel, retail, and cross-border remittances, its payment volume trends, active account growth, and transactions per account are closely watched as a real-time barometer of digital consumer spending and the ongoing shift from cash and card payments to digital wallets. As a leading indicator, PayPal\'s quarterly results and forward guidance provide early signals of changes in online retail demand, consumer credit conditions through its credit and installment products, cross-border trade activity via its international corridors, and the pace of digital payment adoption, dynamics that often anticipate broader trends in personal consumption expenditures and e-commerce growth ahead of official data. Quoted in US dollars per share, updated in real time during market hours.") -->
+<!-- ``` -->
+
+<!-- ```{=html} -->
+<!-- <div class="perf-section"> -->
+<!-- ``` -->
+
+<!-- ```{r PAYPAL, echo=FALSE, results='asis', warning=FALSE, message=FALSE} -->
+
+<!-- # Get series -->
+<!-- data <- get_series(name = "paypal") -->
+
+<!-- # Compute sma  -->
+<!-- data <- compute_moving_average(df = data, date_col = "date", value_col = "value") -->
+
+<!-- # Plot serie -->
+<!-- div(style = "display: flex; justify-content: center;", -->
+<!--     produce_interactive_plot(df = data, sma = TRUE)) -->
+
+<!-- ``` -->
+
+<!-- ```{=html} -->
+<!-- </div> -->
+<!-- ``` -->
+
+<!-- ####################################################################### -->
+<!-- Exchange Rates  -->
+<!-- ####################################################################### -->
+
+## Exchange Rates
+
+```{=html}
+<div class="company-hero">
+  <div class="co-body">
+    <div class="masthead-title">Exchange Rates</div>
+  </div>
+</div>
+```
+
+### EUR/USD
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r EURUSD, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "eur_usd")
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+
+```
+
+```{=html}
+</div>
+```
+
+### GBP/USD
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r GBPUSD, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "gbp_usd")
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+
+```
+
+```{=html}
+</div>
+```
+
+### CHF/USD
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r CHFUSD, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "chf_usd")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+
+```
+
+```{=html}
+</div>
+```
+
+### CAD/USD
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r CADUSD, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "cad_usd")
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+
+```
+
+```{=html}
+</div>
+```
+
+### JPY/USD
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r JPYUSD, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "jpy_usd")
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+
+```
+
+```{=html}
+</div>
+```
