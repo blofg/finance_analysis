@@ -61,6 +61,9 @@ render("html/market_reports/markdown/equity_index_report_html.Rmd",             
 render("html/market_reports/markdown/key_index_and_indicator_report_html.Rmd",  output_dir = "html/market_reports/output/", params = list(llm_analysis = FALSE))      # |Key index markdown|
 render("html/market_reports/markdown/gold_fundamentals_report_html.Rmd",        output_dir = "html/market_reports/output/", params = list(llm_analysis = FALSE))      # |Gold fundamentals index markdown|
 render("html/market_reports/markdown/crypto_report_html.Rmd",                   output_dir = "html/market_reports/output/", params = list(llm_analysis = FALSE))      # |Crypto report markdown|render("html/market_reports/markdown/bond_marketr_report_html.Rmd",             output_dir = "html/market_reports/output/", params = list(llm_analysis = FALSE))      # |Bond market report markdown|
+render("html/market_reports/markdown/crypto_report_html.Rmd",                   output_dir = "html/market_reports/output/", params = list(llm_analysis = FALSE))      # |Crypto report markdown|
+render("html/market_reports/markdown/bond_market_report_html.Rmd",              output_dir = "html/market_reports/output/", params = list(llm_analysis = FALSE))               # |Bond market report markdown|
+
 
 # Share reports
 render("html/share_reports/mag7/markdown/magnificent_aapl_report_html.Rmd",      output_dir = "html/share_reports/mag7/output/", params = list(llm_analysis = FALSE))      # |Magnificent Apple report markdown|

@@ -1156,10 +1156,11 @@ div(style = "display: flex; justify-content: center;",
 
 ```{r BOFA IDX TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
 series_info_box(
-  source_html = 'STOXX — <a href="https://fr.finance.yahoo.com/quote/%5EMOVE/" target="_blank">link</a>',
+  source_html = 'ICE BoFa — <a href="https://fr.finance.yahoo.com/quote/%5EMOVE/" target="_blank">link</a>',
   frequency = "Daily",
   adjustment = "Not Adjusted",
-  about = "ICE BofA MOVE Index (^MOVE) measures the implied volatility of U.S. Treasury bonds across the yield curve, published by ICE Data Indices and derived from the prices of one-month over-the-counter options on U.S. Treasury securities across four maturities (2-year, 5-year, 10-year, and 30-year) weighted by the outstanding amount of each maturity in the Treasury market. The resulting composite reflects the bond market\'s consensus expectation of near-term interest rate volatility, making the MOVE the fixed income equivalent of the VIX, which measures equity market implied volatility and earning it the informal designation of the bond market fear gauge. Elevated MOVE readings indicate that options markets are pricing significant uncertainty about the future path of interest rates, typically occurring during periods of monetary policy uncertainty, inflation surprises, fiscal stress, or broader financial market dislocation; low readings reflect calm rate expectations and stable monetary policy conditions. Because interest rate volatility transmits directly to borrowing costs, mortgage rates, credit spreads, and asset valuations across virtually every corner of the financial system, the MOVE is closely watched as a leading indicator of financial conditions tightness and systemic stress, often anticipating broader market dislocations before they materialize in equity volatility measures. Quoted in basis points of annualized yield volatility,updated daily with closing prices.")
+  about = "ICE BofA MOVE Index (^MOVE) measures the implied volatility of U.S. Treasury bonds across the yield curve, published by ICE Data Indices and derived from the prices of one-month over-the-counter options on U.S. Treasury securities across four maturities (2-year, 5-year, 10-year, and 30-year) weighted by the outstanding amount of each maturity in the Treasury market. The resulting composite reflects the bond market\'s consensus expectation of near-term interest rate volatility, making the MOVE the fixed income equivalent of the VIX, which measures equity market implied volatility and earning it the informal designation of the bond market fear gauge. Elevated MOVE readings indicate that options markets are pricing significant uncertainty about the future path of interest rates, typically occurring during periods of monetary policy uncertainty, inflation surprises, fiscal stress, or broader financial market dislocation; low readings reflect calm rate expectations and stable monetary policy conditions. Because interest rate volatility transmits directly to borrowing costs, mortgage rates, credit spreads, and asset valuations across virtually every corner of the financial system, the MOVE is closely watched as a leading indicator of financial conditions tightness and systemic stress, often anticipating broader market dislocations before they materialize in equity volatility measures. Quoted in basis points of annualized yield volatility,updated daily with closing prices.",
+  interpretation = "The MOVE Index functions as the bond market's fear gauge, translating options pricing on U.S. Treasuries into a single composite measure of expected near-term interest rate volatility across the yield curve. Because it is derived from one-month OTC options spanning the 2Y, 5Y, 10Y, and 30Y maturities and weighted by outstanding issuance, it captures the market's aggregate uncertainty about the future path of rates rather than any single point on the curve. In tranquil monetary environments, MOVE readings remain subdued, reflecting stable rate expectations and predictable Fed policy, providing a low-volatility backdrop that compresses credit spreads, tightens financial conditions, and supports risk asset valuations broadly. Spikes in the MOVE signal that options markets are repricing rate uncertainty sharply, typically triggered by inflation surprises, unexpected shifts in Fed communication, fiscal stress events, or broader financial dislocation, and these episodes tend to precede wider credit spreads, higher mortgage rates, and tighter lending conditions with a meaningful lead time over equity volatility measures. The transmission mechanism is direct: elevated rate volatility raises the discount rate applied to all fixed income cash flows, destabilizes duration hedging for institutional portfolios, and compresses the risk-taking capacity of leveraged participants, making elevated MOVE readings an early warning signal of systemic stress even when equity markets appear calm. Watching the MOVE alongside credit spread levels creates a powerful joint signal, when both are elevated simultaneously it typically marks peak financial stress, while a declining MOVE paired with still-wide spreads often signals the early stages of a credit spread compression cycle as rate uncertainty resolves before credit risk premium fully normalizes.")
 ```
 
 ```{=html}
@@ -1186,6 +1187,15 @@ div(style = "display: flex; justify-content: center;",
 
 
 ## Emerging Markets 
+
+```{=html}
+<div class="company-hero">
+  <div class="co-body">
+    <div class="masthead-title">Emerging Markets</div>
+  </div>
+</div>
+```
+
 
 ### BofA Rates
 
