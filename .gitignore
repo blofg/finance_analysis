@@ -13,5 +13,3 @@ initialization/secret.R
 # Database
 database/rds/
 
-
-initialization/secret.R
