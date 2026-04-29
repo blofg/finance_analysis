@@ -10,6 +10,4 @@
 initialization/secret.R
 .env
 
-# Database
-database/rds/
 
