@@ -7,7 +7,7 @@
 .RData
 
 # Secrets
-initialization/secrets.R
+initialization/secret.R
 .env
 
 # Database
