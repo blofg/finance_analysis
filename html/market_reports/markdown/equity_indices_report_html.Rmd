@@ -1,0 +1,1198 @@
+---
+title: "Equity Index Report"
+output:
+  html_document:
+    toc: true
+    toc_depth: 4
+    toc_float:
+      collapsed: false
+      smooth_scroll: true
+    theme: flatly
+    highlight: kate
+    self_contained: true
+    css: "/Users/benjaminlachavanne/Desktop/script/finance_analysis/html/style/style.css"
+
+
+params:
+  llm_analysis: false
+  
+---
+
+```{r setup, include=FALSE, warning=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+
+# Main path 
+path_main <- file.path("~", "Desktop", "script", "finance_analysis")
+
+# Upload packages, functions and inputs 
+source(paste0(path_main,"/initialization/package.R"))         # |Package|
+source(paste0(path_main,"/function/function_information.R"))  # |Function price|
+source(paste0(path_main,"/function/function_format.R"))       # |Function format|
+source(paste0(path_main,"/function/function_visualization.R"))        # |Functions visualization|
+source(paste0(path_main,"/function/function_compute.R"))      # |Functions indicator|
+source(paste0(path_main,"/function/function_ai.R"))           # |Functions ai|
+source(paste0(path_main,"/initialization/input.R"))           # |Input|
+
+# Download all series from the RDS folder
+path_rds_folder    <- "/Users/benjaminlachavanne/Desktop/script/finance_analysis/database/rds/"
+path_rds_all <- paste0(path_rds_folder,"series_store_all.rds")
+series_database <- readRDS(path_rds_all)
+
+# Styled info box
+series_info_box <- function(source_html, frequency, adjustment, about) {
+  htmltools::HTML(paste0('
+  <div class="info-card">
+    <div class="info-grid">
+      <div class="info-row">
+        <span class="info-label">Source</span>
+        <span class="info-value">', source_html, '</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Frequency</span>
+        <span class="info-value">', frequency, '</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Adjustment</span>
+        <span class="info-value">', adjustment, '</span>
+      </div>
+    </div>
+    <div class="info-about">', about, '</div>
+  </div>
+  '))
+}
+
+# Section label helper
+section_label <- function(icon, text) {
+  htmltools::HTML(paste0(
+    '<div class="section-label"><span class="section-icon">', icon,
+    '</span><span class="section-text">', text, '</span></div>'))
+}
+
+# Subsection label helper
+subsection_label <- function(text) {
+  htmltools::HTML(paste0('<div class="subsection-label">', text, '</div>'))
+}
+
+# Chart note helper
+chart_note <- function(text) {
+  htmltools::HTML(paste0('<p class="chart-note">', text, '</p>'))
+}
+```
+
+
+<!-- ####################################################################### -->
+<!-- Head Title  -->
+<!-- ####################################################################### -->
+
+```{=html}
+<!-- ── MASTHEAD ─────────────────────────────────────────────────────────────── -->
+<div class="masthead">
+  <div class="masthead-eyebrow">Equity Research · Global Markets</div>
+  <div class="masthead-title">Equity <span>Index Report</span></div>
+  <div class="masthead-date">Latest update date: `r format(Sys.Date(), '%B %d, %Y')`</div>
+</div>
+```
+
+<!-- ####################################################################### -->
+<!-- Abstract  -->
+<!-- ####################################################################### -->
+
+## Abstract
+
+```{=html}
+<div class="company-hero">
+  <div class="co-body">
+    <div class="masthead-title">Abstract</div>
+  </div>
+</div>
+```
+
+```{=html}
+<div class="abstract-box">
+<p>This report provides a comprehensive overview of global equity markets through a structured set of price and trend indicators covering the world's major stock indices.</p>
+
+<ul>
+  <li>The <strong>World Equity Indices</strong> section opens with a summary table comparing performance across all tracked markets, followed by individual charts for each index with moving average overlays.</li>
+  <li>Coverage spans <strong>Americas</strong> (S&amp;P 500, Dow Jones, Nasdaq 100, Nasdaq Composite, Russell 2000, TSX, IPC Mexico, Bovespa), <strong>Europe</strong> (FTSE 100, DAX, CAC 40, SMI, OMX, AEX, IBEX, FTSEMIB, STOXX 50, STXE 600), <strong>Asia-Pacific</strong> (Nikkei 225, Hang Seng, Shanghai Composite, KOSPI, ASX 200, Sensex), and <strong>Middle East</strong> (Tadawul).</li>
+  <li>A final <strong>comparison</strong> section enables cross-regional performance analysis to identify divergences and relative strength across global equity markets.</li>
+</ul>
+
+<p>Taken together, this report aims to offer a 360° view of global equity market dynamics, combining price signals with moving averages to support a comprehensive assessment of the current environment.</p>
+</div>
+```
+
+<!-- ####################################################################### -->
+<!-- World Equity Indices  -->
+<!-- ####################################################################### -->
+
+## World Equity Indices
+
+```{=html}
+<div class="company-hero">
+  <div class="co-body">
+    <div class="masthead-title">World Equity Indices</div>
+  </div>
+</div>
+```
+
+```{r EQUITY INDICES TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo — <a href="https://finance.yahoo.com/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about  = '
+  This table presents the performance of major global stock indices across multiple time horizons
+  (1 day, 5 days, 1 month, 3 months, 6 months, 1 year, 2 years, 5 years and since inception).
+  It covers the following indices:
+  <br><br>
+  <b>North America:</b> S&P 500 <i>(500 largest U.S. listed companies)</i> · 
+  Dow Jones <i>(30 largest U.S. blue chips)</i> · 
+  Nasdaq 100 <i>(100 largest Nasdaq tech companies)</i> · 
+  Nasdaq Composite <i>(all Nasdaq-listed companies)</i> · 
+  Russell 2000 <i>(U.S. small caps)</i> · 
+  TSX <i>(Toronto Stock Exchange, Canada)</i>
+  <br><br>
+  <b>Europe:</b> FTSE 100 <i>(London)</i> · DAX <i>(Frankfurt)</i> · CAC 40 <i>(Paris)</i> · 
+  SMI <i>(Zurich)</i> · OMX 30 <i>(Stockholm)</i> · AEX <i>(Amsterdam)</i> · 
+  IBEX 35 <i>(Madrid)</i> · FTSE MIB <i>(Milan)</i> · 
+  Euro Stoxx <i>(Eurozone)</i> · Stoxx Europe 600 <i>(600 largest European caps)</i>
+  <br><br>
+  <b>Asia & Pacific:</b> Nikkei 225 <i>(Tokyo)</i> · Hang Seng <i>(Hong Kong)</i> · 
+  Shanghai Composite <i>(China)</i> · KOSPI <i>(Seoul)</i> · 
+  ASX 200 <i>(Sydney)</i> · Sensex <i>(Mumbai)</i>
+  <br><br>
+  <b>Latin America & Middle East:</b> IPC <i>(Mexico City)</i> · 
+  Bovespa <i>(São Paulo)</i> · Tadawul <i>(Riyadh)</i>
+  '
+)
+```
+
+### Table
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r FIN IND TABLE, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Mapping tickers to readable names
+labels <- c(
+  "^GSPC"          = "S&P 500",
+  "^DJI"           = "Dow Jones",
+  "^NDX"           = "Nasdaq 100",
+  "^IXIC"          = "Nasdaq Composite",
+  "^RUT"           = "Russell 2000",
+  "^GSPTSE"        = "S&P/TSX Composite",
+  "^FTSE"          = "FTSE 100",
+  "^GDAXI"         = "DAX",
+  "^FCHI"          = "CAC 40",
+  "^SSMI"          = "SMI",
+  "^OMX"           = "OMX Stockholm 30",
+  "^AEX"           = "AEX",
+  "^IBEX"          = "IBEX 35",
+  "FTSEMIB.MI"     = "FTSE MIB",
+  "^STOXX50E"      = "Euro Stoxx 50",
+  "^STOXX"         = "Stoxx Europe 600",
+  "^N225"          = "Nikkei 225",
+  "^HSI"           = "Hang Seng",
+  "000001.SS"      = "Shanghai Composite",
+  "^KS11"          = "KOSPI",
+  "^AXJO"          = "ASX 200",
+  "^BSESN"         = "BSE Sensex",
+  "^MXX"           = "IPC Mexico",
+  "^BVSP"          = "Bovespa",
+  "^TASI.SR"       = "Tadawul (TASI)",
+  "^990100-USD-STRD" = "MSCI World"
+)
+
+# Get series
+indices <- c("^GSPC","^DJI","^NDX","^IXIC","^RUT","^GSPTSE","^FTSE","^GDAXI","^FCHI","^SSMI","^OMX","^AEX","^IBEX","FTSEMIB.MI","^STOXX50E","^STOXX","^N225","^HSI","000001.SS","^KS11","^AXJO","^BSESN","^MXX","^BVSP","^TASI.SR", "^990100-USD-STRD")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+   produce_performance_table(series = indices, label = labels))
+```
+
+```{=html}
+</div>
+```
+
+### Comparison
+
+#### *North America*
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r FIN IND NA, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("sp500", "nasdaq100", "dowjones","russell2000", "nasdaqcomposite", "tsx", "msci_world"))
+
+# Compute index
+data <- compute_rebase(df = data, base = "2015-01-07")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, title = "North America Equity Indices – Indexed Performance (2015:01:07 = 100)"))
+```
+
+```{=html}
+</div>
+```
+
+#### *Europe*
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r FIN IND EUR, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("cac40", "dax", "eurostoxx", "smi", "ftse100", "omx30", "aex", "ibex35","ftsemib", "stoxxeur600","msci_world"))
+
+# Compute index
+data <- compute_rebase(df = data, base = "2015-01-07")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, title = "Europe Equity Indices – Indexed Performance (2015:01:07 = 100)"))
+```
+
+```{=html}
+</div>
+```
+
+#### *Asia & Pacific*
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r FIN IND AP, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("nikkei225", "hangseng","shanghai", "kospi","asx200", "sensex","msci_world"))
+
+# Compute index
+data <- compute_rebase(df = data, base = "2015-01-07")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, title = "Asia & Pacific Equity Indices – Indexed Performance (2015:01:07 = 100)"))
+```
+
+```{=html}
+</div>
+```
+
+#### *Latin America & Middle East*
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r FIN IND AME, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("ipc", "bovespa", "tadawul", "msci_world"))
+
+
+# Compute index
+data <- compute_rebase(df = data, base = "2015-01-07")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, title = "Latin America & Middle East Equity Indices – Indexed Performance (2015:01:07 = 100)"))
+```
+
+```{=html}
+</div>
+```
+
+### Index
+
+#### *MSCI World*
+
+```{r MSCI TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'GPR — <a href="https://finance.yahoo.com/quote/%5E990100-USD-STRD/" target="_blank">link</a> ',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "MSCI World Index is a free-float market-capitalization-weighted index capturing large and mid-cap equity representation across 23 developed market countries, maintained by MSCI Inc. and constructed under the MSCI Global Investable Market Indexes methodology. With approximately 1,600 constituents, it covers roughly 85% of the free-float adjusted market capitalization in each of its member countries, which include the United States, United Kingdom, Japan, Canada, France, Germany, Switzerland, Australia, the Netherlands, and other developed economies across Europe and Asia-Pacific. The United States typically accounts for the largest single-country weight, reflecting the dominant size of its equity market within the developed world universe. The index is reviewed quarterly in February, May, August, and November, with full rebalancing and recalculation of size cutoffs conducted semi-annually in May and November. Because it covers only developed markets and explicitly excludes emerging and frontier market equities, it is distinct from the broader MSCI ACWI, which additionally incorporates emerging markets, and is the most widely used benchmark for measuring the performance of global developed market equities among institutional investors worldwide. Quoted in U.S. dollars, updated in real time during market hours.")
+```
+
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r FIN IND MSCI, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = c("msci_world"))
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+
+```
+
+```{=html}
+</div>
+```
+
+#### *S&P 500*
+
+```{r US FIN IND SP500 TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo — <a href="https://finance.yahoo.com/quote/%5EGSPC/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "The S&P 500 is the primary U.S. equity benchmark, tracking 500 large-cap companies listed on NYSE or Nasdaq, weighted by free-float market capitalization. It covers approximately 80% of U.S. equity market capitalization across all eleven GICS sectors, with technology, healthcare, and financials typically dominating. Quoted in index points, updated daily with closing prices.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US FIN IND SP500, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("sp500"))
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+```
+
+```{=html}
+</div>
+```
+
+#### *Dow Jones*
+
+```{r US FIN IND DOWJONES TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo — <a href="https://finance.yahoo.com/quote/%5EDJI/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "The Dow Jones Industrial Average tracks 30 large-cap U.S. blue-chip companies, selected by the editors of The Wall Street Journal. Unlike most major indices, it is price-weighted rather than market-cap weighted, giving higher-priced stocks greater influence. Despite its narrow composition, it remains one of the most widely cited indicators of U.S. equity market health. Quoted in index points, updated daily with closing prices.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US FIN IND DOWJONES, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("dowjones"))
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+```
+
+```{=html}
+</div>
+```
+
+#### *Nasdaq 100*
+
+```{r US FIN IND NASDAQ100 TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo — <a href="https://finance.yahoo.com/quote/%5ENDX/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "The Nasdaq 100  tracks the 100 largest non-financial companies listed on the Nasdaq exchange, weighted by modified market capitalization. Heavily concentrated in technology and growth sectors, with mega-cap names such as Apple, Microsoft, Nvidia, and Amazon typically dominating. It serves as the primary benchmark for U.S. technology and innovation-driven equities. Quoted in index points, updated daily with closing prices.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US FIN IND NASDAQ 100, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("nasdaq100"))
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+```
+
+```{=html}
+</div>
+```
+
+#### *Nasdaq Composite*
+
+```{r US FIN IND NASDAQCOMP TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo — <a href="https://finance.yahoo.com/quote/%5EIXIC/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "The Nasdaq Composite covers all equities listed on the Nasdaq exchange, over 3,000 securities, weighted by market capitalization. Broader than the Nasdaq 100, it includes small- and mid-cap growth and technology companies alongside large-caps, making it a comprehensive gauge of the Nasdaq-listed universe. Quoted in index points, updated daily with closing prices.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US FIN IND NASDAQ COMP, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("nasdaqcomposite"))
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+```
+
+```{=html}
+</div>
+```
+
+#### *Russell 2000*
+
+```{r US FIN IND RUSSELL2000 TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo — <a href="https://finance.yahoo.com/quote/%5ERUT/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "The Russell 2000 tracks the 2,000 smallest companies within the broader Russell 3000 index, serving as the primary benchmark for U.S. small-cap equities. More domestically oriented than large-cap indices, it is particularly sensitive to U.S. economic conditions, interest rates, and domestic consumer trends. Quoted in index points, updated daily with closing prices.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US FIN IND RUSSELL2000, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("russell2000"))
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+```
+
+```{=html}
+</div>
+```
+
+#### *TSX*
+
+```{r CA FIN IND TSX TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo — <a href="https://finance.yahoo.com/quote/%5EGSPTSE/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "The S&P/TSX Composite is Canada's primary equity benchmark, tracking the largest companies listed on the Toronto Stock Exchange, weighted by free-float market capitalization. Heavily concentrated in financials, energy, and materials, reflecting Canada's resource-driven economy. Particularly sensitive to commodity prices, notably oil and metals. Quoted in index points, updated daily with closing prices.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r CA FIN IND TSX, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("tsx"))
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+```
+
+```{=html}
+</div>
+```
+
+#### *FTSE 100*
+
+```{r UK FIN IND FTSE100 TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo — <a href="https://finance.yahoo.com/quote/%5EFTSE/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "The FTSE 100 tracks the 100 largest companies by market capitalization listed on the London Stock Exchange, maintained by FTSE Russell. Dominated by multinationals in energy, financials, consumer staples, and mining, with constituents generating the majority of revenues internationally. This global exposure makes it more sensitive to commodity cycles and GBP dynamics than to the UK domestic economy. Quoted in index points, updated daily with closing prices.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r UK FIN IND FTSE100, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("ftse100"))
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+```
+
+```{=html}
+</div>
+```
+
+#### *DAX*
+
+```{r EU FIN IND DAX TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo — <a href="https://finance.yahoo.com/quote/%5EGDAXI/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "The DAX tracks the 40 largest and most liquid companies listed on the Frankfurt Stock Exchange, weighted by free-float market capitalization. Notably a total return index, meaning dividends are reinvested. Heavily export-oriented with key weights in industrials, automotive, chemicals, and financials, making it particularly sensitive to global trade conditions, eurozone growth, and Chinese demand. Quoted in index points, updated daily with closing prices.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r EU FIN IND DAX, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("dax"))
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+```
+
+```{=html}
+</div>
+```
+
+#### *CAC 40*
+
+```{r EU FIN IND CAC40 TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo — <a href="https://finance.yahoo.com/quote/%5EFCHI/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "The CAC 40 tracks the 40 largest companies by free-float market capitalization listed on Euronext Paris. Constituents are predominantly multinationals with significant weights in luxury goods, industrials, energy, and financials. More sensitive to global consumer spending and emerging market demand than to the French domestic economy. Quoted in index points, updated daily with closing prices.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r EU FIN IND CAC40, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("cac40"))
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+```
+
+```{=html}
+</div>
+```
+
+#### *SMI*
+
+```{r CH FIN IND SMI TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo — <a href="https://finance.yahoo.com/quote/%5ESSMI/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "The SMI tracks the 20 largest and most liquid companies listed on the SIX Swiss Exchange, weighted by free-float market capitalization. Highly concentrated in three defensive sectors, healthcare (Novartis, Roche), consumer staples (Nestlé), and financials (UBS, Zurich Insurance) ,giving it a distinctive defensive risk profile. Constituents generate the vast majority of revenues outside Switzerland, making the index more sensitive to global conditions and CHF dynamics than to the Swiss domestic economy. Quoted in index points, updated daily with closing prices.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r CH FIN SMI, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+data <- get_series("smi")
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = TRUE))
+```
+
+```{=html}
+</div>
+```
+
+#### *OMX*
+
+```{r EU FIN IND OMX TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo — <a href="https://finance.yahoo.com/quote/%5EOMX/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "The OMX Stockholm 30 tracks the 30 most-traded stocks on Nasdaq Stockholm, weighted by free-float market capitalization. Concentrated in industrials, financials, and technology, with major holdings in globally active Swedish multinationals. Sensitive to global trade conditions, Nordic economic dynamics, and Swedish krona movements. Quoted in index points, updated daily with closing prices.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r EU FIN IND OMX, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("omx30"))
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+```
+
+```{=html}
+</div>
+```
+
+#### *AEX*
+
+```{r EU FIN IND AEX TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo — <a href="https://finance.yahoo.com/quote/%5EAEX/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "The AEX tracks the 25 largest companies by free-float market capitalization listed on Euronext Amsterdam. Heavily concentrated in semiconductors and technology equipment, notably ASML,alongside financials and energy, giving it a pronounced sensitivity to global technology cycles and semiconductor demand. Quoted in index points, updated daily with closing prices.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r EU FIN IND AEX, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("aex"))
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+```
+
+```{=html}
+</div>
+```
+
+#### *IBEX*
+
+```{r EU FIN IND IBEX TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo — <a href="https://finance.yahoo.com/quote/%5EIBEX/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "The IBEX 35 tracks the 35 most liquid companies listed on the Bolsa de Madrid, weighted by free-float market capitalization. Dominated by financials, utilities, and telecoms, with significant exposure to Latin American markets through its largest constituents. Sensitive to eurozone credit conditions, Spanish domestic growth, and emerging market dynamics. Quoted in index points, updated daily with closing prices.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r EU FIN IND IBEX, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("ibex35"))
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+```
+
+```{=html}
+</div>
+```
+
+#### *FTSEMIB*
+
+```{r EU FIN IND FTSEMIB TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo — <a href="https://finance.yahoo.com/quote/FTSEMIB.MI/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "The FTSE MIB tracks the 40 largest and most liquid companies listed on Borsa Italiana, weighted by free-float market capitalization. Heavily concentrated in financials, utilities, and energy, with Italian banks representing a significant portion of the index. Sensitive to eurozone sovereign spreads, Italian fiscal dynamics, and European financial conditions. Quoted in index points, updated daily with closing prices.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r EU FIN IND FTSEMIB, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("ftsemib"))
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+```
+
+```{=html}
+</div>
+```
+
+#### *STOXX 50*
+
+```{r EU FIN STOXX50 TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo — <a href="https://finance.yahoo.com/quote/%5ESTOXX50E/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "The Euro STOXX 50 tracks the 50 largest blue-chip companies in the eurozone, weighted by free-float market capitalization and maintained by STOXX Ltd. It serves as the primary benchmark for eurozone equity performance, with significant weights in financials, industrials, consumer goods, and energy. Broadly diversified across major eurozone economies including Germany, France, the Netherlands, and Spain. Quoted in index points, updated daily with closing prices.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r EU FIN STOXX 50, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("eurostoxx"))
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+```
+
+```{=html}
+</div>
+```
+
+#### *STXE 600*
+
+```{r EU FIN IND STXE600 TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo — <a href="https://finance.yahoo.com/quote/%5ESTOXX/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "The STOXX Europe 600 covers 600 large-, mid-, and small-cap companies across 17 European countries, weighted by free-float market capitalization. The broadest pan-European benchmark, it provides comprehensive exposure to the European equity universe beyond the eurozone, including the UK, Switzerland, and Scandinavian markets. Quoted in index points, updated daily with closing prices.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r EU FIN IND STXE 600, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("stoxxeur600"))
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+```
+
+```{=html}
+</div>
+```
+
+#### *Nikkei 225*
+
+```{r JP FIN IND NIKKEI225 TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo — <a href="https://finance.yahoo.com/quote/%5EN225/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "The Nikkei 225 is Japan's primary equity benchmark, tracking 225 large-cap companies listed on the Tokyo Stock Exchange, price-weighted and reviewed annually. Concentrated in technology, industrials, consumer goods, and financials, it reflects Japan's export-driven economy. Highly sensitive to JPY dynamics, U.S. demand, and global trade flows. Quoted in index points, updated daily with closing prices.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r JP FIN IND NIKKEI225, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("nikkei225"))
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+```
+
+```{=html}
+</div>
+```
+
+#### *Hang Seng*
+
+```{r HK FIN IND HANGSENG TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo — <a href="https://finance.yahoo.com/quote/%5EHSI/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "The Hang Seng Index tracks the largest companies listed on the Hong Kong Stock Exchange, weighted by free-float market capitalization. Dominated by financials, technology, and property, with heavy exposure to mainland Chinese economic conditions. Sensitive to China's growth outlook, regulatory environment, and HKD-USD peg dynamics. Quoted in index points, updated daily with closing prices.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r HK FIN IND HANGSENG, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("hangseng"))
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+```
+
+```{=html}
+</div>
+```
+
+#### *Shanghai Composite*
+
+```{r CN FIN IND SHANGHAI TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo — <a href="https://finance.yahoo.com/quote/000001.SS/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "The Shanghai Composite covers all A-shares and B-shares listed on the Shanghai Stock Exchange, weighted by market capitalization. A broad gauge of mainland Chinese equities, it is heavily influenced by domestic monetary policy, government stimulus measures, and regulatory developments. Less correlated with global markets than other major indices due to China's capital controls and the predominantly domestic investor base. Quoted in index points, updated daily with closing prices.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r CN FIN IND SHANGHAI, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("shanghai"))
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+```
+
+```{=html}
+</div>
+```
+
+#### *KOSPI*
+
+```{r KR FIN IND KOSPI TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo — <a href="https://finance.yahoo.com/quote/%5EKS11/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "The KOSPI is South Korea's primary equity benchmark, tracking all common stocks listed on the Korea Exchange, weighted by market capitalization. Dominated by technology, semiconductors, and industrials, with Samsung Electronics and SK Hynix representing major weights, it is highly sensitive to global semiconductor cycles, Chinese demand, and KRW dynamics. Quoted in index points, updated daily with closing prices.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r KR FIN IND KOSPI, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("kospi"))
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+```
+
+```{=html}
+</div>
+```
+
+#### *ASX 200*
+
+```{r AU FIN IND ASX200 TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo — <a href="https://finance.yahoo.com/quote/%5EAXJO/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "The S&P/ASX 200 tracks the 200 largest companies by float-adjusted market capitalization listed on the Australian Securities Exchange. Concentrated in financials, materials, and energy, reflecting Australia's commodity-driven economy. Particularly sensitive to iron ore and mining prices, Chinese demand, and AUD movements. Quoted in index points, updated daily with closing prices.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r AU FIN IND ASX200, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("asx200"))
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+```
+
+```{=html}
+</div>
+```
+
+#### *Sensex*
+
+```{r IN FIN IND SENSEX TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo — <a href="https://finance.yahoo.com/quote/%5EBSESN/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "The BSE Sensex tracks the 30 largest and most actively traded companies on the Bombay Stock Exchange, weighted by free-float market capitalization. A key benchmark for Indian equities, it spans financials, technology, consumer goods, and energy. Driven primarily by domestic economic growth, RBI monetary policy, and INR dynamics. Quoted in index points, updated daily with closing prices.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r IN FIN IND SENSEX, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("sensex"))
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+```
+
+```{=html}
+</div>
+```
+
+#### *IPC Mexico*
+
+```{r MX FIN IND IPC TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo — <a href="https://finance.yahoo.com/quote/%5EMXX/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "The IPC Mexico tracks the most liquid companies listed on the Bolsa Mexicana de Valores, weighted by free-float market capitalization. Concentrated in consumer staples, financials, and telecoms, with significant exposure to domestic consumption and the U.S. economy through trade linkages. Sensitive to USD/MXN dynamics, U.S. growth, and commodity prices. Quoted in index points, updated daily with closing prices.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r MX FIN IND IPC, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("ipcmexico"))
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+```
+
+```{=html}
+</div>
+```
+
+#### *Bovespa*
+
+```{r BR FIN IND BOVESPA TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo — <a href="https://finance.yahoo.com/quote/%5EBVSP/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "The Bovespa is Brazil's primary equity benchmark, tracking the most liquid stocks listed on B3 (Brasil Bolsa Balcão), weighted by free-float market capitalization. Concentrated in financials, energy, materials, and consumer goods, it is particularly sensitive to commodity cycles, Chinese demand, BRL dynamics, and domestic Brazilian fiscal and monetary policy. Quoted in index points, updated daily with closing prices.")
+```
+
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r BR FIN IND BOVESPA, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("bovespa"))
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+```
+
+```{=html}
+</div>
+```
+
+#### *Tadawul*
+
+```{r SA FIN IND TADAWUL TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo — <a href="https://finance.yahoo.com/quote/%5ETASI.SR/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "The Tadawul All Share Index tracks all companies listed on the Saudi Exchange (Tadawul), weighted by free-float market capitalization. The largest equity market in the Arab world, it is heavily concentrated in financials, energy (including Saudi Aramco), and materials. Highly sensitive to oil prices, Saudi Vision 2030 reforms, and regional geopolitical dynamics. Quoted in index points, updated daily with closing prices.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r SA FIN IND TADAWUL, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("tadawul"))
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+```
+
+```{=html}
+</div>
+```
