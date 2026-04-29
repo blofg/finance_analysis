@@ -14,14 +14,14 @@ setwd(path_main)
 # Call scripts to get functions/inputs
 ################################################################################
 
-source("initialization/package.R")           # |Package|
-source("initialization/secrets.R")           # |Secrets|
+source("initialization/package.R")           # |Packages|
+source("initialization/secret.R")            # |Secret|
 source("function/function_information.R")    # |Function price|
 source("function/function_format.R")         # |Function format|
 source("function/function_visualization.R")  # |Functions visualization|
 source("function/function_compute.R")        # |Functions compute|
 source("function/function_ai.R")             # |Functions ai|
-source("initialization/input.R")             # |Input|
+source("initialization/input.R")             # |Inputs|
 
 ################################################################################
 # Call scripts to get data
@@ -57,13 +57,12 @@ render("html/geo_reports/markdown/ch_report_html.Rmd",  output_dir = "html/geo_r
 render("html/geo_reports/markdown/wrl_report_html.Rmd", output_dir = "html/geo_reports/output/", params = list(llm_analysis = FALSE))      # |World report markdown|
 
 # Market reports
-render("html/market_reports/markdown/equity_index_report_html.Rmd",             output_dir = "html/market_reports/output/", params = list(llm_analysis = FALSE))      # |Equity index markdown|
-render("html/market_reports/markdown/key_index_and_indicator_report_html.Rmd",  output_dir = "html/market_reports/output/", params = list(llm_analysis = FALSE))      # |Key index markdown|
-render("html/market_reports/markdown/gold_fundamentals_report_html.Rmd",        output_dir = "html/market_reports/output/", params = list(llm_analysis = FALSE))      # |Gold fundamentals index markdown|
-render("html/market_reports/markdown/crypto_report_html.Rmd",                   output_dir = "html/market_reports/output/", params = list(llm_analysis = FALSE))      # |Crypto report markdown|render("html/market_reports/markdown/bond_marketr_report_html.Rmd",             output_dir = "html/market_reports/output/", params = list(llm_analysis = FALSE))      # |Bond market report markdown|
-render("html/market_reports/markdown/crypto_report_html.Rmd",                   output_dir = "html/market_reports/output/", params = list(llm_analysis = FALSE))      # |Crypto report markdown|
-render("html/market_reports/markdown/bond_market_report_html.Rmd",              output_dir = "html/market_reports/output/", params = list(llm_analysis = FALSE))               # |Bond market report markdown|
-
+render("html/market_reports/markdown/equity_index_report_html.Rmd",                output_dir = "html/market_reports/output/", params = list(llm_analysis = FALSE))      # |Equity index markdown|
+render("html/market_reports/markdown/key_indices_and_indicators_report_html.Rmd",  output_dir = "html/market_reports/output/", params = list(llm_analysis = FALSE))      # |Key index markdown|
+render("html/market_reports/markdown/gold_fundamentals_report_html.Rmd",           output_dir = "html/market_reports/output/", params = list(llm_analysis = FALSE))      # |Gold fundamentals index markdown|
+render("html/market_reports/markdown/crypto_report_html.Rmd",                      output_dir = "html/market_reports/output/", params = list(llm_analysis = FALSE))      # |Crypto report markdown|render("html/market_reports/markdown/bond_marketr_report_html.Rmd",             output_dir = "html/market_reports/output/", params = list(llm_analysis = FALSE))      # |Bond market report markdown|
+render("html/market_reports/markdown/crypto_report_html.Rmd",                      output_dir = "html/market_reports/output/", params = list(llm_analysis = FALSE))      # |Crypto report markdown|
+render("html/market_reports/markdown/bond_market_report_html.Rmd",                 output_dir = "html/market_reports/output/", params = list(llm_analysis = FALSE))               # |Bond market report markdown|
 
 # Share reports
 render("html/share_reports/mag7/markdown/magnificent_aapl_report_html.Rmd",      output_dir = "html/share_reports/mag7/output/", params = list(llm_analysis = FALSE))      # |Magnificent Apple report markdown|
@@ -74,21 +73,25 @@ render("html/share_reports/mag7/markdown/magnificent_amzn_report_html.Rmd",     
 render("html/share_reports/mag7/markdown/magnificent_meta_report_html.Rmd",      output_dir = "html/share_reports/mag7/output/", params = list(llm_analysis = FALSE))      # |Magnificent Meta report markdown|
 render("html/share_reports/mag7/markdown/magnificent_tsla_report_html.Rmd",      output_dir = "html/share_reports/mag7/output/", params = list(llm_analysis = FALSE))      # |Magnificent Tesla report markdown|
 
-
-
 ################################################################################
 # Publish reports to GitHub financial report page
 ################################################################################
 
 source("publish.R")            # |Publish on Git|
-
-
-
-
-
 source("stock_analysis.R")     # |stock analysis|
 
+################################################################################
+# Clean
+################################################################################
 
+# Clean Data interface
+rm(list = Filter(function(x) is.data.frame(get(x)) && !grepl("series|input", x), ls()))
+
+################################################################################
+# Display Metadata 
+################################################################################
+
+source("metadata_display.R")     # |Metadata display with view button|
 
 
 

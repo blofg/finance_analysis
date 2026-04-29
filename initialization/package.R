@@ -42,7 +42,8 @@ packages <- c(
   "httr", "jsonlite", "XML", "RSelenium", "quantr", "TTR", "ichimoku",
   "fredr", "cli", "dygraphs", "magrittr", "highcharter", "lubridate",
   "DT", "rollama", "tidychatmodels", "rmarkdown","htmltools", "eurostat",
-  "tidyverse", "gt", "scales", "rsdmx", "knitr", "sandwich", "lmtest", "ecb")
+  "tidyverse", "gt", "scales", "rsdmx", "knitr", "sandwich", "lmtest", "ecb",
+  "yahoofinancer", "shiny")
 
 
 ################################################################################

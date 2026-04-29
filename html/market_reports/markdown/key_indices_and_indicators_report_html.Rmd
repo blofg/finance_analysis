@@ -1,0 +1,1310 @@
+---
+title: "Key Index and Indicator Report"
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float:
+      collapsed: false
+      smooth_scroll: true
+    theme: flatly
+    highlight: kate
+    self_contained: true
+    css: "/Users/benjaminlachavanne/Desktop/script/finance_analysis/html/style/style.css"
+
+params:
+  llm_analysis: false
+  
+---
+
+```{r setup, include=FALSE, warning=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+
+# Main path 
+path_main <- file.path("~", "Desktop", "script", "finance_analysis")
+
+# Upload packages, functions and inputs 
+source(paste0(path_main,"/initialization/package.R"))         # |Package|
+source(paste0(path_main,"/function/function_information.R"))  # |Function price|
+source(paste0(path_main,"/function/function_format.R"))       # |Function format|
+source(paste0(path_main,"/function/function_visualization.R"))        # |Functions visualization|
+source(paste0(path_main,"/function/function_compute.R"))      # |Functions indicator|
+source(paste0(path_main,"/function/function_ai.R"))           # |Functions ai|
+source(paste0(path_main,"/initialization/input.R"))           # |Input|
+
+# Download all series from the RDS folder
+path_rds_folder    <- "/Users/benjaminlachavanne/Desktop/script/finance_analysis/database/rds/"
+path_rds_all <- paste0(path_rds_folder,"series_store_all.rds")
+series_database <- readRDS(path_rds_all)
+
+# Styled info box
+series_info_box <- function(source_html, frequency, adjustment, about) {
+  htmltools::HTML(paste0('
+  <div class="info-card">
+    <div class="info-grid">
+      <div class="info-row">
+        <span class="info-label">Source</span>
+        <span class="info-value">', source_html, '</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Frequency</span>
+        <span class="info-value">', frequency, '</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Adjustment</span>
+        <span class="info-value">', adjustment, '</span>
+      </div>
+    </div>
+    <div class="info-about">', about, '</div>
+  </div>
+  '))
+}
+
+# Section label helper
+section_label <- function(icon, text) {
+  htmltools::HTML(paste0(
+    '<div class="section-label"><span class="section-icon">', icon,
+    '</span><span class="section-text">', text, '</span></div>'))
+}
+
+# Subsection label helper
+subsection_label <- function(text) {
+  htmltools::HTML(paste0('<div class="subsection-label">', text, '</div>'))
+}
+
+# Chart note helper
+chart_note <- function(text) {
+  htmltools::HTML(paste0('<p class="chart-note">', text, '</p>'))
+}
+
+
+# API to take the correct rating for all the sub indicators 
+resp <- GET("https://production.dataviz.cnn.io/index/fearandgreed/graphdata/2026-04-27",
+  add_headers("User-Agent" = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko)Chrome/124.0.0.0 Safari/537.36","Referer"    = "https://edition.cnn.com/","Origin"     = "https://edition.cnn.com"))
+rating <- fromJSON(content(resp, as = "text", encoding = "UTF-8"))
+
+```
+
+<!-- ####################################################################### -->
+<!-- Head Title  -->
+<!-- ####################################################################### -->
+
+```{=html}
+<!-- ── MASTHEAD ─────────────────────────────────────────────────────────────── -->
+<div class="masthead">
+  <div class="masthead-eyebrow">Market Research · Sentiment & Trade</div>
+  <div class="masthead-title">Key <span>Index and Indicator Report</span></div>
+  <div class="masthead-date">Latest update date: `r format(Sys.Date(), '%B %d, %Y')`</div>
+</div>
+```
+
+<!-- ####################################################################### -->
+<!-- Abstract  -->
+<!-- ####################################################################### -->
+
+## Abstract
+
+```{=html}
+<div class="company-hero">
+  <div class="co-body">
+    <div class="masthead-title">Abstract</div>
+  </div>
+</div>
+```
+
+```{=html}
+<div class="abstract-box">
+<p>This report provides an overview of key cross-asset sentiment and activity indicators, tracking investor psychology and global trade dynamics through two complementary lenses.</p>
+
+<ul>
+  <li>The <strong>Greed and Fear Index</strong> section monitors the overall sentiment in US equity markets through a composite index and its seven underlying components: <em>Market Momentum</em>, <em>Stock Price Strength</em>, <em>Stock Price Breadth</em>, <em>Put &amp; Call Options</em>, <em>Market Volatility</em>, <em>Safe Haven Demand</em>, and <em>Junk Bond Demand</em>. Together, these indicators capture the spectrum from extreme fear to extreme greed.</li>
+  <li>The <strong>Freight Index</strong> section tracks global trade activity through the Baltic Dry Index (dry bulk commodities) and the Shanghai Containerized Freight Index (containerized cargo), providing real-time signals on supply chain conditions and economic demand.</li>
+</ul>
+
+<p>Taken together, this report aims to offer a concise view of market sentiment and global trade flows, combining behavioral finance signals with physical economic activity indicators to support a comprehensive assessment of the current environment.</p>
+</div>
+```
+
+<!-- ####################################################################### -->
+<!-- Greed & Fear Indices  -->
+<!-- ####################################################################### -->
+
+## Greed & Fear Indices
+
+### Greed & Fear Index
+
+```{=html}
+<div class="company-hero">
+  <div class="co-body">
+    <div class="masthead-title">Greed and Fear Index</div>
+  </div>
+</div>
+```
+
+```{r GF IND TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'CNN — <a href="https://edition.cnn.com/markets/fear-and-greed" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "CNN Fear & Greed Index measures the prevailing emotional driver of US equity market behavior, published by CNN Business and updated continuously as new data becomes available. It is a composite of seven equally weighted market indicators, each measuring a distinct dimension of investor sentiment: market momentum (the S&P 500 relative to its 125-day moving average), stock price strength (net new 52-week highs versus lows on the NYSE), stock price breadth (the McClellan Volume Summation Index, comparing the volume of advancing versus declining NYSE shares), put and call options (the 5-day average put/call ratio), market volatility (the CBOE VIX relative to its 50-day moving average), safe haven demand (the 20-day return differential between Treasury bonds and equities), and junk bond demand (the yield spread between high-yield and investment-grade corporate bonds). Each indicator is scored based on how far it deviates from its historical average relative to its typical range of variation, and the seven scores are averaged into a single composite reading on a scale of 0 to 100with readings near 0 indicating extreme fear, readings near 100 indicating extreme greed, and 50 representing neutral sentiment. The index is grounded in the behavioral finance observation that excessive fear tends to drive equity prices below fair value while excessive greed tends to push them above it, making the index useful as a contrarian sentiment gauge alongside fundamental and technical analysis. Reported as a score from 0 to 100, updated daily with closing prices.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r GF RATING, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get serie
+data <- get_series(c("gf_hist_cnn"))
+
+# Take the last rating
+last_rating <- tail(data$rating, 1)
+
+# Attribute color to Feat and Greed Indicators
+color_fear_and_greed <- case_when(
+  last_rating == "extreme fear"  ~ "#FF0000",
+  last_rating == "fear"          ~ "#FF6B00",
+  last_rating == "neutral"       ~ "#FFD700",
+  last_rating == "greed"         ~ "#7CB900",
+  last_rating == "extreme greed" ~ "#008000",
+  TRUE                           ~ "#000000"
+)
+
+# Show Rating
+tagList(
+  div(style = "text-align: center; margin: 20px 0;",
+    span(style = paste0("font-size: 32px; font-weight: bold; color: ", color_fear_and_greed, ";"), toupper(last_rating))))
+```
+
+```{=html}
+</div>
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r GF IND, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get serie
+data <- get_series(c("gf_hist_cnn"))
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = FALSE)))
+```
+
+```{=html}
+</div>
+```
+
+#### *7 Fear & Greed indicators*
+
+##### Market Momentum
+
+```{r MM IND TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'CNN — <a href="https://edition.cnn.com/markets/fear-and-greed" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "S&P 500 Market Momentum Indicators measure the price trajectory of the S&P 500 over a one-year lookback period, comprising two companion series: the raw index level and its 125-day moving average. The 125-day moving average smooths short-term price fluctuations to reveal the underlying medium-term trend, and the relationship between the two series serves as the market momentum component of the CNN Fear & Greed Index, the S&P 500 trading above its 125-day average signals positive momentum and contributes a greed signal, while trading below it signals deteriorating momentum and contributes a fear signal. Together the two series provide a simple and widely used framework for assessing whether prevailing equity market conditions are consistent with a sustained trend or a potential reversal. Quoted in index points, updated daily.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r MM RATING, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Take the last rating
+last_rating <- rating$market_momentum_sp500$rating
+
+# Attribute color to Feat and Greed Indicators
+color_fear_and_greed <- case_when(
+  last_rating == "extreme fear"  ~ "#FF0000",
+  last_rating == "fear"          ~ "#FF6B00",
+  last_rating == "neutral"       ~ "#FFD700",
+  last_rating == "greed"         ~ "#7CB900",
+  last_rating == "extreme greed" ~ "#008000",
+  TRUE                           ~ "#000000"
+)
+
+# Show Rating
+tagList(
+  div(style = "text-align: center; margin: 20px 0;",
+    span(style = paste0("font-size: 32px; font-weight: bold; color: ", color_fear_and_greed, ";"), toupper(last_rating))))
+```
+
+```{=html}
+</div>
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r MM IND, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get serie
+data <- get_series(c("gf_mkt_mom_sp500_cnn", "gf_mkt_mom_sp500_125ma_cnn"))
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = FALSE)))
+```
+
+```{=html}
+</div>
+```
+
+##### Stock Price Strength
+
+```{r SPS IND TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'CNN — <a href="https://edition.cnn.com/markets/fear-and-greed" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "Stock Price Strength Indicator measures the net number of NYSE-listed stocks reaching 52-week highs versus 52-week lows over a one-year lookback period, and serves as the stock price strength component of the CNN Fear & Greed Index. Rather than relying on the performance of a capitalization-weighted index, which can be skewed by a small number of large-cap constituents, this indicator captures the breadth of underlying market strength by assessing how many individual stocks are achieving new annual highs relative to those hitting new annual lows. A persistently positive net balance, with significantly more 52-week highs than lows, signals broad-based bullish momentum across the NYSE universe and contributes a greed signal to the composite index, while a negative or deteriorating balance, more new lows than highs, indicates widespread weakness beneath the surface and contributes a fear signal. Quoted as a net count, updated daily.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r SPS RATING, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Take the last rating
+last_rating <- rating$stock_price_strength$rating
+
+# Attribute color to Feat and Greed Indicators
+color_fear_and_greed <- case_when(
+  last_rating == "extreme fear"  ~ "#FF0000",
+  last_rating == "fear"          ~ "#FF6B00",
+  last_rating == "neutral"       ~ "#FFD700",
+  last_rating == "greed"         ~ "#7CB900",
+  last_rating == "extreme greed" ~ "#008000",
+  TRUE                           ~ "#000000"
+)
+
+# Show Rating
+tagList(
+  div(style = "text-align: center; margin: 20px 0;",
+    span(style = paste0("font-size: 32px; font-weight: bold; color: ", color_fear_and_greed, ";"), toupper(last_rating))))
+```
+
+```{=html}
+</div>
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r SPS IND, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get serie
+data <- get_series(c("gf_sto_strength_cnn"))
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = FALSE)))
+```
+
+```{=html}
+</div>
+```
+
+##### Stock Price Breadthß
+
+```{r BPS IND TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'CNN — <a href="https://edition.cnn.com/markets/fear-and-greed" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "Stock Price Breadth Indicator measures the balance between advancing and declining share volume on the NYSE using the McClellan Volume Summation Index, and serves as the stock price breadth component of the CNN Fear & Greed Index. Rather than tracking price levels or the number of stocks at new highs and lows, this indicator focuses specifically on the volume of shares traded in rising stocks versus falling stocks, providing a flow-of-money perspective on market participation. The McClellan Volume Summation Index is a cumulative measure derived from the difference between advancing and declining volume, smoothed through exponential moving averages to filter short-term noise and reveal the underlying trend in buying versus selling pressure across the broad NYSE universe. A high or rising summation index indicates that volume is disproportionately concentrated in advancing stocks, signaling broad-based buying conviction and contributing a greed signal to the composite, while a low or declining index reflects dominant selling pressure across the market and contributes a fear signal. Quoted as an index level, updated daily.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r BPS RATING, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Take the last rating
+last_rating <- rating$stock_price_breadth$rating
+
+# Attribute color to Feat and Greed Indicators
+color_fear_and_greed <- case_when(
+  last_rating == "extreme fear"  ~ "#FF0000",
+  last_rating == "fear"          ~ "#FF6B00",
+  last_rating == "neutral"       ~ "#FFD700",
+  last_rating == "greed"         ~ "#7CB900",
+  last_rating == "extreme greed" ~ "#008000",
+  TRUE                           ~ "#000000"
+)
+
+# Show Rating
+tagList(
+  div(style = "text-align: center; margin: 20px 0;",
+    span(style = paste0("font-size: 32px; font-weight: bold; color: ", color_fear_and_greed, ";"), toupper(last_rating))))
+```
+
+```{=html}
+</div>
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r BPS IND, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get serie
+data <- get_series(c("gf_sto_breadth_cnn"))
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = FALSE)))
+```
+
+```{=html}
+</div>
+```
+
+##### Put & Call Optionsß
+
+```{r PC IND TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'CNN — <a href="https://edition.cnn.com/markets/fear-and-greed" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "Put and Call Options Indicator measures the 5-day average ratio of put options to call options traded across US equity markets over a one-year lookback period, and serves as the options sentiment component of the CNN Fear & Greed Index. Put options give holders the right to sell an asset at a predetermined price and are typically purchased as hedges against downside risk or as directional bets on falling prices, while call options give holders the right to buy and are associated with bullish positioning. The ratio therefore captures the relative demand for protective or bearish options versus speculative or bullish ones across the market as a whole, a rising put/call ratio indicates that investors are increasingly purchasing downside protection relative to upside exposure, signaling growing anxiety and contributing a fear signal to the composite, while a low or falling ratio reflects dominant bullish positioning and contributes a greed signal. The 5-day averaging window smooths day-to-day volatility in options activity to reveal the short-term directional trend in investor hedging behavior. A ratio above 1 is conventionally interpreted as bearish, indicating that put volume exceeds call volume. Quoted as a ratio, updated daily.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r PC RATING, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Take the last rating
+last_rating <- rating$put_call_options$rating
+
+# Attribute color to Feat and Greed Indicators
+color_fear_and_greed <- case_when(
+  last_rating == "extreme fear"  ~ "#FF0000",
+  last_rating == "fear"          ~ "#FF6B00",
+  last_rating == "neutral"       ~ "#FFD700",
+  last_rating == "greed"         ~ "#7CB900",
+  last_rating == "extreme greed" ~ "#008000",
+  TRUE                           ~ "#000000"
+)
+
+# Show Rating
+tagList(
+  div(style = "text-align: center; margin: 20px 0;",
+    span(style = paste0("font-size: 32px; font-weight: bold; color: ", color_fear_and_greed, ";"), toupper(last_rating))))
+```
+
+```{=html}
+</div>
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r PC IND, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get serie
+data <- get_series(c("gf_put_call_cnn"))
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = FALSE)))
+```
+
+```{=html}
+</div>
+```
+
+##### Market Volatility
+
+```{r MV IND TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'CNN — <a href="https://edition.cnn.com/markets/fear-and-greed" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "Market Volatility Indicators measure the CBOE VIX and its 50-day moving average over a one-year lookback period, comprising two companion series that together form the market volatility component of the CNN Fear & Greed Index. The VIX captures the market\'s real-time expectation of 30-day implied volatility in S&P 500 options, while its 50-day moving average provides a smoothed baseline against which current volatility conditions are assessed, the VIX trading above its 50-day average indicates rising fear and uncertainty relative to recent norms and contributes a fear signal to the composite, while the VIX trading below it reflects calm, low-volatility conditions consistent with investor complacency and contributes a greed signal. Quoted in annualized percentage points, updated daily.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r MV RATING, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Take the last rating
+last_rating <- rating$market_volatility_vix$rating
+
+# Attribute color to Feat and Greed Indicators
+color_fear_and_greed <- case_when(
+  last_rating == "extreme fear"  ~ "#FF0000",
+  last_rating == "fear"          ~ "#FF6B00",
+  last_rating == "neutral"       ~ "#FFD700",
+  last_rating == "greed"         ~ "#7CB900",
+  last_rating == "extreme greed" ~ "#008000",
+  TRUE                           ~ "#000000"
+)
+
+# Show Rating
+tagList(
+  div(style = "text-align: center; margin: 20px 0;",
+    span(style = paste0("font-size: 32px; font-weight: bold; color: ", color_fear_and_greed, ";"), toupper(last_rating))))
+```
+
+```{=html}
+</div>
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r MV IND, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get serie
+data <- get_series(c("gf_mkt_vol_cnn", "gf_mkt_vol_50ma_cnn"))
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = FALSE)))
+```
+
+```{=html}
+</div>
+```
+
+##### Safe Haven Demandß
+
+```{r SHD IND TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'CNN — <a href="https://edition.cnn.com/markets/fear-and-greed" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "Safe Haven Demand Indicator measures the return differential between US Treasury bonds and equities over the prior 20 trading days, and serves as the safe haven demand component of the CNN Fear & Greed Index. The underlying premise is that during periods of investor stress or risk aversion, capital rotates out of equities and into the relative safety of government bonds, causing bond returns to outperform stock returns over short horizons. When Treasury bonds outperform equities over the 20-day window, the indicator signals elevated safe haven demand and contributes a fear signal to the composite, while equities outperforming bonds over the same period reflects a risk-on environment in which investors are favoring growth assets over capital preservation and contributes a greed signal. The 20-day window is short enough to capture recent shifts in asset allocation behavior while filtering out single-day noise. Quoted as a return spread in percentage points, updated daily.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r SHD RATING, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Take the last rating
+last_rating <- rating$safe_haven_demand$rating
+
+# Attribute color to Feat and Greed Indicators
+color_fear_and_greed <- case_when(
+  last_rating == "extreme fear"  ~ "#FF0000",
+  last_rating == "fear"          ~ "#FF6B00",
+  last_rating == "neutral"       ~ "#FFD700",
+  last_rating == "greed"         ~ "#7CB900",
+  last_rating == "extreme greed" ~ "#008000",
+  TRUE                           ~ "#000000"
+)
+
+# Show Rating
+tagList(
+  div(style = "text-align: center; margin: 20px 0;",
+    span(style = paste0("font-size: 32px; font-weight: bold; color: ", color_fear_and_greed, ";"), toupper(last_rating))))
+```
+
+```{=html}
+</div>
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r SHD IND, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get serie
+data <- get_series(c("gf_safe_haven_dmd_cnn"))
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = FALSE)))
+```
+
+```{=html}
+</div>
+```
+
+##### Junk Bond Demand
+
+```{r JBD IND TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'CNN — <a href="https://edition.cnn.com/markets/fear-and-greed" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "Junk Bond Demand Indicator measures the yield spread between high-yield corporate bonds and investment-grade corporate bonds over a one-year lookback period, and serves as the credit market sentiment component of the CNN Fear & Greed Index. High-yield bonds, commonly referred to as junk bonds, carry a higher risk of default than investment-grade securities and therefore normally trade at a yield premium to compensate investors for that additional credit risk. When investors are confident and risk-seeking, demand for high-yield bonds increases, pushing their prices up and their yields down relative to safer investment-grade bonds, thereby compressing the spread and contributing a greed signal to the composite. Conversely, when fear and risk aversion dominate, investors shun high-yield debt in favor of higher-quality instruments, causing spreads to widen as junk bond prices fall and yields rise relative to investment-grade peers, contributing a fear signal. Because credit spreads respond to shifts in perceived default risk and liquidity conditions ahead of many other market indicators, the junk bond demand component adds a forward-looking credit market dimension to the overall sentiment composite. Quoted as a yield spread in percentage points, updated in real time.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r JBD RATING, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Take the last rating
+last_rating <- rating$junk_bond_demand$rating
+
+# Attribute color to Feat and Greed Indicators
+color_fear_and_greed <- case_when(
+  last_rating == "extreme fear"  ~ "#FF0000",
+  last_rating == "fear"          ~ "#FF6B00",
+  last_rating == "neutral"       ~ "#FFD700",
+  last_rating == "greed"         ~ "#7CB900",
+  last_rating == "extreme greed" ~ "#008000",
+  TRUE                           ~ "#000000"
+)
+
+# Show Rating
+tagList(
+  div(style = "text-align: center; margin: 20px 0;",
+    span(style = paste0("font-size: 32px; font-weight: bold; color: ", color_fear_and_greed, ";"), toupper(last_rating))))
+```
+
+```{=html}
+</div>
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r JBD IND, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get serie
+data <- get_series(c("gf_junk_bond_dmd_cnn"))
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = FALSE)))
+```
+
+```{=html}
+</div>
+```
+
+### Crypto Fear & Greed Index
+
+```{r CCCFG TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Coin Market Cap — <a href="https://coinmarketcap.com/charts/fear-and-greed-index/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "Crypto Fear & Greed Index measures the prevailing emotional state of the cryptocurrency market on a scale from 0 to 100, where 0 represents extreme fear and 100 represents extreme greed, published daily by CoinMarketCap. It is a composite of multiple market signals, each capturing a distinct dimension of crypto investor sentiment: volatility (current Bitcoin volatility and maximum drawdowns compared to 30-day and 90-day averages), market momentum and volume (current Bitcoin trading volume and market momentum relative to recent averages, with high buying volume interpreted as greedy behavior), social media sentiment (analysis of hashtag usage and engagement on crypto-related posts across platforms such as Twitter and Reddit), surveys (weekly crypto polls aggregating retail investor sentiment), Bitcoin dominance (a rising Bitcoin dominance share is associated with fear as investors retreat to the relative safety of the largest cryptocurrency, while declining dominance signals increased risk appetite for altcoins), and Google Trends data (search volume for Bitcoin-related queries, including searches for terms such as Bitcoin price manipulation as a fear indicator). Each component is normalized and combined into a single composite score updated daily. The index is grounded in the behavioral finance observation that extreme fear can signal undervaluation and buying opportunities while extreme greed may signal market overheating, making it a useful contrarian sentiment gauge alongside on-chain and technical analysis. Reported as a score from 0 to 100, updated daily.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r CCCFG RATING, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get serie
+data <- get_series(c("ccc_fg"))
+
+# Take the last rating
+last_rating <- tail(data$rating, 1)
+
+# Attribute color to Crypto Fear & Greed Indicators
+color_fear_and_greed <- case_when(
+  last_rating == "extreme fear"  ~ "#FF0000",
+  last_rating == "fear"          ~ "#FF6B00",
+  last_rating == "neutral"       ~ "#FFD700",
+  last_rating == "greed"         ~ "#7CB900",
+  last_rating == "extreme greed" ~ "#008000",
+  TRUE                           ~ "#000000"
+)
+
+# Show Rating
+tagList(
+  div(style = "text-align: center; margin: 20px 0;",
+    span(style = paste0("font-size: 32px; font-weight: bold; color: ", color_fear_and_greed, ";"), toupper(last_rating))))
+```
+
+```{=html}
+</div>
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r CCCFG IND, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get serie
+data <- get_series(c("ccc_fg"))
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = FALSE)))
+```
+
+```{=html}
+</div>
+```
+
+
+<!-- ####################################################################### -->
+<!-- Freight Indices  -->
+<!-- ####################################################################### -->
+
+## Freight Indices
+
+```{=html}
+<div class="company-hero">
+  <div class="co-body">
+    <div class="masthead-title">Freight Index</div>
+  </div>
+</div>
+```
+
+### Baltic Dry Index
+
+```{r BDI TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Investing — <a href="https://www.investing.com/indices/baltic-dry" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "Baltic Dry Index measures the cost of transporting major raw materials by sea across global shipping routes, published daily by the Baltic Exchange in London. It is a composite of daily freight rate assessments for three vessel size categories, Capesize (the largest vessels, primarily carrying iron ore and coal), Panamax (mid-size vessels carrying coal, grain, and minor bulk commodities), and Supramax (smaller vessels carrying a wider range of dry bulk cargoes), weighted to reflect each segment\'s contribution to global dry bulk trade. Because it tracks rates negotiated directly between shipowners and charterers on the spot market for the physical transport of commodities such as iron ore, coal, grain, bauxite, and fertilizers, it is considered a real-time barometer of global trade volumes and industrial demand, free from speculative distortion as no financial instrument can be purchased that directly replicates the index. Quoted in index points, s.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r BDI, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get serie
+data <- get_series("baltic_dry_idx_inv")
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE))
+
+```
+
+```{=html}
+</div>
+```
+
+### Shanghai Freight Index
+
+```{r SCFI TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'SSE — <a href="https://en.sse.net.cn/indices/scfinew.jsp" target="_blank">link</a>',
+  frequency = "Weekly",
+  adjustment = "Not Adjusted",
+  about = "Shanghai Containerized Freight Index measures the spot freight rates for containerized cargo exported from Shanghai to major global destinations, published weekly by the Shanghai Shipping Exchange. It is a composite index constructed from a weighted average of spot rate assessments across a range of key trade lanes originating from Shanghai, including routes to Europe, the Mediterranean, the US West Coast, the US East Coast, the Persian Gulf, Australia, Southeast Asia, Japan, and South Korea, with weights reflecting the relative trade volumes of each corridor. Unlike the Baltic Dry Index, which tracks bulk commodity shipping, the SCFI focuses exclusively on containerized goods, encompassing finished consumer products, electronics, machinery, apparel, and other manufactured exports, making it a more direct barometer of global manufactured goods trade flows and export demand from China, the world\'s largest exporter. Because spot container freight rates respond rapidly to shifts in cargo volumes, port congestion, vessel capacity utilization, and seasonal demand patterns, the SCFI provides a timely and forward-looking signal of changes in global trade momentum, supply chain pressures, and Chinese export activity ahead of official trade statistics. Quoted in US dollars per twenty-foot equivalent unit (TEU), not adjusted, released weekly.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r SCFI, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+include_graphics("https://www.sse.net.cn/index/indexImg?name=scfi&type=english")
+
+```
+
+```{=html}
+</div>
+```
+
+<!-- ####################################################################### -->
+<!-- Volatility & Stress Indices -->
+<!-- ####################################################################### -->
+
+## Volatility & Stress Indices
+
+```{=html}
+<div class="company-hero">
+  <div class="co-body">
+    <div class="masthead-title">Volatility Index</div>
+  </div>
+</div>
+```
+
+
+### CBOE Volatility Index
+
+```{r CBOE VIX TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo — <a href="https://finance.yahoo.com/quote/%5EVIX/" target="_blank">link</a> and FRED — <a href="https://fred.stlouisfed.org/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = 
+    paste0(
+  '1) <b> CBOE Volatility Index — <a href="https://finance.yahoo.com/quote/%5EVIX/" target="_blank">CBOE VOLATILITY INDEX</a></b>. ',
+  'CBOE Volatility Index measures the market\'s expectation of near-term volatility in the S&P 500, published by Cboe Global Markets. It is derived from real-time prices of S&P 500 options across a wide range of strike prices and two nearest-term expiration dates, aggregating the implied volatilities embedded in those options to produce a single forward-looking estimate of annualized volatility over the next 30 calendar days. Because it rises sharply when investors bid up the cost of protective options during periods of uncertainty or market stress, it is widely known as the \"fear gauge\" of equity markets, elevated readings historically correspond to periods of heightened risk aversion, while low readings reflect investor complacency and stable market conditions. Quoted in annualized percentage points, updated daily with closing prices.',
+  '<br><br>',
+  '2) <b>CBOE S&P 500 3-Month Volatility Index — <a href="https://fred.stlouisfed.org/series/VXVCLS" target="_blank">CBOE VOLATILITY INDEX 3M</a></b>. ',
+  'CBOE S&P 500 3-Month Volatility Index measures the market\'s expectation of volatility in the S&P 500 over a 90-day horizon, published by the Chicago Board Options Exchange from its CBOE Market Statistics release. It is derived from real-time prices of S&P 500 options, aggregating implied volatilities across a range of strike prices to produce a forward-looking estimate of annualized volatility over the next three months. Relative to the standard 30-day VIX, the 3-month horizon makes this index less sensitive to immediate short-term shocks and more reflective of medium-term uncertainty in equity markets, making it a useful complement for assessing whether near-term fear is expected to persist or dissipate. Quoted in annualized percentage points, not seasonally adjusted, updated daily with closing prices.'))
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r CBOE VIX 1M, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "cboevix_1m")
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+
+```
+
+```{=html}
+</div>
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r CBOE VIX 3M, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "cboevix_3m_fd")
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)))
+
+```
+
+```{=html}
+</div>
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US CBOE ALL, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = c("cboevix_1m", "cboevix_3m_fd"))
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, title = "CBOE VIX INDEX - 1M vs 3M"))
+
+```
+
+```{=html}
+</div>
+```
+
+### St. Louis Financial Stress Index 
+
+```{r US FED FINS TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'FRED — <a href="https://fred.stlouisfed.org/series/STLFSI4" target="_blank">link</a>',
+  frequency = "Weekly",
+  adjustment = "Not Adjusted",
+  about = "St. Louis Fed Financial Stress Index (version 4.0) measures the degree of financial stress in US markets and is constructed from 18 weekly data series: seven interest rate series, six yield spreads, and five other indicators, each capturing a distinct aspect of financial stress. It is published by the Federal Reserve Bank of St. Louis and designed so that its average value equals zero, representing normal financial market conditions. Values below zero indicate below-average financial stress, while values above zero indicate above-average stress. The current version (version 4.0) uses the 90-day forward-looking Secured Overnight Financing Rate in its yield spread calculations, replacing the backward-looking 90-day average used in the prior version. Released weekly ending Friday, not seasonally adjusted, and available from late 1993.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US FED FINS, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "fina_stress_idx_fd")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE))
+
+```
+
+```{=html}
+</div>
+```
+
+### VSTOXX Volatility Index
+
+```{r VSTOXX TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'STOXX — <a href="https://stoxx.com/index/v2tx/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "EURO STOXX 50 Volatility Index measures the market\'s expectation of near-term to long-term volatility in the EURO STOXX 50, maintained by STOXX Ltd. and calculated in real time from the prices of EURO STOXX 50 options across all available strikes and a range of expiration dates. Methodologically, it is computed as the square root of the implied variance derived from the full cross-section of listed options on the EURO STOXX 50, producing a forward-looking estimate of annualized volatility expressed in percentage points, an approach directly analogous to that used by the CBOE VIX for the S&P 500, making the two indices broadly comparable as measures of equity market fear in their respective regions. Because it is anchored to the EURO STOXX 50, the primary blue-chip benchmark for the euro area, the VSTOXX captures investor uncertainty specifically related to European economic conditions, ECB monetary policy, euro area sovereign risk, and geopolitical developments on the continent. Elevated readings historically correspond to periods of financial stress, political uncertainty, or macroeconomic deterioration within the euro area, while low readings reflect investor complacency and stable conditions. It serves as the underlying reference for VSTOXX futures and options traded on Eurex, making it both a sentiment indicator and an actively tradeable volatility benchmark. Quoted in annualized percentage points, updated daily with closing prices.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r VSTOXX, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "vstoxx_idx")
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = TRUE))
+
+```
+
+```{=html}
+</div>
+```
+
+### ICE BofAML MOVE Index
+
+```{r BOFA IDX TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'MOVE — <a href="https://fr.finance.yahoo.com/quote/%5EMOVE/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "ICE BofA MOVE Index (^MOVE) measures the implied volatility of U.S. Treasury bonds across the yield curve, published by ICE Data Indices and derived from the prices of one-month over-the-counter options on U.S. Treasury securities across four maturities (2-year, 5-year, 10-year, and 30-year) weighted by the outstanding amount of each maturity in the Treasury market. The resulting composite reflects the bond market\'s consensus expectation of near-term interest rate volatility, making the MOVE the fixed income equivalent of the VIX, which measures equity market implied volatility, and earning it the informal designation of the bond market fear gauge. Elevated MOVE readings indicate that options markets are pricing significant uncertainty about the future path of interest rates, typically occurring during periods of monetary policy uncertainty, inflation surprises, fiscal stress, or broader financial market dislocation; low readings reflect calm rate expectations and stable monetary policy conditions. Because interest rate volatility transmits directly to borrowing costs, mortgage rates, credit spreads, and asset valuations across virtually every corner of the financial system, the MOVE is closely watched as a leading indicator of financial conditions tightness and systemic stress, often anticipating broader market dislocations before they materialize in equity volatility measures. Quoted in basis points of annualized yield volatility,updated daily with closing prices.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r BOFA, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "move_idx")
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = TRUE))
+
+```
+
+```{=html}
+</div>
+```
+
+<!-- ####################################################################### -->
+<!-- Advanced Indicators  -->
+<!-- ####################################################################### -->
+
+## Advanced Indicators
+
+```{=html}
+<div class="company-hero">
+  <div class="co-body">
+    <div class="masthead-title">Advanced Indicators</div>
+  </div>
+</div>
+```
+
+
+### Semiconductor Index
+
+```{r SOX TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo — <a href="https://finance.yahoo.com/quote/%5ESOX/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "Philadelphia Semiconductor  (SOX) measures the performance of companies primarily involved in the design, distribution, manufacture, and sale of semiconductors, maintained by Nasdaq and calculated as a modified market-capitalization-weighted index of 30 of the largest US-listed semiconductor companies. Constituents span the full semiconductor value chain, including fabless chip designers (such as Nvidia, Qualcomm, and AMD), integrated device manufacturers (such as Intel and Texas Instruments), pure-play foundries (such as TSMC), and semiconductor equipment makers (such as Applied Materials and Lam Research). Because semiconductors are a foundational input across virtually every technology-intensive sector of the modern economy, including consumer electronics, data centers, automotive, industrial automation, defense, and telecommunications, demand for chips is highly sensitive to forward-looking capital expenditure plans and inventory cycle dynamics rather than current consumption alone. As a leading indicator, the SOX index anticipates broader economic and industrial turning points because semiconductor orders and production ramp-ups precede the delivery of finished goods by several months; chipmakers\' order books, book-to-bill ratios, and guidance therefore signal shifts in business investment, technology spending, and manufacturing activity well ahead of official data releases. Elevated SOX performance historically correlates with accelerating technology capital expenditure cycles, while sustained weakness tends to foreshadow inventory corrections and broader industrial slowdowns.The SOX serves as a leading indicator of broader economic and industrial activity because semiconductor orders and production ramp-ups precede the delivery of finished goods by several months. Since chips are a foundational input across virtually every technology-intensive sector, chipmakers' order books, book-to-bill ratios, and forward guidance capture shifts in business investment and technology spending well ahead of official data releases. Sustained SOX outperformance has historically signaled accelerating capex cycles, while prolonged weakness tends to foreshadow inventory corrections and broader industrial slowdowns. Quoted in index points, updated daily with closing prices")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r SOX, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "sox_idx")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE))
+
+```
+
+```{=html}
+</div>
+```
+
+<!-- ####################################################################### -->
+<!-- Sentiment Indicators  -->
+<!-- ####################################################################### -->
+
+## Sentiment Indicators
+
+```{=html}
+<div class="company-hero">
+  <div class="co-body">
+    <div class="masthead-title">Sentiment Indicators</div>
+  </div>
+</div>
+```
+
+
+### ISM PMI Index
+
+```{r ISM PMI TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Investing — <a href="https://www.investing.com/economic-calendar/ism-manufacturing-pmi-173" target="_blank">link</a>',
+  frequency = "Monthly",
+  adjustment = "Not Adjusted",
+  about = "ISM Manufacturing Purchasing Managers Index (PMI) measures the prevailing direction of economic trends in the US manufacturing sector, published monthly by the Institute for Supply Management from surveys of purchasing and supply executives at over 400 industrial companies. The composite is a weighted diffusion index of five sub-components: new orders (30%), production (25%), employment (20%), supplier deliveries (15%), and inventories (10%). A reading above 50 indicates expansion and below 50 contraction, with the distance from 50 reflecting the pace of change. Released on the first business day of each month for the prior month, it is one of the most timely leading indicators of US industrial activity, business investment, and supply chain conditions ahead of official hard data, with the prices paid sub-component serving additionally as an early inflation signal. Reported as a diffusion index, seasonally adjusted, released monthly.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r ISM PMI, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "ism_pmi_idx_inv")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE))
+
+```
+
+```{=html}
+</div>
+```
+
+### ZEW Index
+
+```{r ZEW TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Investing — <a href="https://www.investing.com/economic-calendar/zew-economic-sentiment-310" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "Eurozone ZEW Economic Sentiment Index measures the six-month economic outlook for the euro area among financial market experts, published monthly by the Zentrum für Europäische Wirtschaftsforschung (ZEW — Centre for European Economic Research) in Mannheim, Germany. It is derived from a survey of approximately 350 German institutional investors and analysts who assess whether they expect euro area economic conditions to improve, remain unchanged, or deteriorate over the following six months, with the index calculated as the net balance between the share of optimistic and pessimistic respondents. A reading above zero indicates that optimists outnumber pessimists and signals positive near-term growth expectations for the euro area, while a reading below zero reflects a majority expecting deterioration. Because the survey captures the forward-looking expectations of sophisticated financial market participants rather than current business conditions, it serves as a leading indicator of euro area economic activity, with shifts in the index historically anticipating turning points in euro area GDP growth by several months. updated daily with closing prices.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r ZEW, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "zwe_idx_inv")
+
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE))
+
+```
+
+```{=html}
+</div>
+```
+
+### KOF Swiss Barometer
+
+```{r KOF CH BAR TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'KOF — <a href="https://kof.ethz.ch/fr/previsions-indicateurs/indicateurs/kof-barometre-conjoncturel.html" target="_blank">link</a>',
+  frequency = "Monthly",
+  adjustment = "Seasonally adjusted",
+  about = "KOF Economic Barometer measures the near-term outlook for the Swiss economy, published monthly by the KOF Swiss Economic Institute at ETH Zurich. It is one of Switzerland\'s oldest and most closely watched leading indicators, with a history dating back to the 1970s and methodology revisions carried out in 1998, 2006, and 2014. In its current form, the barometer is anchored to a reference series measuring the month-on-month change in Swiss GDP, derived from quarterly national accounts data produced by the Swiss Federal Statistical Office and trimestrialized by the State Secretariat for Economic Affairs. It is constructed from a pool of more than 500 candidate economic indicators spanning manufacturing, construction, banking and financial services, retail trade, and foreign demand conditions. Each autumn, a transparent selection process retains only those variables that satisfy two criteria: a plausible economic relationship with Swiss GDP growth and a statistically significant cross-correlation with the reference series. On average, more than 300 variables are incorporated in any given year, with the composition varying annually to allow the barometer to adapt to structural changes in the Swiss economy. No smoothing is applied to the final indicator, preserving the timeliness of the cyclical signal. A reading above the long-run average of 100 signals above-average near-term economic momentum, while readings below 100 indicate below-average conditions. Reported as a diffusion index, not seasonally adjusted, released monthly.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r KOF CH BAR, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+# Get serie
+data <- get_series("kof_bar_ch")
+
+# Summarise for llm 
+# sum_ch_bar <- summarize_for_ollama_chat(df = data)
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE))
+```
+
+```{=html}
+</div>
+```
+
+### KOF Global Barometer
+
+```{r KOF GL BAR TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'KOF — <a href="https://kof.ethz.ch/fr/previsions-indicateurs/indicateurs/kof-globalbaro.html" target="_blank">link</a>',
+  frequency = "Monthly",
+  adjustment = "Seasonally adjusted",
+  about = "KOF-FGV Global Economic Barometer measures the state and near-term trajectory of the global economy, published monthly by the KOF Swiss Economic Institute at ETH Zurich in collaboration with the Fundação Getúlio Vargas (FGV) in Brazil. The system comprises two sub-indicators: a coincident indicator, which tracks global economic conditions in real time, and a leading indicator, which anticipates global business cycle turning points by approximately six months. Both indicators draw primarily from business tendency surveys conducted across more than 50 countries, with the advantage that survey data are available in near real time and are not subject to significant subsequent revisions. The coincident indicator incorporates more than 1,000 time series and the leading indicator more than 600, with series selected on the basis of cross-correlation analysis against a reference series defined as the annual growth rate of world GDP, with national GDPs aggregated using purchasing power parity weights. Only series exhibiting both sufficient correlation and appropriate timing relative to the reference series, coincident or leading, are retained. The selected series are then aggregated using a Partial Least Squares methodology and calibrated so that the long-run mean equals 100 and the long-run standard deviation equals 10, facilitating intuitive interpretation of deviations from trend. Both barometers are recalculated in full each month, typically during the first week of the calendar month, which may produce minor revisions to previously published values. Reported as a composite index, released monthly.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r KOF GL BAR, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+# Get serie
+data <- get_series(c("kof_bar_gl_coinci","kof_bar_gl_lead")) 
+
+# Summarise for llm 
+# sum_gl_bar <- summarize_for_ollama_chat(df = data)
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, title = "KOF BAROMETER GLOBAL"))
+```
+
+```{=html}
+</div>
+```
+
+### KOF Business Sentiment
+
+```{r KOF BS TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'KOF — <a href="https://kof.ethz.ch/fr/previsions-indicateurs/indicateurs/kof-indicateur-situation-affaires.html" target="_blank">link</a>',
+  frequency = "Monthly",
+  adjustment = "Seasonally adjusted",
+  about = "KOF Business Situation Indicator measures the current assessment of business conditions across the Swiss private sector, published by the KOF Swiss Economic Institute at ETH Zurich from its monthly and quarterly business surveys covering more than 4,500 firms. Each month, companies in manufacturing, retail trade, construction, engineering and consulting services, financial and insurance services, and other services are surveyed; hospitality and wholesale trade firms are surveyed quarterly, in the first month of each new quarter. Respondents assess their current business situation as good, satisfactory, or poor, and the indicator is computed as the net balance — the difference between the share of good and poor responses, aggregated across all participating sectors and weighted to reflect their contribution to the Swiss economy. For sectors surveyed only quarterly, the reported value is held constant across intervening months. The published figures are seasonally adjusted. Because the indicator directly captures firm-level perceptions of current conditions rather than deriving them from hard activity data, it provides a timely and forward-looking signal of the state of the Swiss business cycle, typically available ahead of official output and activity statistics, and serves as a key input for anticipating near-term developments in Swiss GDP growth. Reported as a net balance in percentage points, seasonally adjusted, released monthly.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r KOF BS, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+# Get serie
+data <- get_series("kof_ind_busen") %>% 
+  na.omit()
+
+# Summarise for llm 
+# sum_bs_ind <- summarize_for_ollama_chat(df = data) 
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE))
+```
+
+```{=html}
+</div>
+```
+
+### KOF Economic Sentiment 
+
+```{r KOF ES TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'KOF — <a href="https://kof.ethz.ch/fr/previsions-indicateurs/indicateurs/kof-indice-climat-economique.html" target="_blank">link</a>',
+  frequency = "Monthly",
+  adjustment = "Seasonally adjusted",
+  about = "KOF Economic Sentiment Indicator measures the overall economic sentiment in Switzerland, published by the KOF Swiss Economic Institute at ETH Zurich from its business tendency surveys and from consumer surveys conducted by the State Secretariat for Economic Affairs (SECO). It is constructed using the methodology of the European Commission, the same framework applied to all EU member states and euro area aggregates, making it directly comparable to the Economic Sentiment Indicator published for the European Union and the euro area, and thereby allowing Swiss business cycle dynamics to be assessed against those of Switzerland\'s main trading partners on a consistent methodological basis. The composite is assembled from sector-level confidence indicators derived from individual survey responses across five components, weighted as follows: manufacturing (40%), other services (30%), consumer confidence as measured by SECO surveys (20%), construction (5%), and retail trade (5%). The dominant weight assigned to manufacturing reflects its central role in Swiss export activity and GDP, while the inclusion of consumer confidence introduces a demand-side dimension alongside the supply-side business survey components. Reported as a composite index, released monthly.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r KOF ES, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+# Get serie
+data <- get_series(c("kof_ind_ch_es", "kof_ind_eu_es"))
+
+# Summarise for llm 
+# sum_es_ind <- summarize_for_ollama_chat(df = data)
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = TRUE, title = "KOF ECONOMIC SENTIMENT INDICATOR"))
+```
+
+```{=html}
+</div>
+```
+
+<!-- ####################################################################### -->
+<!-- Geopolitics Indices  -->
+<!-- ####################################################################### -->
+
+## Geopolitics Indices
+
+```{=html}
+<div class="company-hero">
+  <div class="co-body">
+    <div class="masthead-title">Geopolitics & Uncertainty</div>
+  </div>
+</div>
+```
+
+### Policy Uncertainty Index
+
+```{r EPU TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'EPU — <a href="https://www.policyuncertainty.com/" target="_blank">link</a>',
+  frequency = "Monthly",
+  adjustment = "Not Adjusted",
+  about = 'Economic Policy Uncertainty Indices measure the degree of uncertainty surrounding economic policy across multiple countries and global aggregates, developed by Baker, Bloom, and Davis. Each national index is constructed by combining three components: the frequency of newspaper articles mentioning economic uncertainty and policy-related terms, the number of federal tax code provisions set to expire in coming years, and the dispersion of economic forecasts among professional forecasters, with the relative weighting of components varying by country based on data availability. The series covers the United States (EPUUS), Canada (EPUCAN), the United Kingdom (EPUUK), Germany (EPUDE), France (EPUFR), Spain (EPUES), Italy (EPUIT), and a Europe-wide aggregate (EPUEU), as well as two global composite indices: one weighted by purchasing power parity-adjusted GDP (GEPU_PPP) and one weighted by current nominal GDP (GEPU_CURRENT), the latter giving greater weight to larger economies at current exchange rates. Elevated readings signal heightened uncertainty about the direction of fiscal, regulatory, monetary, or trade policy, which tends to suppress business investment, hiring, and consumer spending as firms and households delay decisions pending greater clarity, making the indices useful coincident-to-leading indicators of economic activity slowdowns and financial market volatility. All series are reported as diffusion indices normalized to a long-run mean of 100, not seasonally adjusted, released monthly.')
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r EPU, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("us_epu","global_epu_ppp","global_epu", "ca_epu", "uk_epu", "de_epu", "fr_epu", "eu_epu", "es_epu", "it_epu")) %>% 
+  na.omit()
+
+# Plot series
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, title = "Economic Policy Uncertainty Index for US, Canada, United Kingdom, Germany, France, Spain, Italy, Europe and Global"))
+
+```
+
+```{=html}
+</div>
+```
+
+### Geopolitical Risk Index
+
+```{r GRP TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = '<GPR — a href="https://www.matteoiacoviello.com/gpr.htm" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = 'Geopolitical Risk Index and its sub-components measure the level of geopolitical risk and associated uncertainty in the global environment, developed by Caldara and Iacoviello and published via their geopoliticalrisk.net platform. The headline daily GPR index is constructed by counting the frequency of articles in eleven major international newspapers that reference geopolitical tensions, conflicts, terrorism, and related threats, normalized to a historical baseline. It is decomposed into two distinct sub-indices: the Geopolitical Acts index, which captures realized adverse geopolitical events such as wars, terrorist attacks, and military escalations that have already materialized, and the Geopolitical Threats index, which captures forward-looking references to potential geopolitical risks and tensions not yet realizedx, the distinction between the two allowing users to separate the impact of actual geopolitical shocks from the effect of anticipated or feared ones. Two smoothed variants are also provided: a 30-day moving average that filters high-frequency noise to reveal the medium-term trend in geopolitical risk, and a 7-day moving average that preserves more near-term signal while reducing daily volatility. Elevated readings are associated with increased safe-haven demand, higher risk premia across financial markets, reduced business investment, and upward pressure on commodity prices including oil and gold. All series are reported as diffusion indices normalized to a historical mean of 100, not seasonally adjusted, released daily.')
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r GRP 1, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("gpr","gpr_act","gpr_threat"))
+
+# Plot series
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, title = "Geopolitical Risk Index, Geopolitical Acts index and Geopolitical Risk Threats Index"))
+
+```
+
+```{=html}
+</div>
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r GRP 2, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("gpr", "gpr_ma30", "gpr_ma7"))
+
+# Plot series
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, title = "Geopolitical Risk Index with 7 and 30 days moving average"))
+
+```
+
+```{=html}
+</div>
+```
+
+<!-- ####################################################################### -->
+<!-- Currency Index  -->
+<!-- ####################################################################### -->
+
+## Currency Index 
+
+```{=html}
+<div class="company-hero">
+  <div class="co-body">
+    <div class="masthead-title">Currency Index</div>
+  </div>
+</div>
+```
+
+### Nominal Broad US Dollar Index
+
+```{r NBUSI TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'FRED — <a href="https://fred.stlouisfed.org/series/DTWEXBGS" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "Nominal Broad US Dollar Index measures the value of the US dollar against a broad basket of foreign currencies, published by the Board of Governors of the Federal Reserve System from its H.10 Foreign Exchange Rates release. It is a trade-weighted index in which each foreign currency\'s weight reflects the corresponding country\'s share of US goods and services trade, encompassing both exports and imports, making it a more comprehensive gauge of overall dollar strength than narrower indices limited to major advanced-economy currencies. The basket covers currencies of both advanced and emerging market economies that are significant US trading partners, including the euro, Chinese renminbi, Canadian dollar, Mexican peso, Japanese yen, and British pound, among others. Because weights are based on trade flows rather than financial market volumes, the index more directly captures the competitiveness implications of dollar movements for US exporters and importers. A rising index indicates that the US. dollar is appreciating against its trading partners\' currencies, which tends to make US exports more expensive and less competitive abroad while reducing the cost of imports, and simultaneously exerts downward pressure on dollar-denominated commodity prices including gold and oil. A declining index signals dollar depreciation, improving US export competitiveness, increasing import costs, and typically supporting commodity prices. Indexed to January 2006 equal to 100, not seasonally adjusted, released daily.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r NBUSI, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "trade_dol_idx_fd")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE))
+
+```
+
+```{=html}
+</div>
+```
+

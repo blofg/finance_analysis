@@ -85,7 +85,7 @@ chart_note <- function(text) {
 <!-- ── MASTHEAD ─────────────────────────────────────────────────────────────── -->
 <div class="masthead">
   <div class="masthead-eyebrow">Equity Research · Technology </div>
-  <div class="masthead-title">Magnificent 7 <span>Tesla</span></div>
+  <div class="masthead-title">Magnificent 7 <span>— Tesla</span></div>
   <div class="masthead-date">Report date: `r format(Sys.Date(), '%B %d, %Y')`</div>
 </div>
 ```
@@ -516,7 +516,7 @@ tagList(
 <div class="perf-section">
 ```
 
-```{r TSLA FS IS A, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+```{r TSLA FS IS A, echo=FALSE, results='asis', message=TRUE, warning=FALSE}
 
 # Produce table
 tryCatch(
@@ -533,7 +533,7 @@ tryCatch(
 <div class="perf-section">
 ```
 
-```{r TSLA FS IS Q, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+```{r TSLA FS IS Q, echo=FALSE, results='asis', message=TRUE, warning=FALSE}
 
 # Produce table
 tryCatch(
@@ -577,7 +577,7 @@ tryCatch(
 <div class="perf-section">
 ```
 
-```{r TSLA FS BS A, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+```{r TSLA FS BS A, echo=FALSE, results='asis', message=TRUE, warning=FALSE}
 
 # Produce table
 tryCatch(
@@ -594,7 +594,7 @@ tryCatch(
 <div class="perf-section">
 ```
 
-```{r TSLA FS BS Q, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+```{r TSLA FS BS Q, echo=FALSE, results='asis', message=TRUE, warning=FALSE}
 
 # Produce table
 tryCatch(
@@ -624,7 +624,7 @@ tryCatch(
 <div class="perf-section">
 ```
 
-```{r TSLA FS CF A, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+```{r TSLA FS CF A, echo=FALSE, results='asis', message=TRUE, warning=FALSE}
 
 
 # Produce table
@@ -642,7 +642,7 @@ tryCatch(
 <div class="perf-section">
 ```
 
-```{r TSLA FS CF Q, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+```{r TSLA FS CF Q, echo=FALSE, results='asis', message=TRUE, warning=FALSE}
 
 # Produce table
 tryCatch(

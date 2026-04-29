@@ -20,3 +20,4 @@ path_rds_all <- paste0(path_rds_folder,"series_store_all.rds")
 # Save the data base with all series in a RDS file 
 saveRDS(series_database, path_rds_all)
 
+
