@@ -123,14 +123,16 @@ finance_analysis/
 ## Reports Generated
 
 ### Geographic Reports (`html/geo_reports/`)
-Macroeconomic and financial reports across major economies
+Macroeconomic and financial reports across major economies:
+
 - **United States** (`us_report_html.Rmd`)
 - **Europe** (`eu_report_html.Rmd`)
 - **Switzerland** (`ch_report_html.Rmd`)
 - **World** (`wrl_report_html.Rmd`)
 
 ### Market Reports (`html/market_reports/`)
-Financial and marekt reports
+Financial and marekt reports:
+
 - **Global Equity Indices** (`equity_index_report_html.Rmd`)
 - **Key Indices & Indicators** (`key_indices_and_indicators_report_html.Rmd`)
 - **Gold Fundamentals** (`gold_fundamentals_report_html.Rmd`)
