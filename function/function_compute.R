@@ -309,7 +309,7 @@ compute_time_data <- function(file, label) {
   # Output   : message with the time it took to source the file
   #-----------------------------------------------------------------------------
   t <- system.time(source(file))
-  message(sprintf("%s: %.2f sec", label, t["elapsed"] / 60))
+  message(sprintf("%s: %.2f min", label, t["elapsed"] / 60))
 }
 
 # Function to render and compute a Rmd script takes
@@ -323,7 +323,7 @@ compute_time_render <- function(file, output_dir, label, llm_analysis = FALSE) {
   # Output   : message with the time it took to render the file
   #-----------------------------------------------------------------------------
   t <- system.time(render(file, output_dir = output_dir, params = list(llm_analysis = llm_analysis)))
-  message(sprintf("%s: %.2f sec", label, t["elapsed"] / 60))
+  message(sprintf("%s: %.2f min", label, t["elapsed"] / 60))
 }
 
 
