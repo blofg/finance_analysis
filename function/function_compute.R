@@ -300,7 +300,31 @@ compute_moving_average <- function(df, date_col, value_col) {
   return(df)
 }
 
+# Function to source and compute a time a data script takes 
+compute_time_data <- function(file, label) {
+  #-----------------------------------------------------------------------------
+  # Function : Compute time a data script and display the time it took to run
+  # 1. Input : file  = path to the R file to source (character)
+  # 2. Input : label = label to display in the message (character)
+  # Output   : message with the time it took to source the file
+  #-----------------------------------------------------------------------------
+  t <- system.time(source(file))
+  message(sprintf("%s: %.2f sec", label, t["elapsed"] / 60))
+}
 
+# Function to render and compute a Rmd script takes
+compute_time_render <- function(file, output_dir, label, llm_analysis = FALSE) {
+  #-----------------------------------------------------------------------------
+  # Function : Compute time a Rmd script and display the time it took to run
+  # 1. Input : file         = path to the Rmd file to render (character)
+  # 2. Input : output_dir   = path to the output directory (character)
+  # 3. Input : label        = label to display in the message (character)
+  # 4. Input : llm_analysis = whether to run LLM analysis (logical, default FALSE)
+  # Output   : message with the time it took to render the file
+  #-----------------------------------------------------------------------------
+  t <- system.time(render(file, output_dir = output_dir, params = list(llm_analysis = llm_analysis)))
+  message(sprintf("%s: %.2f sec", label, t["elapsed"] / 60))
+}
 
 
 

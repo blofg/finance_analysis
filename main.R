@@ -1,5 +1,6 @@
 rm(list = ls())
 options(scipen = 999)
+start_total <- Sys.time()
 
 ################################################################################
 # Environment
@@ -27,71 +28,71 @@ source("initialization/input.R")             # |Inputs|
 # Call scripts to get data
 ################################################################################
 
-source("database/database_fred.R")         # |Fred database loading|
-source("database/database_yahoo.R")        # |Yahoo database loading|
-source("database/database_eurostat.R")     # |Eurostat database loading|
-source("database/database_ecb.R")          # |ECB database loading|
-source("database/database_oecd.R")         # |OECD database loading|
-source("database/database_investing.R")    # |Investing database loading|
-source("database/database_kof.R")          # |KOF database loading|
-source("database/database_kofnc.R")        # |KOF Nowcasting database loading|
-source("database/database_shiller.R")      # |Shiller database loading|
-source("database/database_buffet.R")       # |Buffet database loading|
-source("database/database_stoxx.R")        # |Investing database loading|
-source("database/database_euribor.R")      # |Euribor database loading|
-source("database/database_cnn.R")          # |CNN database loading|
-source("database/database_ccc.R")          # |CoinMarketCap database loading|
-source("database/database_imf.R")          # |IMF database loading|
-source("database/database_epu.R")          # |Economic Policy Uncertainty database loading|
-source("database/database_gpr.R")          # |Geopolitical Risk Index database loading|
-source("database/database_all.R")          # |All database interactive view|
+compute_time_data("database/database_fred.R",      "Fred database loading")                         # |Fred database loading|
+compute_time_data("database/database_yahoo.R",     "Yahoo database loading")                        # |Yahoo database loading|
+compute_time_data("database/database_eurostat.R",  "Eurostat database loading")                     # |Eurostat database loading|
+compute_time_data("database/database_ecb.R",       "ECB database loading")                          # |ECB database loading|
+compute_time_data("database/database_oecd.R",      "OECD database loading")                         # |OECD database loading|
+compute_time_data("database/database_investing.R", "Investing database loading")                    # |Investing database loading|
+compute_time_data("database/database_kof.R",       "KOF database loading")                          # |KOF database loading|
+compute_time_data("database/database_kofnc.R",     "KOF Nowcasting database loading")               # |KOF Nowcasting database loading|
+compute_time_data("database/database_shiller.R",   "Shiller database loading")                      # |Shiller database loading|
+compute_time_data("database/database_buffet.R",    "Buffet database loading")                       # |Buffet database loading|
+compute_time_data("database/database_stoxx.R",     "Stoxx database loading")                        # |Stoxx database loading|
+compute_time_data("database/database_euribor.R",   "Euribor database loading")                      # |Euribor database loading|
+compute_time_data("database/database_cnn.R",       "CNN database loading")                          # |CNN database loading|
+compute_time_data("database/database_ccc.R",       "CoinMarketCap database loading")                # |CoinMarketCap database loading|
+compute_time_data("database/database_imf.R",       "IMF database loading")                          # |IMF database loading|
+compute_time_data("database/database_epu.R",       "Economic Policy Uncertainty database loading")  # |Economic Policy Uncertainty database loading|
+compute_time_data("database/database_gpr.R",       "Geopolitical Risk Index database loading")      # |Geopolitical Risk Index database loading|
+compute_time_data("database/database_all.R",       "All database interactive view")                 # |Data from all sources loading|
 
 ################################################################################
 # Call markdown html documents
 ################################################################################
 
 # Geo reports
-render("html/geo_reports/markdown/us_report_html.Rmd",  output_dir = "html/geo_reports/output/", params = list(llm_analysis = FALSE))      # |US report markdown|
-render("html/geo_reports/markdown/eu_report_html.Rmd",  output_dir = "html/geo_reports/output/", params = list(llm_analysis = FALSE))      # |Europe report markdown|
-render("html/geo_reports/markdown/ch_report_html.Rmd",  output_dir = "html/geo_reports/output/", params = list(llm_analysis = FALSE))      # |Switzerland report markdown|
-render("html/geo_reports/markdown/wrl_report_html.Rmd", output_dir = "html/geo_reports/output/", params = list(llm_analysis = FALSE))      # |World report markdown|
+compute_time_render("html/geo_reports/markdown/us_report_html.Rmd",  "html/geo_reports/output/", "US report markdown")           # |US report markdown|
+compute_time_render("html/geo_reports/markdown/eu_report_html.Rmd",  "html/geo_reports/output/", "Europe report markdown")       # |Europe report markdown|
+compute_time_render("html/geo_reports/markdown/ch_report_html.Rmd",  "html/geo_reports/output/", "Switzerland report markdown")  # |Switzerland report markdown|
+compute_time_render("html/geo_reports/markdown/wrl_report_html.Rmd", "html/geo_reports/output/", "World report markdown")        # |World report markdown|
 
 # Market reports
-render("html/market_reports/markdown/equity_index_report_html.Rmd",                output_dir = "html/market_reports/output/", params = list(llm_analysis = FALSE))      # |Equity index markdown|
-render("html/market_reports/markdown/key_indices_and_indicators_report_html.Rmd",  output_dir = "html/market_reports/output/", params = list(llm_analysis = FALSE))      # |Key index markdown|
-render("html/market_reports/markdown/gold_fundamentals_report_html.Rmd",           output_dir = "html/market_reports/output/", params = list(llm_analysis = FALSE))      # |Gold fundamentals index markdown|
-render("html/market_reports/markdown/crypto_report_html.Rmd",                      output_dir = "html/market_reports/output/", params = list(llm_analysis = FALSE))      # |Crypto report markdown|render("html/market_reports/markdown/bond_marketr_report_html.Rmd",             output_dir = "html/market_reports/output/", params = list(llm_analysis = FALSE))      # |Bond market report markdown|
-render("html/market_reports/markdown/crypto_report_html.Rmd",                      output_dir = "html/market_reports/output/", params = list(llm_analysis = FALSE))      # |Crypto report markdown|
-render("html/market_reports/markdown/bond_market_report_html.Rmd",                 output_dir = "html/market_reports/output/", params = list(llm_analysis = FALSE))               # |Bond market report markdown|
+compute_time_render("html/market_reports/markdown/equity_index_report_html.Rmd",               "html/market_reports/output/", "Equity index markdown")            # |Equity index markdown|
+compute_time_render("html/market_reports/markdown/key_indices_and_indicators_report_html.Rmd", "html/market_reports/output/", "Key index markdown")               # |Key index markdown|
+compute_time_render("html/market_reports/markdown/gold_fundamentals_report_html.Rmd",          "html/market_reports/output/", "Gold fundamentals index markdown") # |Gold fundamentals index markdown|
+compute_time_render("html/market_reports/markdown/crypto_report_html.Rmd",                     "html/market_reports/output/", "Crypto report markdown")           # |Crypto report markdown|
+compute_time_render("html/market_reports/markdown/bond_market_report_html.Rmd",                "html/market_reports/output/", "Bond market report markdown")      # |Bond market report markdown|
 
 # Share reports
-render("html/share_reports/mag7/markdown/magnificent_aapl_report_html.Rmd",      output_dir = "html/share_reports/mag7/output/", params = list(llm_analysis = FALSE))      # |Magnificent Apple report markdown|
-render("html/share_reports/mag7/markdown/magnificent_msft_report_html.Rmd",      output_dir = "html/share_reports/mag7/output/", params = list(llm_analysis = FALSE))      # |Magnificent Microsoft report markdown|
-render("html/share_reports/mag7/markdown/magnificent_googl_report_html.Rmd",     output_dir = "html/share_reports/mag7/output/", params = list(llm_analysis = FALSE))      # |Magnificent Google markdown|
-render("html/share_reports/mag7/markdown/magnificent_nvda_report_html.Rmd",      output_dir = "html/share_reports/mag7/output/", params = list(llm_analysis = FALSE))      # |Magnificent Nvidia markdown|
-render("html/share_reports/mag7/markdown/magnificent_amzn_report_html.Rmd",      output_dir = "html/share_reports/mag7/output/", params = list(llm_analysis = FALSE))      # |Magnificent Amazon markdown|
-render("html/share_reports/mag7/markdown/magnificent_meta_report_html.Rmd",      output_dir = "html/share_reports/mag7/output/", params = list(llm_analysis = FALSE))      # |Magnificent Meta report markdown|
-render("html/share_reports/mag7/markdown/magnificent_tsla_report_html.Rmd",      output_dir = "html/share_reports/mag7/output/", params = list(llm_analysis = FALSE))      # |Magnificent Tesla report markdown|
+compute_time_render("html/share_reports/mag7/markdown/magnificent_aapl_report_html.Rmd",  "html/share_reports/mag7/output/", "Magnificent Apple report markdown")     # |Magnificent Apple report markdown|
+compute_time_render("html/share_reports/mag7/markdown/magnificent_msft_report_html.Rmd",  "html/share_reports/mag7/output/", "Magnificent Microsoft report markdown") # |Magnificent Microsoft report markdown|
+compute_time_render("html/share_reports/mag7/markdown/magnificent_googl_report_html.Rmd", "html/share_reports/mag7/output/", "Magnificent Google markdown")           # |Magnificent Google markdown|
+compute_time_render("html/share_reports/mag7/markdown/magnificent_nvda_report_html.Rmd",  "html/share_reports/mag7/output/", "Magnificent Nvidia markdown")           # |Magnificent Nvidia markdown|
+compute_time_render("html/share_reports/mag7/markdown/magnificent_amzn_report_html.Rmd",  "html/share_reports/mag7/output/", "Magnificent Amazon markdown")           # |Magnificent Amazon markdown|
+compute_time_render("html/share_reports/mag7/markdown/magnificent_meta_report_html.Rmd",  "html/share_reports/mag7/output/", "Magnificent Meta report markdown")      # |Magnificent Meta report markdown|
+compute_time_render("html/share_reports/mag7/markdown/magnificent_tsla_report_html.Rmd",  "html/share_reports/mag7/output/", "Magnificent Tesla report markdown")     # |Magnificent Tesla report markdown|
 
 ################################################################################
 # Publish reports to GitHub financial report page
 ################################################################################
 
 source("publish.R")            # |Publish on Git|
-source("stock_analysis.R")     # |stock analysis|
 
 ################################################################################
 # Clean
 ################################################################################
 
 # Clean Data interface
-rm(list = Filter(function(x) is.data.frame(get(x)) && !grepl("series|input", x), ls()))
+rm(list = Filter(function(x) (is.data.frame(get(x)) || is.list(get(x)) || is.matrix(get(x)) || is.array(get(x))) && !grepl("series|input", x), ls()))
+message(sprintf("Total loading time: %.2f min", as.numeric(Sys.time() - start_total) / 60))
 
 ################################################################################
 # Display Metadata 
 ################################################################################
 
-source("metadata_display.R")     # |Metadata display with view button|
+source("database/metadata_display.R")     # |Metadata display with view button|
+
 
 
 
@@ -104,7 +105,7 @@ source("metadata_display.R")     # |Metadata display with view button|
 # ToDo
 ################################################################################
 
-
+source("stock_analysis.R")     # |stock analysis|
 
 
 # Probability risque neutral approach 2 de first finance 

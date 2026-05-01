@@ -36,9 +36,10 @@ get_financial <- function(id, aq, fs) {
   # 3. Input : fs      = statement type (character : "I" income, "B" balance sheet, "C" cash flow)
   # Output   : dataframe with financial statements. 
   #-----------------------------------------------------------------------------
-  # build URL
+  Sys.sleep(4)
+  # Build URL
   URL <- paste0("https://finviz.com/api/statement.ashx?t=",id,"&s=F&s=",fs,aq)
-  # headers (browser-like)
+  # Headers (browser-like)
   headers <- c(
     "Host" = "finviz.com",
     "User-Agent" = "Mozilla/5.0",
@@ -130,25 +131,35 @@ get_investing_market_series <- function(id, date_from = "1985-01-01", date_to = 
     # Convert dates to UNIX timestamps (UTC) as required by the API
     ts_from <- as.integer(as.POSIXct(paste(starts[i], "00:00:00"), tz = "UTC"))
     ts_to   <- as.integer(as.POSIXct(paste(ends[i],   "23:59:59"), tz = "UTC"))
-    # Current timestamp, embedded in the URL path
-    ts_now  <- as.integer(Sys.time())
-    # Build the TVC API URL with symbol, resolution (D = daily) and date range
-    url <- sprintf("https://tvc6.investing.com/%s/%d/56/56/23/history?symbol=%d&resolution=D&from=%d&to=%d", HASH, ts_now, id, ts_from, ts_to)
-    # GET request with browser-like headers to avoid bot detection (timeout 30s), return NULL on network error instead of crashing
-    resp <- tryCatch(GET(url, add_headers(`User-Agent` = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.102 Safari/537.36", `Accept` = "*/*", `Accept-Language` = "en-US,en;q=0.9", `content-type` = "text/plain", `Origin` = "https://tvc-invdn-com.investing.com", `Referer` = "https://tvc-invdn-com.investing.com/", `sec-fetch-dest` = "empty", `sec-fetch-mode` = "cors", `sec-fetch-site` = "same-site"), timeout(30)), error = function(e) NULL)
-    # Process response only if the request succeeded (HTTP 200)
-    if (!is.null(resp) && status_code(resp) == 200) {
-      # Parse JSON body, return NULL on malformed JSON
-      json <- tryCatch(fromJSON(content(resp, "text", encoding = "UTF-8")), error = function(e) NULL)
-      # Validate API response : status must be "ok" and timestamps non-empty
-      if (!is.null(json) && !is.null(json$s) && json$s == "ok" && length(json$t) > 0) {
-        # Convert UNIX timestamps to Date, extract closing prices, remove rows with missing close price
-        chunk <- tibble(date = as.Date(as.POSIXct(as.numeric(json$t), tz = "UTC")), value = as.numeric(json$c)) %>% filter(!is.na(value))
-        message(sprintf("    ✓ %d rows | last = %.2f", nrow(chunk), tail(chunk$value, 1)))
-        # Polite delay between requests to avoid rate-limiting (except after last chunk)
-        if (i < length(starts)) Sys.sleep(0.8)
-        return(chunk)}}
-    return(NULL)})
+    # Retry loop : up to 3 attempts, waiting 2 minutes between failures
+    attempt <- 1L
+    repeat {
+      # Current timestamp, embedded in the URL path (refreshed at each attempt)
+      ts_now <- as.integer(Sys.time())
+      # Build the TVC API URL with symbol, resolution (D = daily) and date range
+      url <- sprintf("https://tvc6.investing.com/%s/%d/56/56/23/history?symbol=%d&resolution=D&from=%d&to=%d", HASH, ts_now, id, ts_from, ts_to)
+      # GET request with browser-like headers to avoid bot detection (timeout 30s), return NULL on network error instead of crashing
+      resp <- tryCatch(GET(url, add_headers(`User-Agent` = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.102 Safari/537.36", `Accept` = "*/*", `Accept-Language` = "en-US,en;q=0.9", `content-type` = "text/plain", `Origin` = "https://tvc-invdn-com.investing.com", `Referer` = "https://tvc-invdn-com.investing.com/", `sec-fetch-dest` = "empty", `sec-fetch-mode` = "cors", `sec-fetch-site` = "same-site"), timeout(30)), error = function(e) NULL)
+      # Process response only if the request succeeded (HTTP 200)
+      if (!is.null(resp) && status_code(resp) == 200) {
+        # Parse JSON body, return NULL on malformed JSON
+        json <- tryCatch(fromJSON(content(resp, "text", encoding = "UTF-8")), error = function(e) NULL)
+        # Validate API response : status must be "ok" and timestamps non-empty
+        if (!is.null(json) && !is.null(json$s) && json$s == "ok" && length(json$t) > 0) {
+          # Convert UNIX timestamps to Date, extract closing prices, remove rows with missing close price
+          chunk <- tibble(date = as.Date(as.POSIXct(as.numeric(json$t), tz = "UTC")), value = as.numeric(json$c)) %>% filter(!is.na(value))
+          message(sprintf("    ✓ %d rows | last = %.2f", nrow(chunk), tail(chunk$value, 1)))
+          # Polite delay between requests to avoid rate-limiting (except after last chunk)
+          if (i < length(starts)) Sys.sleep(0.8)
+          return(chunk)}}
+      # Skip chunk after 3 failed attempts
+      if (attempt >= 3L) {
+        message(sprintf("    ✗ Chunk %d/%d failed after 3 attempts — skipping.", i, length(starts)))
+        return(NULL)}
+      # Wait 2 minutes before retrying
+      message(sprintf("    ✗ Attempt %d failed. Waiting 2 minutes before retry...", attempt))
+      Sys.sleep(120)
+      attempt <- attempt + 1L}})
   # Combine all chunks, remove duplicate dates, sort chronologically
   bind_rows(chunks) %>% distinct(date, .keep_all = TRUE) %>% arrange(date)
 }

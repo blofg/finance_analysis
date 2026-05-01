@@ -3,9 +3,6 @@
 # Database for all series
 ################################################################################
 
-# Interactive view of the complete database (with all series)
-print(datatable(input_database))               
-
 # Create a list with all series from each database
 series_database <- setNames(do.call(c, mget(ls(pattern = "^series_"))), gsub("^[^.]+\\.", "", names(do.call(c, mget(ls(pattern = "^series_"))))))
 
