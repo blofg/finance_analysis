@@ -15,7 +15,8 @@ market_reports <- list(
   "key_indices_and_indicators_report_html.html"  = file.path(path_main, "html/market_reports/output"),
   "gold_fundamentals_report_html.html"           = file.path(path_main, "html/market_reports/output"),
   "crypto_report_html.html"                      = file.path(path_main, "html/market_reports/output"),
-  "bond_market_report_html.html"                = file.path(path_main, "html/market_reports/output")
+  "bond_market_report_html.html"                 = file.path(path_main, "html/market_reports/output"),
+  "commodities_report_html.html"                 = file.path(path_main, "html/market_reports/output")
 )
 
 # Share reports: Magnificent 7 

@@ -953,27 +953,34 @@ input_database <- tribble(
   # ============================= COMMODITIES ==================================
   
   # Energy 
-  "BZ=F",                    "fut_brent_crude",     "Brent crude oil futures (front contract)",                                                                            "yahoo",     "D",            NA,      "usd",   "NA",
-  "CL=F",                    "fut_wti_crude",       "WTI crude oil futures (front contract)",                                                                              "yahoo",     "D",            NA,      "usd",   "NA",
-  "NG=F",                    "fut_natural_gas",     "Natural gas futures (front contract)",                                                                                "yahoo",     "D",            NA,      "usd",   "NA",
-  "HO=F",                    "fut_heating_oil",     "Heating oil futures",                                                                                                 "yahoo",     "D",            NA,      "usd",   "NA",
-  "RB=F",                    "fut_rbob_gasoline",   "RBOB gasoline futures (gasoline benchmark)",                                                                          "yahoo",     "D",            NA,      "usd",   "NA",
+  "BZ=F",                    "fut_brent_crude",       "Brent crude oil futures (front contract)",                           "yahoo",       "D",   NA,   "usd",   "NA",
+  "CL=F",                    "fut_wti_crude",         "WTI crude oil futures (front contract)",                             "yahoo",       "D",   NA,   "usd",   "NA",
+  "NG=F",                    "fut_natural_gas",       "Natural gas futures (front contract)",                               "yahoo",       "D",   NA,   "usd",   "NA",
+  "HO=F",                    "fut_heating_oil",       "Heating oil futures",                                                "yahoo",       "D",   NA,   "usd",   "NA",
+  "RB=F",                    "fut_rbob_gasoline",     "RBOB gasoline futures (gasoline benchmark)",                         "yahoo",       "D",   NA,   "usd",   "NA",
+  # Metals
+  "GC=F",                    "fut_gold",              "Gold futures (COMEX front contract)",                                "yahoo",       "D",   NA,   "usd",   "NA",
+  "SI=F",                    "fut_silver",            "Silver futures (COMEX front contract)",                              "yahoo",       "D",   NA,   "usd",   "NA",
+  "HG=F",                    "fut_copper",            "Copper futures (COMEX front contract)",                              "yahoo",       "D",   NA,   "usd",   "NA",
+  "PL=F",                    "fut_platinum",          "Platinum futures",                                                   "yahoo",       "D",   NA,   "usd",   "NA",
+  "PA=F",                    "fut_palladium",         "Palladium futures",                                                  "yahoo",       "D",   NA,   "usd",   "NA",
+  "ALI=F",                   "fut_aluminium",         "Aluminium futures (COMEX front contract)",                           "yahoo",       "D",   NA,   "usd",   "NA",
+  # Agriculture
+  "ZC=F",                    "fut_corn",              "Corn futures (CBOT front contract)",                                 "yahoo",       "D",   NA,   "usd",   "NA",
+  "ZW=F",                    "fut_wheat",             "Wheat futures (CBOT front contract)",                                "yahoo",       "D",   NA,   "usd",   "NA",
+  "ZS=F",                    "fut_soybeans",          "Soybean futures (CBOT front contract)",                              "yahoo",       "D",   NA,   "usd",   "NA",
+  "KC=F",                    "fut_coffee",            "Coffee (Arabica) futures",                                           "yahoo",       "D",   NA,   "usd",   "NA",
+  "CC=F",                    "fut_cocoa",             "Cocoa futures",                                                      "yahoo",       "D",   NA,   "usd",   "NA",
+  "CT=F",                    "fut_cotton",            "Cotton futures",                                                     "yahoo",       "D",   NA,   "usd",   "NA",
+  "SB=F",                    "fut_sugar",             "Sugar futures",                                                      "yahoo",       "D",   NA,   "usd",   "NA",
+  "LE=F",                    "fut_live_cattle",       "Live cattle futures (CME front contract)",                           "yahoo",       "D",   NA,   "usd",   "NA",
+  "HE=F",                    "fut_lean_hogs",         "Lean hogs futures (CME front contract)",                             "yahoo",       "D",   NA,   "usd",   "NA",
+  "OJ=F",                    "fut_orange_juice",      "Orange juice futures (ICE front contract)",                          "yahoo",       "D",   NA,   "usd",   "NA",
+  "LBS=F",                   "fut_lumber",            "Lumber futures (CME front contract)",                                "yahoo",       "D",   NA,   "usd",   "NA",
   
-  # Metals 
-  "GC=F",                    "fut_gold",            "Gold futures (COMEX front contract)",                                                                                 "yahoo",     "D",            NA,      "usd",   "NA",
-  "SI=F",                    "fut_silver",          "Silver futures (COMEX front contract)",                                                                               "yahoo",     "D",            NA,      "usd",   "NA",
-  "HG=F",                    "fut_copper",          "Copper futures (COMEX front contract)",                                                                               "yahoo",     "D",            NA,      "usd",   "NA",
-  "PL=F",                    "fut_platinum",        "Platinum futures",                                                                                                    "yahoo",     "D",            NA,      "usd",   "NA",
-  "PA=F",                    "fut_palladium",       "Palladium futures",                                                                                                   "yahoo",     "D",            NA,      "usd",   "NA",
-  
-  # Agriculture 
-  "ZC=F",                    "fut_corn",            "Corn futures (CBOT front contract)",                                                                                  "yahoo",     "D",            NA,      "usd",   "NA",
-  "ZW=F",                    "fut_wheat",           "Wheat futures (CBOT front contract)",                                                                                 "yahoo",     "D",            NA,      "usd",   "NA",
-  "ZS=F",                    "fut_soybeans",        "Soybean futures (CBOT front contract)",                                                                               "yahoo",     "D",            NA,      "usd",   "NA",
-  "KC=F",                    "fut_coffee",          "Coffee (Arabica) futures",                                                                                            "yahoo",     "D",            NA,      "usd",   "NA",
-  "CC=F",                    "fut_cocoa",           "Cocoa futures",                                                                                                       "yahoo",     "D",            NA,      "usd",   "NA",
-  "CT=F",                    "fut_cotton",          "Cotton futures",                                                                                                      "yahoo",     "D",            NA,      "usd",   "NA",
-  "SB=F",                    "fut_sugar",           "Sugar futures",                                                                                                       "yahoo",     "D",            NA,      "usd",   "NA",  
+  # Commodity Indices
+  "^SPGSCI",                 "idx_spgsci",            "S&P GSCI broad commodity index",                                     "yahoo",       "D",   NA,   "usd",   "NA",
+  "BCOM",                    "idx_bcom",              "Bloomberg Commodity Index (BCOM)",                                   "investing",   "D",   NA,   "usd",   "NA",
   
   # ================================= INDEX ====================================
   

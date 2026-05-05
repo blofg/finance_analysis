@@ -1,6 +1,5 @@
 rm(list = ls())
 options(scipen = 999)
-start_total <- Sys.time()
 
 ################################################################################
 # Environment
@@ -28,6 +27,9 @@ source("initialization/input.R")             # |Inputs|
 # Call scripts to get data
 ################################################################################
 
+# Compute entire running time for HTML creation
+start_time <- Sys.time()
+
 compute_time_data("database/database_fred.R",      "Fred database loading")                         # |Fred database loading|
 compute_time_data("database/database_yahoo.R",     "Yahoo database loading")                        # |Yahoo database loading|
 compute_time_data("database/database_eurostat.R",  "Eurostat database loading")                     # |Eurostat database loading|
@@ -47,9 +49,16 @@ compute_time_data("database/database_epu.R",       "Economic Policy Uncertainty 
 compute_time_data("database/database_gpr.R",       "Geopolitical Risk Index database loading")      # |Geopolitical Risk Index database loading|
 compute_time_data("database/database_all.R",       "All database interactive view")                 # |Data from all sources loading|
 
+# Running time 
+end_time <- Sys.time()
+cat("✅ Total :", round(difftime(end_time, start_time, units = "mins"), 2), "minutes\n")
+
 ################################################################################
 # Call markdown html documents
 ################################################################################
+
+# Compute entire running time for HTML creation
+start_time <- Sys.time()
 
 # Geo reports
 compute_time_render("html/geo_reports/markdown/us_report_html.Rmd",  "html/geo_reports/output/", "US report markdown")           # |US report markdown|
@@ -58,11 +67,12 @@ compute_time_render("html/geo_reports/markdown/ch_report_html.Rmd",  "html/geo_r
 compute_time_render("html/geo_reports/markdown/wrl_report_html.Rmd", "html/geo_reports/output/", "World report markdown")        # |World report markdown|
 
 # Market reports
-compute_time_render("html/market_reports/markdown/equity_index_report_html.Rmd",               "html/market_reports/output/", "Equity index markdown")            # |Equity index markdown|
-compute_time_render("html/market_reports/markdown/key_indices_and_indicators_report_html.Rmd", "html/market_reports/output/", "Key index markdown")               # |Key index markdown|
-compute_time_render("html/market_reports/markdown/gold_fundamentals_report_html.Rmd",          "html/market_reports/output/", "Gold fundamentals index markdown") # |Gold fundamentals index markdown|
-compute_time_render("html/market_reports/markdown/crypto_report_html.Rmd",                     "html/market_reports/output/", "Crypto report markdown")           # |Crypto report markdown|
-compute_time_render("html/market_reports/markdown/bond_market_report_html.Rmd",                "html/market_reports/output/", "Bond market report markdown")      # |Bond market report markdown|
+compute_time_render("html/market_reports/markdown/equity_index_report_html.Rmd",               "html/market_reports/output/", "Equity index markdown")               # |Equity index markdown|
+compute_time_render("html/market_reports/markdown/key_indices_and_indicators_report_html.Rmd", "html/market_reports/output/", "Key index markdown")                  # |Key index markdown|
+compute_time_render("html/market_reports/markdown/gold_fundamentals_report_html.Rmd",          "html/market_reports/output/", "Gold fundamentals index markdown")    # |Gold fundamentals index markdown|
+compute_time_render("html/market_reports/markdown/crypto_report_html.Rmd",                     "html/market_reports/output/", "Crypto report markdown")              # |Crypto report markdown|
+compute_time_render("html/market_reports/markdown/bond_market_report_html.Rmd",                "html/market_reports/output/", "Bond market report markdown")         # |Bond market report markdown|
+compute_time_render("html/market_reports/markdown/commodities_report_html.Rmd",                "html/market_reports/output/", "Commodities market report markdown")  # |Commodities market report markdown|
 
 # Share reports
 compute_time_render("html/share_reports/mag7/markdown/magnificent_aapl_report_html.Rmd",  "html/share_reports/mag7/output/", "Magnificent Apple report markdown")     # |Magnificent Apple report markdown|
@@ -73,6 +83,10 @@ compute_time_render("html/share_reports/mag7/markdown/magnificent_amzn_report_ht
 compute_time_render("html/share_reports/mag7/markdown/magnificent_meta_report_html.Rmd",  "html/share_reports/mag7/output/", "Magnificent Meta report markdown")      # |Magnificent Meta report markdown|
 compute_time_render("html/share_reports/mag7/markdown/magnificent_tsla_report_html.Rmd",  "html/share_reports/mag7/output/", "Magnificent Tesla report markdown")     # |Magnificent Tesla report markdown|
 
+# Running time 
+end_time <- Sys.time()
+cat("✅ Total :", round(difftime(end_time, start_time, units = "mins"), 2), "minutes\n")
+
 ################################################################################
 # Publish reports to GitHub financial report page
 ################################################################################
@@ -80,12 +94,10 @@ compute_time_render("html/share_reports/mag7/markdown/magnificent_tsla_report_ht
 source("publish.R")            # |Publish on Git|
 
 ################################################################################
-# Clean
+# Clean Data interface and compute the time 
 ################################################################################
 
-# Clean Data interface
 rm(list = Filter(function(x) (is.data.frame(get(x)) || is.list(get(x)) || is.matrix(get(x)) || is.array(get(x))) && !grepl("series|input", x), ls()))
-message(sprintf("Total loading time: %.2f min", as.numeric(Sys.time() - start_total) / 60))
 
 ################################################################################
 # Display Metadata 
@@ -124,7 +136,6 @@ source("stock_analysis.R")     # |stock analysis|
 # Auto-update financial statements, generate monthly report and create a summary insights 
 
 # Report de recession pour US et Europe, taux de croissance du PIB, taux naturel , écart de production, outputgap, conference board , indice composite de l'OCDE, écart de la courbe des taux
-# report commodities
 # 20 facteurs fondamentaux barometer geopolitical (regarder capture d'écran Top Gane)
 # Indidcateurs pour déterminer le taux de change, différence d'inflation entre les pays.  Les écarts de taux d'intérêts et surtout les écarts de leurs balance de paiements
 # cross rates table (currency first finance 67)

@@ -845,6 +845,15 @@ reformate_data_investing <- function(tribble){
     result
   }, error = function(e) { message("Baltic Dry Index failed"); NULL })
   timeout(10)
+  # Bloomberg Commodity
+  bcom <- tryCatch({
+    result <- get_investing_market_series(id = 948434, date_from = "1985-01-01", date_to = Sys.Date()) %>%
+      mutate(id = "BCOM") %>%
+      left_join(tribble %>% select(id, name, label, source, unit), by = "id")
+    message("BBloomberg Commodity Index fetched successfully")
+    result
+  }, error = function(e) { message("Bloomberg Commodity Index failed"); NULL })
+  timeout(10)
   # ISM Manufacturing Purchasing Managers Index PMI
   ism <- tryCatch({
     result <- get_investing_indicator_series(id = 173, date_from = "1970-01-01", date_to = Sys.Date()) %>%
@@ -862,7 +871,7 @@ reformate_data_investing <- function(tribble){
     message("ZEW Economic Sentiment Index fetched successfully")
     result
   }, error = function(e) { message("ZEW Economic Sentiment Index failed"); NULL })
-  df <- rbind(bdi, ism, zew) %>% 
+  df <- rbind(bdi, ism, zew, bcom) %>% 
     distinct(id, date, .keep_all = TRUE) %>%
     na.omit()
   return(df)
