@@ -565,7 +565,7 @@ div(style = "text-align: center;",
 </div>
 ```
 
-### Housing prices
+### Housing Prices
 
 ```{r EU HP TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
 series_info_box(

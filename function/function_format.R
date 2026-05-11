@@ -865,13 +865,29 @@ reformate_data_investing <- function(tribble){
   timeout(10)
   # ZEW Economic Sentiment Index 
   zew <- tryCatch({
-    result <- get_investing_indicator_series(id = 310, date_from = "1970-01-01", date_to = Sys.Date()) %>%
+    result <- get_investing_indicator_series(id = 144, date_from = "1970-01-01", date_to = Sys.Date()) %>%
       mutate(id = "ZEWINV") %>%
       left_join(tribble %>% select(id, name, label, source, unit), by = "id")
     message("ZEW Economic Sentiment Index fetched successfully")
     result
   }, error = function(e) { message("ZEW Economic Sentiment Index failed"); NULL })
-  df <- rbind(bdi, ism, zew, bcom) %>% 
+  # US Crude Oil Inventories
+  uswtiinv <- tryCatch({
+    result <- get_investing_indicator_series(id = 75, date_from = "1970-01-01", date_to = Sys.Date()) %>%
+      mutate(id = "ZEWINV") %>%
+      left_join(tribble %>% select(id, name, label, source, unit), by = "id")
+    message("US Crude Oil Inventories fetched successfully")
+    result
+  }, error = function(e) { message("US Crude Oil Inventories failed"); NULL })
+  # Rig count Baker Hughes 
+  uswtiinv <- tryCatch({
+    result <- get_investing_indicator_series(id = 75, date_from = "1970-01-01", date_to = Sys.Date()) %>%
+      mutate(id = "RICBH") %>%
+      left_join(tribble %>% select(id, name, label, source, unit), by = "id")
+    message("Rig count Baker Hughes fetched successfully")
+    result
+  }, error = function(e) { message("•	Rig count Baker Hughes failed"); NULL })
+  df <- rbind(bdi, ism, zew, bcom, uswtiinv) %>% 
     distinct(id, date, .keep_all = TRUE) %>%
     na.omit()
   return(df)
@@ -927,7 +943,7 @@ reformate_data_imf       <- function(tribble){
     na.omit()
   return(df)
 }
-reformate_data_epu       <- function(tribble) {
+reformate_data_epu       <- function(tribble){
   #-----------------------------------------------------------------------------
   # Function : Reformat data from Economic Policy Uncertainty source
   # Input    : tribble = mapping inputs table
@@ -1032,7 +1048,7 @@ reformate_data_ccc       <- function(tribble){
   }, error = function(e) { message("Crypto Fear & Greed failed"); NULL })
   return(ccc_fear_greed)
 }
-reformate_data_gpr       <- function(tribble) {
+reformate_data_gpr       <- function(tribble){
   #-----------------------------------------------------------------------------
   # Function : Reformat data from Geopolitical Risk Index source
   # Input    : tribble = mapping inputs table
@@ -1054,4 +1070,37 @@ reformate_data_gpr       <- function(tribble) {
     message("Geopolitical Risk Index failed"); NULL
   })
 }
+reformate_data_eia       <- function(tribble){
+  #-----------------------------------------------------------------------------
+  # Function : Reformat data from EIA API  (International crude oil production)
+  # 1. Input : tribble = mapping inputs table
+  # Output   : dataframe for the chosen series with standardized format
+  #-----------------------------------------------------------------------------
+  # Fetch raw data from Crude Oil Production
+  copr <- tryCatch({
+    result <- fromJSON(content(GET(paste0(
+      "https://api.eia.gov/v2/international/data/?api_key=", Sys.getenv("EIA_API_KEY_INTER"),
+      "&frequency=monthly&data[0]=value&sort[0][column]=period&sort[0][direction]=desc",
+      "&offset=0&length=100000",
+      "&facets[countryRegionId][]=OPEC&facets[countryRegionId][]=USA&facets[countryRegionId][]=RUS",
+      "&facets[countryRegionId][]=CHN&facets[countryRegionId][]=SAU&facets[countryRegionId][]=IRQ",
+      "&facets[countryRegionId][]=IRN&facets[countryRegionId][]=ARE&facets[countryRegionId][]=KWT",
+      "&facets[countryRegionId][]=VEN&facets[countryRegionId][]=NGA&facets[countryRegionId][]=LBY",
+      "&facets[countryRegionId][]=DZA&facets[countryRegionId][]=NOR&facets[countryRegionId][]=CAN",
+      "&facets[countryRegionId][]=MEX&facets[countryRegionId][]=BRA&facets[countryRegionId][]=KAZ",
+      "&facets[productId][]=57")), "text", encoding = "UTF-8"))$response$data
 
+    # All countries and OPEC aggregate in a single request (length=100000 to get full history)
+    result <- result %>%
+      mutate(date  = as.Date(paste0(period, "-01")),value = as.numeric(value),id = paste0("COPR_",countryRegionId)) %>% 
+      select(date, value, id) %>% 
+      left_join(tribble %>% select(id, label, name, source, unit, frequency, adjustment), by = "id") 
+    message("EIA crude oil production fetched successfully")
+    result
+  }, error = function(e) { message("EIA crude oil production failed: ", e$message); NULL })
+  df <- copr %>%
+    distinct(id, date, .keep_all = TRUE) %>%
+    na.omit()
+  return(df)
+}
+  

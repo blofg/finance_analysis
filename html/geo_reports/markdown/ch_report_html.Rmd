@@ -356,7 +356,7 @@ div(style = "display: flex; justify-content: center;",
 </div>
 ```
 
-### Housing prices
+### Housing Prices
 
 ```{r CH HP TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
 series_info_box(

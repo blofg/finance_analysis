@@ -888,6 +888,7 @@ input_database <- tribble(
   "BAMLEMCBPIOAS",           "ice_bofa_em_corp",           "ICE BofA Emerging Markets Corporate Plus Index Option-Adjusted Spread, Percent, Not Adjusted",              "fred",    "D",         "lin",       "prc",  "NA",
   "BAMLEMHBHYCRPIOAS",       "ice_bofa_em_hy_corp",        "ICE BofA High Yield Emerging Markets Corporate Plus Index Option-Adjusted Spread, Percent, Not Adjusted",   "fred",    "D",         "lin",       "prc",  "NA",
   
+  
   # ================================ SHARE =====================================
   
   # US Share
@@ -958,6 +959,7 @@ input_database <- tribble(
   "NG=F",                    "fut_natural_gas",       "Natural gas futures (front contract)",                               "yahoo",       "D",   NA,   "usd",   "NA",
   "HO=F",                    "fut_heating_oil",       "Heating oil futures",                                                "yahoo",       "D",   NA,   "usd",   "NA",
   "RB=F",                    "fut_rbob_gasoline",     "RBOB gasoline futures (gasoline benchmark)",                         "yahoo",       "D",   NA,   "usd",   "NA",
+  
   # Metals
   "GC=F",                    "fut_gold",              "Gold futures (COMEX front contract)",                                "yahoo",       "D",   NA,   "usd",   "NA",
   "SI=F",                    "fut_silver",            "Silver futures (COMEX front contract)",                              "yahoo",       "D",   NA,   "usd",   "NA",
@@ -965,6 +967,7 @@ input_database <- tribble(
   "PL=F",                    "fut_platinum",          "Platinum futures",                                                   "yahoo",       "D",   NA,   "usd",   "NA",
   "PA=F",                    "fut_palladium",         "Palladium futures",                                                  "yahoo",       "D",   NA,   "usd",   "NA",
   "ALI=F",                   "fut_aluminium",         "Aluminium futures (COMEX front contract)",                           "yahoo",       "D",   NA,   "usd",   "NA",
+  
   # Agriculture
   "ZC=F",                    "fut_corn",              "Corn futures (CBOT front contract)",                                 "yahoo",       "D",   NA,   "usd",   "NA",
   "ZW=F",                    "fut_wheat",             "Wheat futures (CBOT front contract)",                                "yahoo",       "D",   NA,   "usd",   "NA",
@@ -981,6 +984,32 @@ input_database <- tribble(
   # Commodity Indices
   "^SPGSCI",                 "idx_spgsci",            "S&P GSCI broad commodity index",                                     "yahoo",       "D",   NA,   "usd",   "NA",
   "BCOM",                    "idx_bcom",              "Bloomberg Commodity Index (BCOM)",                                   "investing",   "D",   NA,   "usd",   "NA",
+  
+  # Stock
+  "WTTSTUS1",                "us_crude_inv",          "US Crude Oil Inventories, Weekly, Thousands of Barrels, Not Adjusted", "investing", "W",   NA,   "bbl",   "NA",
+  
+  # Production 
+  "COPR_OPEC",  "opec_crude_prod",  "Crude Oil Production including Lease Condensate for OPEC, Thousand Barrels per Day, Not Adjusted",                   "eia", "M", NA, "bbl", "NA",
+  "COPR_USA",   "us_crude_prod",    "Crude Oil Production including Lease Condensate for United States, Thousand Barrels per Day, Not Adjusted",          "eia", "M", NA, "bbl", "NA",
+  "COPR_RUS",   "ru_crude_prod",    "Crude Oil Production including Lease Condensate for Russia, Thousand Barrels per Day, Not Adjusted",                 "eia", "M", NA, "bbl", "NA",
+  "COPR_CHN",   "cn_crude_prod",    "Crude Oil Production including Lease Condensate for China, Thousand Barrels per Day, Not Adjusted",                  "eia", "M", NA, "bbl", "NA",
+  "COPR_SAU",   "sau_crude_prod",   "Crude Oil Production including Lease Condensate for Saudi Arabia, Thousand Barrels per Day, Not Adjusted",           "eia", "M", NA, "bbl", "NA",
+  "COPR_IRQ",   "irq_crude_prod",   "Crude Oil Production including Lease Condensate for Iraq, Thousand Barrels per Day, Not Adjusted",                   "eia", "M", NA, "bbl", "NA",
+  "COPR_IRN",   "irn_crude_prod",   "Crude Oil Production including Lease Condensate for Iran, Thousand Barrels per Day, Not Adjusted",                   "eia", "M", NA, "bbl", "NA",
+  "COPR_ARE",   "are_crude_prod",   "Crude Oil Production including Lease Condensate for United Arab Emirates, Thousand Barrels per Day, Not Adjusted",   "eia", "M", NA, "bbl", "NA",
+  "COPR_KWT",   "kwt_crude_prod",   "Crude Oil Production including Lease Condensate for Kuwait, Thousand Barrels per Day, Not Adjusted",                 "eia", "M", NA, "bbl", "NA",
+  "COPR_VEN",   "ven_crude_prod",   "Crude Oil Production including Lease Condensate for Venezuela, Thousand Barrels per Day, Not Adjusted",              "eia", "M", NA, "bbl", "NA",
+  "COPR_NGA",   "nga_crude_prod",   "Crude Oil Production including Lease Condensate for Nigeria, Thousand Barrels per Day, Not Adjusted",                "eia", "M", NA, "bbl", "NA",
+  "COPR_LBY",   "lby_crude_prod",   "Crude Oil Production including Lease Condensate for Libya, Thousand Barrels per Day, Not Adjusted",                  "eia", "M", NA, "bbl", "NA",
+  "COPR_DZA",   "dza_crude_prod",   "Crude Oil Production including Lease Condensate for Algeria, Thousand Barrels per Day, Not Adjusted",                "eia", "M", NA, "bbl", "NA",
+  "COPR_NOR",   "nor_crude_prod",   "Crude Oil Production including Lease Condensate for Norway, Thousand Barrels per Day, Not Adjusted",                 "eia", "M", NA, "bbl", "NA",
+  "COPR_CAN",   "can_crude_prod",   "Crude Oil Production including Lease Condensate for Canada, Thousand Barrels per Day, Not Adjusted",                 "eia", "M", NA, "bbl", "NA",
+  "COPR_MEX",   "mex_crude_prod",   "Crude Oil Production including Lease Condensate for Mexico, Thousand Barrels per Day, Not Adjusted",                 "eia", "M", NA, "bbl", "NA",
+  "COPR_BRA",   "bra_crude_prod",   "Crude Oil Production including Lease Condensate for Brazil, Thousand Barrels per Day, Not Adjusted",                 "eia", "M", NA, "bbl", "NA",
+  "COPR_KAZ",   "kaz_crude_prod",   "Crude Oil Production including Lease Condensate for Kazakhstan, Thousand Barrels per Day, Not Adjusted",             "eia", "M", NA, "bbl", "NA",
+  
+  # Supply
+  "RICBH",       "us_rig_count",   "Baker Hughes US Rig Count, Total Oil & Gas Rigs, Not Adjusted",                                                    "investing", "W", NA, "nbr", "NA",
   
   # ================================= INDEX ====================================
   

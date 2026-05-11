@@ -406,6 +406,8 @@ tagList(
 
 ### WTI Crude Oil
 
+#### Price 
+
 ```{r ENERGY WTI TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
 series_info_box(
   source_html = 'Yahoo — <a href="https://finance.yahoo.com/quote/CL=F/" target="_blank">link</a>',
@@ -437,6 +439,32 @@ tagList(
 ```{=html}
 </div>
 ```
+
+#### Drivers
+
+```{r INV WTI TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Investing.com — <a href="https://www.investing.com/economic-calendar/eia-crude-oil-inventories-75" target="_blank">link</a>',
+  frequency = "Weekly",
+  adjustment = "Not Adjusted",
+  about = "U.S. crude oil inventories as reported weekly by the EIA (Energy Information Administration). Stocks are measured in thousands of barrels and cover commercial crude oil held at refineries, tank farms, and pipelines, excluding the Strategic Petroleum Reserve (SPR). A key fundamental driver of WTI prices: rising inventories signal oversupply and typically pressure prices lower, while declining stocks indicate tightening conditions and support higher prices. The Cushing, Oklahoma hub, the physical delivery point for WTI futures, is particularly closely watched.")
+```
+
+
+```{r INV WTI, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("us_crude_inv"))
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = FALSE)))
+```
+
 
 ### Natural Gas
 

@@ -1,0 +1,596 @@
+---
+title: "Energy Commodities Report"
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float:
+      collapsed: false
+      smooth_scroll: true
+    theme: flatly
+    highlight: kate
+    self_contained: true
+    css: "/Users/benjaminlachavanne/Desktop/script/finance_analysis/html/style/style.css"
+
+
+params:
+  llm_analysis: false
+  
+---
+
+```{r setup, include=FALSE, warning=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+
+# Main path 
+path_main <- file.path("~", "Desktop", "script", "finance_analysis")
+
+# Upload packages, functions and inputs 
+source(paste0(path_main,"/initialization/package.R"))         # |Package|
+source(paste0(path_main,"/function/function_information.R"))  # |Function price|
+source(paste0(path_main,"/function/function_format.R"))       # |Function format|
+source(paste0(path_main,"/function/function_visualization.R"))# |Functions visualization|
+source(paste0(path_main,"/function/function_compute.R"))      # |Functions indicator|
+source(paste0(path_main,"/function/function_ai.R"))           # |Functions ai|
+source(paste0(path_main,"/initialization/input.R"))           # |Input|
+
+# Download all series from the RDS folder
+path_rds_folder    <- "/Users/benjaminlachavanne/Desktop/script/finance_analysis/database/rds/"
+path_rds_all <- paste0(path_rds_folder,"series_store_all.rds")
+series_database <- readRDS(path_rds_all)
+
+# Styled info box
+series_info_box <- function(source_html, frequency, adjustment, about) {
+  htmltools::HTML(paste0('
+  <div class="info-card">
+    <div class="info-grid">
+      <div class="info-row">
+        <span class="info-label">Source</span>
+        <span class="info-value">', source_html, '</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Frequency</span>
+        <span class="info-value">', frequency, '</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Adjustment</span>
+        <span class="info-value">', adjustment, '</span>
+      </div>
+    </div>
+    <div class="info-about">', about, '</div>
+  </div>
+  '))
+}
+
+# Section label helper
+section_label <- function(icon, text) {
+  htmltools::HTML(paste0(
+    '<div class="section-label"><span class="section-icon">', icon,
+    '</span><span class="section-text">', text, '</span></div>'))
+}
+
+# Subsection label helper
+subsection_label <- function(text) {
+  htmltools::HTML(paste0('<div class="subsection-label">', text, '</div>'))
+}
+
+# Chart note helper
+chart_note <- function(text) {
+  htmltools::HTML(paste0('<p class="chart-note">', text, '</p>'))
+}
+```
+
+
+<!-- ####################################################################### -->
+<!-- Head Title  -->
+<!-- ####################################################################### -->
+
+```{=html}
+<!-- ── MASTHEAD ─────────────────────────────────────────────────────────────── -->
+<div class="masthead">
+  <div class="masthead-eyebrow">Commodities Research · Global Markets</div>
+  <div class="masthead-title">Commodities <span>Report</span></div>
+  <div class="masthead-date">Latest update date: `r format(Sys.Date(), '%B %d, %Y')`</div>
+</div>
+```
+
+<!-- ####################################################################### -->
+<!-- Abstract  -->
+<!-- ####################################################################### -->
+
+## Abstract
+
+```{=html}
+<div class="company-hero">
+  <div class="co-body">
+    <div class="masthead-title">Abstract</div>
+  </div>
+</div>
+```
+
+
+<!-- ####################################################################### -->
+<!-- World Commodities  -->
+<!-- ####################################################################### -->
+
+## World Commodities
+
+```{=html}
+<div class="company-hero">
+  <div class="co-body">
+    <div class="masthead-title">World Commodities</div>
+  </div>
+</div>
+```
+
+```{r COMMODITIES TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo — <a href="https://finance.yahoo.com/" target="_blank">link</a> · Investing.com — <a href="https://www.investing.com/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about  = '
+  This table presents the performance of major global commodity futures across multiple time horizons
+  (1 day, 5 days, 1 month, 3 months, 6 months, 1 year, 2 years, 5 years and since inception).
+  It covers the following contracts:
+  <br><br>
+  <b>Energy:</b> Brent Crude <i>(global oil benchmark)</i> ·
+  WTI Crude <i>(US oil benchmark)</i> ·
+  Natural Gas <i>(Henry Hub front contract)</i> ·
+  Heating Oil <i>(distillate benchmark)</i> ·
+  RBOB Gasoline <i>(gasoline benchmark)</i>
+  <br><br>
+  <b>Metals:</b> Gold <i>(COMEX)</i> · Silver <i>(COMEX)</i> ·
+  Copper <i>(COMEX)</i> · Platinum <i>(NYMEX)</i> ·
+  Palladium <i>(NYMEX)</i> · Aluminium <i>(COMEX)</i>
+  <br><br>
+  <b>Agriculture:</b> Corn <i>(CBOT)</i> · Wheat <i>(CBOT)</i> ·
+  Soybeans <i>(CBOT)</i> · Coffee <i>(Arabica, ICE)</i> ·
+  Cocoa <i>(ICE)</i> · Cotton <i>(ICE)</i> · Sugar <i>(ICE No.11)</i> ·
+  Live Cattle <i>(CME)</i> · Lean Hogs <i>(CME)</i> ·
+  Orange Juice <i>(ICE)</i> · Lumber <i>(CME)</i>
+  <br><br>
+  <b>Commodity Indices:</b> S&amp;P GSCI <i>(broad commodity index)</i> ·
+  Bloomberg Commodity Index <i>(BCOM)</i>
+  '
+)
+```
+
+### Table
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r COMMODITIES TABLE, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Mapping tickers to readable names
+labels <- c(
+  "BZ=F"    = "Brent Crude Oil",
+  "CL=F"    = "WTI Crude Oil",
+  "NG=F"    = "Natural Gas",
+  "HO=F"    = "Heating Oil",
+  "RB=F"    = "RBOB Gasoline"
+)
+
+# Get series
+commodities <- c("BZ=F","CL=F","NG=F","HO=F","RB=F")
+
+# Plot table
+div(style = "display: flex; justify-content: center;",
+    produce_performance_table(series = commodities, label = labels))
+```
+
+```{=html}
+</div>
+```
+
+### Comparison
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r COMMO COMP ENERGY, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("fut_brent_crude", "fut_wti_crude", "fut_natural_gas", "fut_heating_oil", "fut_rbob_gasoline"))
+
+# Compute index
+data <- compute_rebase(df = data, base = "2015-01-07")
+
+# Plot series
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, title = "Energy Futures – Indexed Performance (2015:01:07 = 100)"))
+```
+
+```{=html}
+</div>
+```
+
+### Indices
+
+#### *S&P GSCI*
+
+```{r IDX SPGSCI TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo — <a href="https://finance.yahoo.com/quote/%5ESPGSCI/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "The S&P GSCI is a broad, production-weighted commodity index maintained by S&P Dow Jones Indices, covering energy, metals, and agriculture. Its heavy energy weighting (typically 50–70%) means it closely tracks oil market dynamics. Widely used as a benchmark for broad commodity exposure and as an inflation sensitivity gauge. Quoted in index points, updated daily with closing prices.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r IDX SPGSCI, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("idx_spgsci"))
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot series
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+```
+
+```{=html}
+</div>
+```
+
+#### *Bloomberg Commodity Index*
+
+```{r IDX BCOM TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Investing.com — <a href="https://www.investing.com/indices/bloomberg-commodity" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "The Bloomberg Commodity Index (BCOM) tracks a diversified basket of commodity futures across energy, metals, and agriculture, with sector caps limiting any single group to 33% and any single commodity to 15%. Its more balanced weighting relative to the S&P GSCI makes it a preferred benchmark for diversified commodity exposure without undue energy concentration. Quoted in index points, updated daily with closing prices.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r IDX BCOM, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("idx_bcom"))
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot series
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+```
+
+```{=html}
+</div>
+```
+
+<!-- ####################################################################### -->
+<!-- Energy  -->
+<!-- ####################################################################### -->
+
+## Energy
+
+```{=html}
+<div class="company-hero">
+  <div class="co-body">
+    <div class="masthead-title">Energy</div>
+  </div>
+</div>
+```
+
+### Oil Prices
+
+#### *Brent Crude Oil*
+
+```{r ENERGY BRENT TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo — <a href="https://finance.yahoo.com/quote/BZ=F/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "Brent Crude is the international oil benchmark, sourced from the North Sea and priced in USD per barrel. It serves as the reference price for roughly two-thirds of global crude oil trading. Sensitive to OPEC+ supply decisions, geopolitical tensions, and global demand conditions. Quoted in USD per barrel, updated daily with closing prices.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r ENERGY BRENT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("fut_brent_crude"))
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot series
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+```
+
+```{=html}
+</div>
+```
+
+#### *WTI Crude Oil*
+
+```{r ENERGY WTI TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo — <a href="https://finance.yahoo.com/quote/CL=F/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "WTI (West Texas Intermediate) is the primary US oil benchmark, produced in the Permian Basin and delivered at Cushing, Oklahoma. It trades at a spread to Brent, influenced by US production dynamics, pipeline infrastructure, and domestic inventory levels. Sensitive to Fed policy, the US dollar, and shale production costs. Quoted in USD per barrel, updated daily with closing prices.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r ENERGY WTI, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("fut_wti_crude"))
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot series
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+```
+
+```{=html}
+</div>
+```
+
+#### *Heating Oil*
+
+```{r ENERGY HO TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo — <a href="https://finance.yahoo.com/quote/HO=F/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "Heating Oil futures track No. 2 distillate fuel, a key refined petroleum product used for residential heating and as a diesel fuel proxy. Listed on NYMEX, it is closely correlated with crude oil prices and refinery margins. Demand is highly seasonal, peaking in Northern Hemisphere winters. Quoted in USD per gallon, updated daily with closing prices.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r ENERGY HO, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("fut_heating_oil"))
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot series
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+```
+
+```{=html}
+</div>
+```
+
+#### *RBOB Gasoline*
+
+```{r ENERGY RBOB TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo — <a href="https://finance.yahoo.com/quote/RB=F/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "RBOB Gasoline futures represent the US benchmark for unleaded gasoline, listed on NYMEX. Prices are driven by crude oil input costs, refinery utilization, seasonal demand (summer driving season), and US inventory data. Closely tracked as an indicator of downstream energy consumer conditions. Quoted in USD per gallon, updated daily with closing prices.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r ENERGY RBOB, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("fut_rbob_gasoline"))
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot series
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+```
+
+```{=html}
+</div>
+```
+
+### Oil Indicators
+
+#### *US Crude Oil Inventory*
+
+```{r INV CRUDE TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Investing.com — <a href="https://www.investing.com/economic-calendar/eia-crude-oil-inventories-75" target="_blank">link</a>',
+  frequency = "Weekly",
+  adjustment = "Not Adjusted",
+  about = "US crude oil inventories as reported weekly by the EIA (Energy Information Administration). Stocks are measured in thousands of barrels and cover commercial crude oil held at refineries, tank farms, and pipelines, excluding the Strategic Petroleum Reserve (SPR). A key fundamental driver of WTI prices: rising inventories signal oversupply and typically pressure prices lower, while declining stocks indicate tightening conditions and support higher prices. The Cushing, Oklahoma hub, the physical delivery point for WTI futures, is particularly closely watched.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r INV CRUDE, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("us_crude_inv"))
+
+# Plot series
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = FALSE)))
+```
+
+```{=html}
+</div>
+```
+
+#### *Crude Oil Production*
+
+```{r PRO CRUDE TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'EIA — <a href="https://www.eia.gov/opendata/browser/international?frequency=monthly&data=value;&sortColumn=period;&sortDirection=desc;" target="_blank">link</a>',
+  frequency = "Monthly",
+  adjustment = "Not Adjusted",
+  about = "Crude oil production including lease condensate, reported monthly by the US Energy Information Administration (EIA) through its International Energy Statistics. Data is expressed in thousand barrels per day (kb/d) and covers both the OPEC aggregate and major individual producers. OPEC production decisions, coordinated through ministerial meetings, are a primary driver of global oil supply and directly influence Brent and WTI prices. Non-OPEC producers such as the United States, Russia, and Canada act as swing factors that determine the overall supply balance. Rising production from any major country typically pressures prices lower, while coordinated cuts or unexpected supply disruptions support higher prices.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r PRO CRUDE, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data_all <- get_series(c("opec_crude_prod", "us_crude_prod", "ru_crude_prod", "cn_crude_prod",
+                          "sau_crude_prod",  "irq_crude_prod", "irn_crude_prod", "are_crude_prod",
+                          "kwt_crude_prod",  "ven_crude_prod", "nga_crude_prod", "lby_crude_prod",
+                          "dza_crude_prod",  "nor_crude_prod", "can_crude_prod", "mex_crude_prod",
+                          "bra_crude_prod",  "kaz_crude_prod"))
+
+# Plot series
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data_all, sma = FALSE, title = "Crude Oil Production by Country (kb/d)")),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : OPEC = OPEC aggregate &nbsp;|&nbsp; USA = United States &nbsp;|&nbsp; RUS = Russia &nbsp;|&nbsp; CHN = China &nbsp;|&nbsp; SAU = Saudi Arabia &nbsp;|&nbsp; IRQ = Iraq &nbsp;|&nbsp; IRN = Iran &nbsp;|&nbsp; ARE = United Arab Emirates &nbsp;|&nbsp; KWT = Kuwait &nbsp;|&nbsp; VEN = Venezuela &nbsp;|&nbsp; NGA = Nigeria &nbsp;|&nbsp; LBY = Libya &nbsp;|&nbsp; DZA = Algeria &nbsp;|&nbsp; NOR = Norway &nbsp;|&nbsp; CAN = Canada &nbsp;|&nbsp; MEX = Mexico &nbsp;|&nbsp; BRA = Brazil &nbsp;|&nbsp; KAZ = Kazakhstan</em></small>")))
+```
+
+```{=html}
+</div>
+```
+
+#### *Rig Count Baker Hughes*
+
+```{r RIG TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Investing.com — <a href="https://www.investing.com/economic-calendar/baker-hughes-u.s.-rig-count-1652" target="_blank">link</a>',
+  frequency = "Weekly",
+  adjustment = "Not Adjusted",
+  about = "The Baker Hughes U.S. Rig Count measures the number of active drilling rigs exploring for or developing oil and natural gas in the United States. Published weekly every Friday, it is one of the most closely watched leading indicators of future domestic oil and gas production. A rising rig count signals increased drilling activity and anticipates higher supply in the coming months, while a declining count suggests producers are pulling back, typically in response to lower prices or tighter margins. Historically highly correlated with WTI prices with a lag of 3 to 6 months, making it a key tool for forecasting U.S. shale output and assessing the responsiveness of supply to price signals.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r RIG, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("us_rig_count"))
+
+# Plot series
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = FALSE)))
+```
+
+```{=html}
+</div>
+```
+
+#### *Crack Spread*
+
+```{r CRA TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'RBN Energy — <a href="https://rbnenergy.com/market-data/3-2-1-crack-spread" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "The 3-2-1 crack spread measures the gross refining margin, representing the profit a refinery earns by processing 3 barrels of WTI crude oil into 2 barrels of RBOB gasoline and 1 barrel of heating oil. Expressed in USD per barrel, it is the most widely used proxy for refinery profitability. A widening crack spread signals strong demand for refined products relative to crude, incentivizing refineries to increase throughput and ultimately driving higher crude demand. A narrowing spread indicates compressed margins, leading refineries to reduce runs. The crack spread is therefore a key leading indicator of physical crude oil demand and a crucial input for understanding the full oil value chain from wellhead to pump.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r CRA, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series and compute crack spread
+data <- get_series(c("fut_rbob_gasoline", "fut_heating_oil", "fut_wti_crude")) %>%
+  select(date, value, name) %>% 
+  pivot_wider(names_from = name, values_from = value) %>%
+  mutate(value = ((2 * fut_rbob_gasoline * 42) + (1 * fut_heating_oil * 42) - (3 * fut_wti_crude)) / 3, name = "crack_spread", id = "CRASPR") %>%
+  select(date, value, name, id)
+
+# Plot series
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data_crack, sma = FALSE, title = "3-2-1 Crack Spread (USD/barrel)")),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Crack Spread = ( 2 &times; RBOB &times; 42 + 1 &times; HO &times; 42 &minus; 3 &times; WTI ) &divide; 3</em></small>")))
+```
+
+```{=html}
+</div>
+```
+
+### Gas Prices
+
+#### *Natural Gas*
+
+```{r ENERGY NATGAS TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo — <a href="https://finance.yahoo.com/quote/NG=F/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "The Henry Hub Natural Gas futures contract is the US benchmark for natural gas, priced at the Henry Hub pipeline interconnection in Louisiana. Highly volatile and seasonally driven, it is sensitive to weather conditions, storage levels, LNG export demand, and power generation needs. Quoted in USD per MMBtu, updated daily with closing prices.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r ENERGY NATGAS, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("fut_natural_gas"))
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot series
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+```
+
+```{=html}
+</div>
+```
+

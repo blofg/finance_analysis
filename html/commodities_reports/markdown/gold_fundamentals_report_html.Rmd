@@ -1,0 +1,738 @@
+---
+title: "Gold Fundamentals Report"
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float:
+      collapsed: false
+      smooth_scroll: true
+    theme: flatly
+    highlight: kate
+    self_contained: true
+    css: "/Users/benjaminlachavanne/Desktop/script/finance_analysis/html/style/style.css"
+
+params:
+  llm_analysis: false
+  
+---
+
+```{r setup, include=FALSE, warning=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+
+# Main path 
+path_main <- file.path("~", "Desktop", "script", "finance_analysis")
+
+# Upload packages, functions and inputs 
+source(paste0(path_main,"/initialization/package.R"))         # |Package|
+source(paste0(path_main,"/function/function_information.R"))  # |Function price|
+source(paste0(path_main,"/function/function_format.R"))       # |Function format|
+source(paste0(path_main,"/function/function_visualization.R"))        # |Functions visualization|
+source(paste0(path_main,"/function/function_compute.R"))      # |Functions indicator|
+source(paste0(path_main,"/function/function_ai.R"))           # |Functions ai|
+source(paste0(path_main,"/initialization/input.R"))           # |Input|
+
+# Download all series from the RDS folder
+path_rds_folder    <- "/Users/benjaminlachavanne/Desktop/script/finance_analysis/database/rds/"
+path_rds_all <- paste0(path_rds_folder,"series_store_all.rds")
+series_database <- readRDS(path_rds_all)
+
+# Styled info box
+series_info_box <- function(source_html, frequency, adjustment, about, chanel) {
+  htmltools::HTML(paste0('
+  <div class="info-card">
+    <div class="info-grid">
+      <div class="info-row">
+        <span class="info-label">Source</span>
+        <span class="info-value">', source_html, '</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Frequency</span>
+        <span class="info-value">', frequency, '</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Adjustment</span>
+        <span class="info-value">', adjustment, '</span>
+      </div>
+    </div>
+    <div class="info-about">', about, '</div>
+    <div class="info-about" style="margin-top:0.6rem;"><strong style="color:var(--accent-gold);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;">Channel</strong><br>', chanel, '</div>
+  </div>
+  '))
+}
+
+# Section label helper
+section_label <- function(icon, text) {
+  htmltools::HTML(paste0(
+    '<div class="section-label"><span class="section-icon">', icon,
+    '</span><span class="section-text">', text, '</span></div>'))
+}
+
+# Subsection label helper
+subsection_label <- function(text) {
+  htmltools::HTML(paste0('<div class="subsection-label">', text, '</div>'))
+}
+
+# Chart note helper
+chart_note <- function(text) {
+  htmltools::HTML(paste0('<p class="chart-note">', text, '</p>'))
+}
+```
+
+<!-- ####################################################################### -->
+<!-- Head Title  -->
+<!-- ####################################################################### -->
+
+```{=html}
+<!-- ── MASTHEAD ─────────────────────────────────────────────────────────────── -->
+<div class="masthead">
+  <div class="masthead-eyebrow">Commodity Research · Precious Metals</div>
+  <div class="masthead-title">Gold <span>Fundamentals Report</span></div>
+  <div class="masthead-date">Report date: `r format(Sys.Date(), '%B %d, %Y')`</div>
+</div>
+```
+
+<!-- ####################################################################### -->
+<!-- Abstract  -->
+<!-- ####################################################################### -->
+
+## Abstract
+
+```{=html}
+<div class="company-hero">
+  <div class="co-body">
+    <div class="masthead-title">Abstract</div>
+  </div>
+</div>
+```
+
+```{=html}
+<div class="abstract-box">
+<p>This report provides an in-depth analysis of the fundamental drivers behind gold prices through a structured set of demand, monetary, and risk indicators.</p>
+
+<ul>
+  <li>The <strong>Investment Demand</strong> section tracks speculative and institutional positioning in gold via futures and ETF flows, capturing the market's directional conviction.</li>
+  <li>The <strong>Central Bank Demand</strong> section covers official sector purchases, which have become an increasingly important structural driver of the gold market.</li>
+  <li>The <strong>Inflation &amp; Expectations</strong> section examines gold's role as an inflation hedge through real yields and breakeven inflation dynamics.</li>
+  <li>The <strong>Monetary Policy &amp; Real Rates</strong> section links gold valuations to the interest rate environment, as real rates are among the most powerful cyclical drivers of gold.</li>
+  <li>The <strong>Money Supply &amp; Dilution</strong> section explores the relationship between monetary expansion and gold as a store of value.</li>
+  <li>The <strong>Geopolitics &amp; Uncertainty</strong> section captures gold's safe-haven demand through measures of global risk and political instability.</li>
+  <li>The <strong>Stock-bond correlation</strong> and <strong>Technical dynamics</strong> sections complement the fundamental analysis with market structure and price-based signals.</li>
+</ul>
+
+<p>Taken together, this report aims to offer a comprehensive view of the forces driving gold prices, combining demand-side fundamentals, monetary conditions, and risk sentiment to support a thorough assessment of the current environment.</p>
+</div>
+```
+
+<!-- ####################################################################### -->
+<!-- Fundamental Drivers  -->
+<!-- ####################################################################### -->
+
+## Fundamental Drivers
+
+```{=html}
+<div class="company-hero">
+  <div class="co-body">
+    <div class="masthead-title">Fundamental Drivers</div>
+  </div>
+</div>
+```
+
+### Investment Demand
+
+```{r GLDF TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo — <a href="https://finance.yahoo.com/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "Gold Futures  measures the price of gold for future delivery as traded on the COMEX division of the New York Mercantile Exchange, operated by CME Group. Each standard contract represents 100 troy ounces of gold with a minimum purity of 99.5%, with the front-month contract, the nearest active expiration, serving as the primary global benchmark for spot gold price discovery across physical markets, exchange-traded products, and over-the-counter instruments. Gold is sensitive to real interest rates (its opportunity cost rises when real rates increase), US. dollar strength (gold tends to move inversely to the currency), central bank reserve policy, geopolitical risk, and broader financial market stress, with the metal traditionally serving as a store of value, inflation hedge, and safe-haven asset during periods of currency debasement or systemic uncertainty. Quoted in US. dollars per troy ounce, updated daily with closing prices.",
+  chanel = "When demand outpaces supply, prices are driven higher, when demand falls short, the opposite follows.")
+```
+
+#### *Gold Future*
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r GLDF, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("fut_gold"))
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot series
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+```
+
+```{=html}
+</div>
+```
+
+#### *Gold ETF*
+
+```{r GLD TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo — <a href="https://finance.yahoo.com/quote/IAU/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = paste0('1) <b>iShares Gold Trust, ETF — <a href="https://finance.yahoo.com/quote/IAU/" target="_blank ">IAU</a></b>. ',
+  'iShares Gold Trust is a physically backed exchange-traded fund sponsored by BlackRock that holds allocated gold bullion in secured vaults operated by JPMorgan Chase, with each share representing approximately 1/100th of a troy ounce of gold. It provides direct, cost-efficient exposure to the spot price of gold without the complexity of futures rolling, making it one of the most widely used passive gold instruments among retail and institutional investors. Updated daily with closing prices.',
+  '<br><br>',
+  '2) <b>SPDR Gold Shares, ETF — <a href="https://finance.yahoo.com/quote/GLD/" target="_blank">GLD</a></b>. ',
+  'SPDR Gold Shares is a physically backed exchange-traded fund sponsored by State Street Global Advisors that holds allocated gold bullion in secured vaults operated by HSBC, with each share representing approximately 1/10th of a troy ounce of gold. As the world\'s largest gold ETF by assets under management and one of the most liquid exchange-traded products globally, GLD serves as the primary institutional benchmark vehicle for gold price exposure, with its daily trading volume and flows closely watched as an indicator of institutional sentiment toward the metal. Updated daily with closing prices.',
+  '<br><br>',
+  '3) <b>iShares Physical Gold, ETF — <a href="https://finance.yahoo.com/quote/EGLN.L/" target="_blank" >EGNL.L</a></b>. ',
+  'iShares Physical Gold ETC is a physically backed exchange-traded commodity sponsored by BlackRock that holds allocated gold bullion in secured vaults operated by JPMorgan Chase in London, providing euro area and European investors with direct exposure to the spot price of gold traded on the London Stock Exchange. Each security represents a fixed entitlement to physical gold, with the exact gram amount per share declining marginally over time to cover the product\'s total expense ratio. As one of the largest and most liquid gold ETCs listed on European exchanges, EGLN serves as a primary vehicle for European institutional and retail investors seeking cost-efficient physical gold exposure without currency conversion to US. dollar-denominated products. Updated daily with closing prices.',
+  '<br><br>',
+  '4) <b>Zürcher Gold, ETF — <a href="https://finance.yahoo.com/quote/ZGLD.SW/" target="_blank">ZGLD.W</a></b>. ',
+  'Zürcher Kantonalbank Gold ETF is a physically backed exchange-traded fund sponsored by Zürcher Kantonalbank (ZKB), Switzerland\'s largest cantonal bank, that holds allocated gold bullion in secured vaults located exclusively in Switzerland, providing investors with direct exposure to the spot price of gold with the additional assurance of Swiss domestic custody. Each share represents a fixed entitlement to physical gold, and the fund\'s Swiss domicile and custody arrangement make it a preferred vehicle among Swiss and European investors who place particular value on the legal and geopolitical security of onshore Swiss vault storage. Updated daily with closing prices.'),
+  chanel = "ETF inflows (share creation) require physical gold purchases by Authorized Participants, exerting direct upward pressure on the spot price. Outflows (share redemption) trigger physical gold sales, pressuring the spot price downward.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r GLD ETF1, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+# Get series
+data <- get_series(c("gold_ishare_etf"))
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot series
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+```
+
+```{=html}
+</div>
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r GLD ETF2, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+# Get series
+data <- get_series(c("gold_spdr_etf"))
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot series
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+```
+
+```{=html}
+</div>
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r GLD ETF3, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+# Get series
+data <- get_series(c("ishares_physical_gold"))
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot series
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+```
+
+```{=html}
+</div>
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r GLD ETF4, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+# Get series
+data <- get_series(c("zuercher_gold_etf"))
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot series
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+```
+
+```{=html}
+</div>
+```
+
+### Central Bank Demand
+
+```{r CBD TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo — <a href="https://data.imf.org/en/Search-Results#q=central%20bank%20gold%20reserves&t=coveob02de888&sort=relevancy" target="_blank">link</a>',
+  frequency = "Monthly",
+  adjustment = "Not Adjusted",
+  about = paste0('1) <b>Gold Reserves Volume — <a href="https://data.imf.org/en/Data-Explorer?datasetUrn=IMF.STA:IL(13.0.1)&INDICATOR=RGV_REVS" target="_blank ">RGV_REV</a></b>. ',
+  'Gold Reserves Volume measures the total volume of gold held as official reserve assets by central banks and monetary authorities worldwide (US, Germany, France, Italy, Switzerland, China, Russia, Tureky, India and Japan), published by the International Monetary Fund from its International Liquidity dataset. Reported in fine troy ounces, the standard unit of measure for monetary gold, where one fine troy ounce equals 31.1035 grams of pure gold, the series captures the physical quantity of gold held in reserve independently of its market valuation, making it a volume measure rather than a value measure and therefore unaffected by fluctuations in the gold price. Coverage encompasses gold held in central bank vaults domestically and in custody abroad, including deposits and loans to bullion banks, as reported by IMF member countries. As a key component of a country\'s international reserves alongside foreign exchange, Special Drawing Rights, and IMF reserve positions, official gold holdings are closely watched as an indicator of reserve diversification strategy, monetary sovereignty preferences, and long-term confidence in gold as a store of value relative to fiat currency reserves. Released on a country-by-country and aggregate basis, updated monthly.',
+  '<br><br>',
+  '2) <b>Gold Reserves at Market Value — <a href="https://data.imf.org/en/Data-Explorer?datasetUrn=IMF.STA:IL(13.0.1)&INDICATOR=RGOLDMV_REVS" target="_blank"	>RGOLDMV_REV</a></b>. ',
+  'Gold Reserves at Market Value measures the total market value of gold held as official reserve assets by central banks and monetary authorities worldwide (US, Germany, France, Italy, Switzerland, China, Russia, Tureky, India and Japan), published by the International Monetary Fund from its International Liquidity dataset. Expressed in Special Drawing Rights (SDRs), the IMF\'s international unit of account whose value is determined by a basket of five major currencies (US. dollar, euro, Chinese renminbi, Japanese yen, and British pound), the series captures the dollar-equivalent worth of official gold holdings at prevailing market prices, making it sensitive to both changes in the physical volume of gold reserves and fluctuations in the gold price and SDR valuation. Expressing reserves in SDRs rather than US. dollars eliminates bilateral exchange rate distortions and provides a currency-neutral basis for cross-country comparison of reserve adequacy. As the value-based complement to the volume measure, this series is used to assess the contribution of gold to total international reserve portfolios and to track shifts in the relative importance of gold as a reserve asset over time. Released on a country-by-country and aggregate basis, updated monthly.'),
+  chanel = "Rising gold reserve volumes signal central bank accumulation, exerting direct upward pressure on spot demand, while declining volumes indicate net selling or lending, pressuring the spot price downward. The market value series compounds this effect with price appreciation, making it essential to cross-reference both: a rising value alongside stable volume confirms a pure price rally, while rising value with rising volume signals genuine institutional accumulation.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r CBD VOL, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+# Get series
+data <- get_series(c("us_gold_vol_res_imf", "de_gold_vol_res_imf", "it_gold_vol_res_imf", "fr_gold_vol_res_imf", "ru_gold_vol_res_imf", "cn_gold_vol_res_imf", "jp_gold_vol_res_imf", "tr_gold_vol_res_imf", "in_gold_vol_res_imf", "ch_gold_vol_res_imf"))
+
+# Plot series
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, title = "Gold Reserves Volume for US, Germany, France, Italy, Switzerland, China, Russia, Tureky, India and Japan, Fine Troy Ounces"))
+```
+
+```{=html}
+</div>
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r CBD MV, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+# Get series
+data <- get_series(c("us_gold_mv_res_imf", "de_gold_mv_res_imf", "it_gold_mv_res_imf", "fr_gold_mv_res_imf", "ru_gold_mv_res_imf", "cn_gold_mv_res_imf", "jp_gold_mv_res_imf", "tr_gold_mv_res_imf", "in_gold_mv_res_imf", "ch_gold_mv_res_imf"))
+
+# Plot series
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, title = "Gold Reserves at Market Value for US, Germany, France, Italy, Switzerland, China, Russia, Tureky, India and Japan, SDR (International Unit of Account)"))
+```
+
+```{=html}
+</div>
+```
+
+### Inflation & Expectations
+
+```{r INF TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'FRED — <a href="https://fred.stlouisfed.org/" target="_blank">link</a> and Eurostat — <a href="https://ec.europa.eu/eurostat/databrowser/view/PRC_HICP_MANR__custom_3761882/bookmark/table?lang=en&bookmarkId=4ad27e6f-358a-4a3d-82a0-587d69a833eb&c=1667558907980" target="_blank">link</a>',
+  frequency = "Monthly",
+  adjustment = "Seasonally Adjusted",
+  about = paste0(
+    '1) <b>CPI — <a href="https://fred.stlouisfed.org/series/CPIAUCSL" target="_blank">CPIAUCSL</a></b>. ',
+    'It measures price changes of a fixed basket of goods and services for urban consumers and is the most widely followed U.S. inflation release in financial markets.',
+    '<br><br>',
+    '2) <b>Core CPI — <a href="https://fred.stlouisfed.org/series/CPILFESL" target="_blank">CPILFESL</a></b>. ',
+    'It strips out volatile food and energy components to reveal the underlying structural inflation trend most relevant to Federal Reserve policy.',
+    '<br><br>',
+    '3) <b>PCE Price Index — <a href="https://fred.stlouisfed.org/series/PCEPI" target="_blank">PCEPI</a></b>. ',
+    'It uses a broader, methodologically distinct basket that accounts for consumer substitution behavior and tends to run slightly below CPI.',
+    '<br><br>',
+    '4) <b>10-Year Breakeven Inflation Rate — <a href="https://fred.stlouisfed.org/series/T10YIE" target="_blank">T10YIE</a></b>. ',
+    'It represents market-implied expected inflation derived from nominal 10-year Treasury yields and 10-year TIPS yields, reflecting the bond market\'s consensus expectation of average U.S. inflation over the next decade.',
+    '<br><br>',
+    '5) <b>5-Year Breakeven Inflation Rate</b>. ',
+    'It captures the same market-implied expectation over a shorter five-year horizon, making it more sensitive to near-term monetary policy shifts.',
+    '<br><br>',
+    '6) <b>Harmonised Index of Consumer Prices for Europe, Euro Zone and Switzerland — <a href="https://ec.europa.eu/eurostat/databrowser/view/PRC_HICP_MANR__custom_3761882/bookmark/table?lang=en&bookmarkId=4ad27e6f-358a-4a3d-82a0-587d69a833eb&c=1667558907980" target="_blank">CP00</a></b>. ',
+    'It measures consumer price inflation across euro area member states and Switzerland using a harmonised methodology defined by Eurostat, serving as the official inflation target measure for the European Central Bank, and enabling direct cross-country comparison of inflation dynamics across European economies.'),
+  chanel = "The transmission mechanism linking all these series to gold prices operates through two complementary channels. The first is the real interest rate channel, defined as nominal rates minus inflation expectations , since gold bears no yield and its opportunity cost is the real return foregone by not holding interest-bearing assets: when inflation rises without a commensurate increase in nominal rates, real rates decline and reduce the cost of holding gold, supporting its price, while aggressive central bank tightening that pushes real rates higher exerts downward pressure. The second is the purchasing power preservation channel: during periods of persistently elevated inflation, gold is historically sought as a store of value and hedge against the erosion of fiat currency purchasing power, as rising prices progressively diminish the real value of cash, bonds, and other fixed nominal claims, driving demand for an asset whose supply is physically constrained and which carries no counterparty or default risk. The breakeven rates carry particular analytical weight as forward-looking, market-derived inflation expectations that drive gold demand in anticipation of purchasing power erosion rather than merely reflecting it in arrears."
+)
+```
+
+#### *US*
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US INF, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("us_cpi_pc1_fd", "us_ccpi_pc1_fd", "us_pce_pc1_fd", "us_5ybrk_inf_fd", "us_10ybrk_inf_fd", "eu27_hicp_pc1_es","ea20_hicp_pc1_es")) %>% 
+  na.omit()
+
+# Plot series
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, title = "Consumer Price Inflation Measures for US, Percent Change from Year Ago, Seasonally Adjusted"))
+
+```
+
+```{=html}
+</div>
+```
+
+#### *Europe*
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r EU HICP, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("eu27_hicp_pc1_es","ea20_hicp_pc1_es","de_hicp_pc1_es","fr_hicp_pc1_es", "ch_hicp_pc1_es"))
+
+# Plot series
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, title = "Harmonised Index of Consumer Prices for Europe, Euro Zone and Switzerland, Percent Change from Year Ago, Not Adjusted"))
+
+```
+
+```{=html}
+</div>
+```
+
+### Monetary Policy & Real Rates
+
+```{r US FED RATE AND REAl RATE TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'FRED — <a href="https://fred.stlouisfed.org/" target="_blank">link</a> and OECD — <a href="https://finance.yahoo.com/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = paste0(
+  '1) <b> Effective Federal Funds Rate — <a href="https://fred.stlouisfed.org/series/EFFR" target="_blank">EFFR</a></b>. ',
+  'Effective Federal Funds Rate is the volume-weighted median of overnight federal funds transactions, calculated from domestic unsecured borrowings in US dollars between depository institutions and certain other entities, primarily government-sponsored enterprises. It is published by the Federal Reserve Bank of New York based on data reported in the FR 2420 Report of Selected Money Market Rates. It represents the actual market rate at which banks lend reserve balances to each other overnight, as opposed to the target rate set by the Federal Open Market Committee (FOMC). It is the most direct expression of US monetary policy and serves as a benchmark for a broad range of short-term interest rates across the economy. Reported as a percent, not seasonally adjusted, and updated daily.',
+  '<br><br>',
+  '2) <b>30Y Real Rate  — <a href="https://fred.stlouisfed.org/series/DFII30" target="_blank">DFII30</a></b>. ',
+  'Market Yield on U.S. Treasury Securities at 30-Year Constant Maturity, Inflation-Indexed measures the real yield on 30-year U.S. Treasury Inflation-Protected Securities (TIPS), published by the Board of Governors of the Federal Reserve System from its H.15 Selected Interest Rates release. As the longest maturity in the TIPS yield curve, DFII30 represents the market\'s expectation of real returns over the very long run and is particularly sensitive to structural shifts in the neutral real rate, long-horizon inflation credibility, and fiscal sustainability concerns. Its extended duration makes it the most powerful real rate signal for assets with long-dated or perpetual cash flow profiles, including gold, where the present value impact of changes in the discount rate is amplified by the length of the horizon. Updated daily.',
+  '<br><br>',
+  '3) <b>10Y Real Rate  — <a href="https://fred.stlouisfed.org/series/DFII10" target="_blank">DFII10</a></b>. ',
+  'Market Yield on U.S. Treasury Securities at 10-Year Constant Maturity, Inflation-Indexed measures the real yield on 10-year U.S. Treasury Inflation-Protected Securities (TIPS), published by the Board of Governors of the Federal Reserve System from its H.15 Selected Interest Rates release. Unlike nominal Treasury yields which embed an inflation premium, TIPS yields are quoted in real terms, their principal adjusts with the CPI, so the yield represents the guaranteed real return above inflation investors receive by holding the security to maturity. As the most widely referenced point on the real yield curve, DFII10 is considered the single most important real interest rate benchmark for global asset pricing, and its inverse relationship with gold is among the most empirically robust in financial markets, declining real yields reduce the opportunity cost of holding non-yielding gold and support its price, while rising real yields increase that cost and exert downward pressure. The 10-year tenor also serves as the numerator input for computing the 10-year breakeven inflation rate when subtracted from the nominal 10-year Treasury yield. Updated daily.',
+  '<br><br>',
+  '4) <b>5Y Real Rate  — <a href="https://fred.stlouisfed.org/series/DFII5" target="_blank">DFII5</a></b>. ',
+  'Market Yield on U.S. Treasury Securities at 5-Year Constant Maturity, Inflation-Indexed measures the real yield on 5-year U.S. Treasury Inflation-Protected Securities (TIPS), published by the Board of Governors of the Federal Reserve System from its H.15 Selected Interest Rates release. As the shortest standard maturity in the actively traded TIPS curve, DFII5 is more sensitive than longer-dated real yields to near-term Federal Reserve policy expectations and short-horizon inflation dynamics, making it a particularly reactive indicator of shifts in monetary policy stance. Like all real yield series, its inverse relationship with gold is structurally significant, declining 5-year real yields reduce the opportunity cost of holding non-yielding gold and support its price, while rising real yields exert downward pressure. It also serves as the input for computing the 5-year breakeven inflation rate when subtracted from the nominal 5-year Treasury yield. Updated daily.',
+    '<br><br>',
+  '5) <b>US Dollar Index  — <a href="https://finance.yahoo.com/quote/DX-Y.NYB/" target="_blank">DX-Y.NYB</a></b>. ',
+  'U.S. Dollar Index  measures the value of the U.S. dollar against a basket of six major foreign currencies, traded on the ICE Futures U.S. exchange. The basket is geometrically weighted and comprises the euro (57.6%), Japanese yen (13.6%), British pound (11.9%), Canadian dollar (9.1%), Swedish krona (4.2%), and Swiss franc (3.6%), with weights fixed at the index\'s inception in 1973 and not updated to reflect changes in global trade patterns, distinguishing it from trade-weighted indices such as the Fed\'s Nominal Broad Dollar Index which rebalance weights periodically. Indexed to 100 at its March 1973 base period, a reading above 100 indicates the dollar is stronger than at inception and below 100 indicates it is weaker. Because of its heavy euro weighting, the index is more reflective of dollar strength against advanced European economies than of overall dollar dynamics against the full range of U.S. trading partners, including large emerging market economies. It is the most widely traded and quoted dollar index in financial markets, serving as the underlying for futures and options contracts used by institutional investors to hedge or express views on broad dollar direction. Quoted in index points, updated daily with closing prices.'),
+  chanel = "When real rates are low or negative, meaning inflation exceeds the nominal rate, bonds offer insufficient real returns, pushing investors toward gold as a capital preservation vehicle and driving prices higher. Conversely, when real rates rise, bonds become genuinely attractive on a risk-adjusted basis, diverting capital away from gold as a non-yielding asset and pressuring prices downward. Central bank decisions to cut nominal rates (accommodative policy) reinforce this dynamic by compressing real rates further, while high inflation independently lowers real rates and amplifies gold's appeal as a store of value. The dollar compounds the effect mechanically, tighter monetary policy strengthens the USD, raising gold's price in foreign currency terms and suppressing global demand, with the gold/DXY correlation historically ranging from -0.6 to -0.8. This relationship is not mechanical however, during periods of acute geopolitical stress or dollar credibility concerns, gold is sought regardless of the rate environment, suggesting that monetary conditions set the baseline direction but do not fully determine the price.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US FED RATE AND REAl RATE, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("us_ffrvw_fd","us_ffr_fd","us_dfii30_fd", "us_dfii10_fd", "us_dfii5_fd"))
+
+# Plot series
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, title = "US Real Rates and Fed Policy Rates, Perecent"))
+
+```
+
+```{=html}
+</div>
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US DOL IND, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("dol_idx"))
+
+# Plot series
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE))
+
+```
+
+```{=html}
+</div>
+```
+
+### Money Supply & Dilution
+
+```{r US M2 TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'FRED — <a href="https://fred.stlouisfed.org/series/WM2NS" target="_blank">link</a>',
+  frequency = "Monthly and Weekly",
+  adjustment = "Not Adjusted for Weekly Data and Seasonally Adjusted for Monthly Data",
+  about = "M2 Money Stock measures the broad money supply in the United States, published by the Board of Governors of the Federal Reserve System from its H.6 Money Stock Measures release. M2 encompasses all components of M1, currency in circulation, demand deposits, and other liquid deposits including checking and savings accounts, plus small-denomination time deposits (certificates of deposit under $100,000) and balances in retail money market funds, excluding IRA and Keogh balances. It thus represents the total stock of money readily available or easily convertible to spending in the economy. Rapid expansion of M2 is historically associated with rising inflationary pressures, as a faster growth rate of money relative to real economic output tends to erode the purchasing power of the currency, a dynamic that has historically supported gold demand as a store of value hedge against monetary debasement. Conversely, contraction in M2, as occurred in 2022-2023 for the first time in decades, signals tightening liquidity conditions and reduced monetary stimulus. Reported in billions of dollars, not seasonally adjusted, released weekly ending Monday.",
+  chanel = "When central banks expand the money supply (M2 growth), the purchasing power of fiat currency is diluted, making fixed-supply assets such as gold more attractive as a store of value and pushing prices higher. Conversely, M2 contraction reduces liquidity in the financial system, strengthens the relative value of cash, and diminishes the inflation hedge appeal of gold, pressuring prices downward. The relationship operates with a lag however, excess liquidity first flows into equities and credit markets before rotating into gold, meaning M2 growth is often a leading rather than coincident indicator for gold. The link also strengthens during periods of fiscal dominance, where money supply expansion is perceived as monetisation of public debt, triggering a broader loss of confidence in fiat currency and amplifying gold's safe-haven demand beyond what the rate environment alone would justify.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US M2, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+# Get series
+data <- get_series(c("us_m2_w_fd", "us_m2_m_fd"))
+
+# Plot series
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, title = "M2 for US, Billions of Dollars, Seasonally Adjusted for Monthly series and Not ajdusted for Weekly series"))
+
+```
+
+```{=html}
+</div>
+```
+
+### Geopolitics & Uncertainty
+
+```{r GEOPOLITIC TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'EPU — <a href="https://www.policyuncertainty.com/" target="_blank">link</a> and  — <GPRa href="https://www.matteoiacoviello.com/gpr.htm" target="_blank">link</a>',
+  frequency = "Monthly for EPU and Daily for GPR",
+  adjustment = "Not Adjusted",
+  about = paste0(
+  '1) <b> Economic Policy Uncertainty Indices </b> measure the degree of uncertainty surrounding economic policy across multiple countries and global aggregates, developed by Baker, Bloom, and Davis. Each national index is constructed by combining three components: the frequency of newspaper articles mentioning economic uncertainty and policy-related terms, the number of federal tax code provisions set to expire in coming years, and the dispersion of economic forecasts among professional forecasters, with the relative weighting of components varying by country based on data availability. The series covers the United States (EPUUS), Canada (EPUCAN), the United Kingdom (EPUUK), Germany (EPUDE), France (EPUFR), Spain (EPUES), Italy (EPUIT), and a Europe-wide aggregate (EPUEU), as well as two global composite indices: one weighted by purchasing power parity-adjusted GDP (GEPU_PPP) and one weighted by current nominal GDP (GEPU_CURRENT), the latter giving greater weight to larger economies at current exchange rates. Elevated readings signal heightened uncertainty about the direction of fiscal, regulatory, monetary, or trade policy, which tends to suppress business investment, hiring, and consumer spending as firms and households delay decisions pending greater clarity, making the indices useful coincident-to-leading indicators of economic activity slowdowns and financial market volatility. All series are reported as diffusion indices normalized to a long-run mean of 100, not seasonally adjusted, released monthly.',
+  '<br><br>',
+  '2) <b>Geopolitical Risk Index </b> and its sub-components measure the level of geopolitical risk and associated uncertainty in the global environment, developed by Caldara and Iacoviello and published via their geopoliticalrisk.net platform. The headline daily GPR index is constructed by counting the frequency of articles in eleven major international newspapers that reference geopolitical tensions, conflicts, terrorism, and related threats, normalized to a historical baseline. It is decomposed into two distinct sub-indices: the Geopolitical Acts index, which captures realized adverse geopolitical events such as wars, terrorist attacks, and military escalations that have already materialized, and the Geopolitical Threats index, which captures forward-looking references to potential geopolitical risks and tensions not yet realizedx, the distinction between the two allowing users to separate the impact of actual geopolitical shocks from the effect of anticipated or feared ones. Two smoothed variants are also provided: a 30-day moving average that filters high-frequency noise to reveal the medium-term trend in geopolitical risk, and a 7-day moving average that preserves more near-term signal while reducing daily volatility. Elevated readings are associated with increased safe-haven demand, higher risk premia across financial markets, reduced business investment, and upward pressure on commodity prices including oil and gold. All series are reported as diffusion indices normalized to a historical mean of 100, not seasonally adjusted, released daily.'),
+   chanel = "Rising economic policy uncertainty prompts firms and households to delay investment and spending decisions, triggering a broad flight toward safe-haven assets, gold chief among them, as investors seek to preserve capital in the face of unclear fiscal, monetary, regulatory or trade policy directions. Geopolitical risk operates through a related but distinct channel: realized geopolitical shocks (wars, terrorist attacks, military escalations) generate immediate safe-haven demand spikes, while geopolitical threats, forward-looking fears not yet materialized, sustain a persistent risk premium in gold prices even in the absence of actual events. The two indices are complementary in practice: policy uncertainty tends to drive gold gradually as it reflects a slow-building erosion of confidence, whereas geopolitical risk spikes are sharper and more short-lived unless sustained by prolonged conflict or systemic instability.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r EPU, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("us_epu","global_epu_ppp","global_epu", "ca_epu", "uk_epu", "de_epu", "fr_epu", "eu_epu", "es_epu", "it_epu")) %>% 
+  na.omit()
+
+# Plot series
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, title = "Economic Policy Uncertainty Index for US, Canada, United Kingdom, Germany, France, Spain, Italy, Europe and Global"))
+
+```
+
+```{=html}
+</div>
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r GRP 1, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("gpr","gpr_act","gpr_threat"))
+
+# Plot series
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, title = "Geopolitical Risk Index, Geopolitical Acts index and Geopolitical Risk Threats Index"))
+
+```
+
+```{=html}
+</div>
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r GRP 2, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("gpr", "gpr_ma30", "gpr_ma7"))
+
+# Plot series
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, title = "Geopolitical Risk Index with 7 and 30 days moving average"))
+
+```
+
+```{=html}
+</div>
+```
+
+### Stock-bond correlation
+
+```{r STOCK BOND CORR TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'FRED — <a href="https://fred.stlouisfed.org/" target="_blank">link</a> and OECD — <a href="https://finance.yahoo.com/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = paste0(
+  '1) <b> Market Yield on US Treasury Securities at 10-Year — <a href="https://fred.stlouisfed.org/series/DGS10" target="_blank">DGS10</a></b>. ',
+  'Effective Federal Funds Rate is the volume-weighted median of overnight federal funds transactions, calculated from domestic unsecured borrowings in US dollars between depository institutions and certain other entities, primarily government-sponsored enterprises. It is published by the Federal Reserve Bank of New York based on data reported in the FR 2420 Report of Selected Money Market Rates. It represents the actual market rate at which banks lend reserve balances to each other overnight, as opposed to the target rate set by the Federal Open Market Committee (FOMC). It is the most direct expression of US monetary policy and serves as a benchmark for a broad range of short-term interest rates across the economy. Reported as a percent, not seasonally adjusted, and updated daily with closing prices.',
+  '<br><br>',
+  '2) <b>S&P 500  — <a href="https://finance.yahoo.com/quote/%5EGSPC/0" target="_blank">SP500</a></b>. ',
+  'The S&P 500 is the primary U.S. equity benchmark, tracking 500 large-cap companies listed on NYSE or Nasdaq, weighted by free-float market capitalization. It covers approximately 80% of U.S. equity market capitalization across all eleven GICS sectors, with technology, healthcare, and financials typically dominating. Quoted in index points, updated daily with closing prices.'),
+chanel = "When the historically negative stock-bond correlation turns positive, meaning equities and bonds fall simultaneously, as occurred during the 2022 inflation shock, the traditional 60/40 portfolio loses its internal hedge and gold emerges as the key diversifier, since it is the only major asset class that can rise independently of both. Beyond this critical regime, gold and equities tend to move in opposite directions during market stress as capital rotates into safe-haven assets, while in calm environments both can rise together when driven by loose monetary policy or a weak dollar, meaning the correlation is context-dependent. Rising Treasury yields add further complexity: they impose an opportunity cost on gold as a non-yielding asset, but if yields rise because inflation is accelerating rather than because growth is strong, gold can resist the pressure since inflation is itself one of its core demand drivers.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r STOCK BOND CORR, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Assign Window
+window <- 90
+
+# Compute rolling correlation
+data <- compute_rolling_correlation(name_1 = "sp500", name_2 = "us_dgs10_fd", window = window)
+
+# Plot series
+hc <- highchart(type = "stock") %>%
+  hc_add_series(data = data, type = "line", hcaes(x = date, y = round(rolling_corr, 4)), name = paste("Rolling", window, "Day Correlation"), color = "#2196F3") %>%
+  hc_yAxis(min = -1, max = 1, tickInterval = 0.25,
+    plotLines = list(
+      list(value =  0,   color = "gray",    dashStyle = "Dash", width = 1),
+      list(value =  0.5, color = "#4CAF50", dashStyle = "Dot",  width = 1),
+      list(value = -0.5, color = "#F44336", dashStyle = "Dot",  width = 1)),
+    plotBands = list(
+      list(from =  0, to =  1, color = "rgba( 76,175, 80, 0.25)", label = list(text = "Bullish Gold", style = list(color = "#ffffff"))),
+      list(from = -1, to =  0, color = "rgba(244, 67, 54, 0.25)", label = list(text = "Neutral Gold", style = list(color = "#ffffff")))
+    )) %>%
+  hc_title(text = paste("Rolling", window, "Day Correlation: S&P500 vs Market Yield on US Treasury Securities at 10-Year")) %>%
+  hc_subtitle(text = "Green = Bullish Gold (positive correlation) | Red = Neutral Gold (negative correlation)",
+              style = list(color = "#ffffff")) %>%
+  hc_tooltip(valueDecimals = 4) %>%
+  hc_exporting(enabled = TRUE) %>%
+  hc_chart(backgroundColor = "#161b22") %>%
+  hc_title(style = list(color = "#ffffff")) %>%
+  hc_xAxis(title = list(text = NULL), labels = list(style = list(color = "#ffffff"))) %>%
+  hc_yAxis(title = list(text = NULL), labels = list(style = list(color = "#ffffff"))) %>%
+  hc_legend(itemStyle = list(color = "#ffffff"))
+div(style = "display: flex; justify-content: center;", hc)
+```
+
+```{=html}
+</div>
+```
+
+### Technical dynamics
+
+```{r TECH TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo — <a href="https://finance.yahoo.com/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = paste0(
+    '1) <b>Simple Moving Average 20 — SMA20</b>. ',
+    'The 20-day Simple Moving Average is the arithmetic mean of the last 20 closing prices. It is a short-term trend indicator that smooths daily noise and helps identify the immediate direction of price momentum. On gold futures, the SMA20 is commonly used to detect early trend shifts and to define dynamic short-term support and resistance levels. When price crosses above the SMA20, it is generally interpreted as a bullish short-term signal, and conversely when it crosses below. It reacts quickly to recent price changes, making it sensitive but also prone to false signals in choppy markets.',
+    '<br><br>',
+    '2) <b>Simple Moving Average 50 — SMA50</b>. ',
+    'The 50-day Simple Moving Average represents the medium-term trend by averaging the last 50 closing prices. It is widely followed by institutional traders and technical analysts as a benchmark for the intermediate price trend. On gold, the SMA50 acts as a key dynamic support in uptrends and resistance in downtrends. A crossover of the SMA20 above the SMA50 is known as a bullish signal, while the reverse is interpreted as a bearish signal. It filters out more noise than the SMA20 while remaining responsive enough to capture meaningful trend changes over a horizon of one to three months.',
+    '<br><br>',
+    '3) <b>Simple Moving Average 200 — SMA200</b>. ',
+    'The 200-day Simple Moving Average is the most widely watched long-term trend indicator in financial markets. It averages the last 200 closing prices and defines the structural bull or bear regime for an asset. On gold futures, the SMA200 is a primary reference for large institutional investors, central banks, and macro funds. Price sustained above the SMA200 is the defining condition of a long-term uptrend, while a break below it signals a potential regime change. The crossover of the SMA50 above the SMA200, known as the Golden Cross, is one of the most closely monitored technical events in gold markets, and its inverse, the Death Cross, is treated as a major bearish warning.',
+    '<br><br>',
+    '4) <b>Volume</b>. ',
+    'Volume represents the total number of gold futures contracts traded during each session on the COMEX exchange. It is a direct measure of market participation and conviction behind price moves. A price advance accompanied by rising volume confirms the strength of the move, while an advance on declining volume may signal exhaustion or lack of commitment from market participants. On gold, volume spikes often coincide with macroeconomic releases, Federal Reserve decisions, or geopolitical shocks, providing context for interpreting the significance of price moves. Volume is also used to validate breakouts above or below key moving average levels.',
+    '<br><br>',
+    '5) <b>Average Directional Index — ADX / DI+ / DI-</b>. ',
+    'The Average Directional Index, developed by J. Welles Wilder, measures the strength of a trend independently of its direction. It is derived from the difference between consecutive highs and lows and is typically computed over a 14-period lookback window. The ADX itself ranges from 0 to 100: readings below 20 indicate a weak or absent trend, readings between 20 and 25 signal an emerging trend, values above 25 confirm a trend of meaningful strength, and readings above 40 indicate a strong trending environment. The ADX is always positive regardless of whether the market is rising or falling. It is complemented by two directional indicators: DI+, which measures upward directional movement, and DI-, which measures downward directional movement. When DI+ is above DI-, buyers are in control; when DI- exceeds DI+, sellers dominate. A crossover of DI+ above DI- while the ADX is rising and above 20 is one of the most reliable trend-entry signals in technical analysis. On gold futures, the ADX is particularly valuable because gold alternates between extended trending phases driven by macro narratives and prolonged consolidation periods, making trend strength measurement essential before applying any directional strategy.',
+    '<br><br>',
+    '6) <b>Relative Strength Index — RSI</b>. ',
+    'The Relative Strength Index, introduced by J. Welles Wilder in 1978, is a momentum oscillator that measures the speed and magnitude of recent price changes on a scale from 0 to 100. It is calculated over a standard 14-period lookback window using the ratio of average gains to average losses over that period. RSI values above 70 are conventionally interpreted as overbought conditions, suggesting that the asset may be due for a correction or consolidation, while values below 30 indicate oversold conditions that may precede a rebound. However, in strong trending markets, the RSI can remain in overbought or oversold territory for extended periods without a reversal, which is why trend context is essential when interpreting RSI signals. On gold futures, divergences between price and RSI are particularly significant: when gold makes a new high but the RSI fails to confirm it by also reaching a new high, it is called a bearish divergence and often precedes a meaningful correction. The reverse, a bullish divergence where price makes a new low but RSI does not, frequently signals a trend exhaustion and potential reversal to the upside.',
+    '<br><br>',
+    '7) <b>Moving Average Convergence Divergence — MACD</b>. ',
+    'The Moving Average Convergence Divergence indicator, developed by Gerald Appel in the late 1970s, is a trend-following momentum indicator built from the difference between a 12-period and a 26-period Exponential Moving Average of closing prices. This difference constitutes the MACD line. A 9-period EMA of the MACD line, called the signal line, is then overlaid to generate crossover signals. The histogram, defined as the MACD line minus the signal line, visualises the distance and direction of the gap between the two, making it easy to identify acceleration or deceleration in momentum. A bullish signal is generated when the MACD line crosses above the signal line, and a bearish signal when it crosses below. Zero-line crossovers, where the MACD moves from negative to positive territory or vice versa, indicate a shift in the medium-term trend direction. On gold futures, the MACD is widely used to confirm trend entries and to detect early signs of momentum exhaustion, particularly when the histogram begins to shrink after a strong directional move, indicating that the driving force behind the trend is weakening even if price has not yet reversed.'),
+  chanel = paste0(
+    'The moving averages define the full trend structure of gold across short, medium, and long-term horizons: when all three are aligned in ascending order with price above each of them, gold is in a confirmed structural uptrend. ',
+    'Volume acts as the validation layer, since a breakout above a key moving average on high volume is considered far more reliable than one occurring on thin trading. ',
+    'The ADX serves as a regime filter: when it is below 20, momentum and mean-reversion strategies are more appropriate than trend-following ones, and when it rises above 25 with DI+ dominant, it typically reflects a macro-driven rally associated with dollar weakness, rising inflation expectations, or a flight-to-safety episode. ',
+    'RSI is most informative on gold when interpreted in the context of the prevailing macro regime: during risk-off episodes gold can remain overbought for weeks, while during periods of rising real yields it can stay oversold as the opportunity cost of holding a non-yielding asset weighs persistently on demand. ',
+    'The MACD is most powerful on gold as a confirmation tool: a bullish crossover while price is above the SMA200 and the ADX is rising above 25 creates a high-conviction long setup aligned across trend, momentum, and strength dimensions simultaneously, while a bearish crossover below the zero line under the SMA200 tends to mark the beginning of sustained downside phases.'))
+```
+
+#### *Volume & SMA*
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r TECH VOL SMA, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Plot series
+div(style = "display: flex; justify-content: center;",produce_technical_indicators_plot(id = "GC=F", interval = "1Y",title = "Gold futures (COMEX front contract), with Volume and Simple Moving Average (20,50,200)", technical_indicator = c("vol", "sma"), cut = FALSE))
+
+```
+
+```{=html}
+</div>
+```
+
+#### *ADX*
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r TECH ADX, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Plot series
+div(style = "display: flex; justify-content: center;",produce_technical_indicators_plot(id = "GC=F", interval = "1Y",title = "Gold futures (COMEX front contract), with Volume and Simple Moving Average (20,50,200)", technical_indicator = c("adx"), cut = FALSE))
+
+
+```
+
+```{=html}
+</div>
+```
+
+#### *RSI*
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r TECH RSI, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Plot series
+div(style = "display: flex; justify-content: center;",produce_technical_indicators_plot(id = "GC=F", interval = "1Y",title = "Gold futures (COMEX front contract), with Volume and Simple Moving Average (20,50,200)", technical_indicator = c("rsi"), cut = FALSE))
+
+
+```
+
+```{=html}
+</div>
+```
+
+#### *MACD*
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r TECH MACD, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Plot series
+div(style = "display: flex; justify-content: center;",produce_technical_indicators_plot(id = "GC=F", interval = "1Y",title = "Gold futures (COMEX front contract), with Volume and Simple Moving Average (20,50,200)", technical_indicator = c("macd"), cut = FALSE))
+
+
+```
+
+```{=html}
+</div>
+```

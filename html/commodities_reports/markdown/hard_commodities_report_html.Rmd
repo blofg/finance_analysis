@@ -1,0 +1,495 @@
+---
+title: "Hard Commodities Report"
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float:
+      collapsed: false
+      smooth_scroll: true
+    theme: flatly
+    highlight: kate
+    self_contained: true
+    css: "/Users/benjaminlachavanne/Desktop/script/finance_analysis/html/style/style.css"
+
+
+params:
+  llm_analysis: false
+  
+---
+
+```{r setup, include=FALSE, warning=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+
+# Main path 
+path_main <- file.path("~", "Desktop", "script", "finance_analysis")
+
+# Upload packages, functions and inputs 
+source(paste0(path_main,"/initialization/package.R"))         # |Package|
+source(paste0(path_main,"/function/function_information.R"))  # |Function price|
+source(paste0(path_main,"/function/function_format.R"))       # |Function format|
+source(paste0(path_main,"/function/function_visualization.R"))# |Functions visualization|
+source(paste0(path_main,"/function/function_compute.R"))      # |Functions indicator|
+source(paste0(path_main,"/function/function_ai.R"))           # |Functions ai|
+source(paste0(path_main,"/initialization/input.R"))           # |Input|
+
+# Download all series from the RDS folder
+path_rds_folder    <- "/Users/benjaminlachavanne/Desktop/script/finance_analysis/database/rds/"
+path_rds_all <- paste0(path_rds_folder,"series_store_all.rds")
+series_database <- readRDS(path_rds_all)
+
+# Styled info box
+series_info_box <- function(source_html, frequency, adjustment, about) {
+  htmltools::HTML(paste0('
+  <div class="info-card">
+    <div class="info-grid">
+      <div class="info-row">
+        <span class="info-label">Source</span>
+        <span class="info-value">', source_html, '</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Frequency</span>
+        <span class="info-value">', frequency, '</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Adjustment</span>
+        <span class="info-value">', adjustment, '</span>
+      </div>
+    </div>
+    <div class="info-about">', about, '</div>
+  </div>
+  '))
+}
+
+# Section label helper
+section_label <- function(icon, text) {
+  htmltools::HTML(paste0(
+    '<div class="section-label"><span class="section-icon">', icon,
+    '</span><span class="section-text">', text, '</span></div>'))
+}
+
+# Subsection label helper
+subsection_label <- function(text) {
+  htmltools::HTML(paste0('<div class="subsection-label">', text, '</div>'))
+}
+
+# Chart note helper
+chart_note <- function(text) {
+  htmltools::HTML(paste0('<p class="chart-note">', text, '</p>'))
+}
+```
+
+
+<!-- ####################################################################### -->
+<!-- Head Title  -->
+<!-- ####################################################################### -->
+
+```{=html}
+<!-- ── MASTHEAD ─────────────────────────────────────────────────────────────── -->
+<div class="masthead">
+  <div class="masthead-eyebrow">Hard Commodities Research · Global Markets</div>
+  <div class="masthead-title">Hard Commodities <span>Report</span></div>
+  <div class="masthead-date">Latest update date: `r format(Sys.Date(), '%B %d, %Y')`</div>
+</div>
+```
+
+<!-- ####################################################################### -->
+<!-- Abstract  -->
+<!-- ####################################################################### -->
+
+## Abstract
+
+```{=html}
+<div class="company-hero">
+  <div class="co-body">
+    <div class="masthead-title">Abstract</div>
+  </div>
+</div>
+```
+
+<!-- ####################################################################### -->
+<!-- World Commodities  -->
+<!-- ####################################################################### -->
+
+## World Commodities
+
+```{=html}
+<div class="company-hero">
+  <div class="co-body">
+    <div class="masthead-title">World Commodities</div>
+  </div>
+</div>
+```
+
+```{r COMMODITIES TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo — <a href="https://finance.yahoo.com/" target="_blank">link</a> · Investing.com — <a href="https://www.investing.com/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about  = '
+  This table presents the performance of major global commodity futures across multiple time horizons
+  (1 day, 5 days, 1 month, 3 months, 6 months, 1 year, 2 years, 5 years and since inception).
+  It covers the following contracts:
+  <br><br>
+  <b>Energy:</b> Brent Crude <i>(global oil benchmark)</i> ·
+  WTI Crude <i>(U.S. oil benchmark)</i> ·
+  Natural Gas <i>(Henry Hub front contract)</i> ·
+  Heating Oil <i>(distillate benchmark)</i> ·
+  RBOB Gasoline <i>(gasoline benchmark)</i>
+  <br><br>
+  <b>Metals:</b> Gold <i>(COMEX)</i> · Silver <i>(COMEX)</i> ·
+  Copper <i>(COMEX)</i> · Platinum <i>(NYMEX)</i> ·
+  Palladium <i>(NYMEX)</i> · Aluminium <i>(COMEX)</i>
+  <br><br>
+  <b>Agriculture:</b> Corn <i>(CBOT)</i> · Wheat <i>(CBOT)</i> ·
+  Soybeans <i>(CBOT)</i> · Coffee <i>(Arabica, ICE)</i> ·
+  Cocoa <i>(ICE)</i> · Cotton <i>(ICE)</i> · Sugar <i>(ICE No.11)</i> ·
+  Live Cattle <i>(CME)</i> · Lean Hogs <i>(CME)</i> ·
+  Orange Juice <i>(ICE)</i> · Lumber <i>(CME)</i>
+  <br><br>
+  <b>Commodity Indices:</b> S&amp;P GSCI <i>(broad commodity index)</i> ·
+  Bloomberg Commodity Index <i>(BCOM)</i>
+  '
+)
+```
+
+### Table
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r COMMODITIES TABLE, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Mapping tickers to readable names
+labels <- c(
+  "GC=F"    = "Gold",
+  "SI=F"    = "Silver",
+  "HG=F"    = "Copper",
+  "PL=F"    = "Platinum",
+  "PA=F"    = "Palladium",
+  "ALI=F"   = "Aluminium"
+)
+
+# Get series
+commodities <- c("GC=F","SI=F","HG=F","PL=F","PA=F","ALI=F")
+
+# Plot table
+div(style = "display: flex; justify-content: center;",
+    produce_performance_table(series = commodities, label = labels))
+```
+
+```{=html}
+</div>
+```
+
+### Comparison
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r COMMO COMP METALS, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("fut_gold", "fut_silver", "fut_copper", "fut_platinum", "fut_palladium", "fut_aluminium"))
+
+# Compute index
+data <- compute_rebase(df = data, base = "2015-01-07")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, title = "Metals Futures – Indexed Performance (2015:01:07 = 100)"))
+```
+
+```{=html}
+</div>
+```
+
+### Indices
+
+#### *S&P GSCI*
+
+```{r IDX SPGSCI TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo — <a href="https://finance.yahoo.com/quote/%5ESPGSCI/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "The S&P GSCI is a broad, production-weighted commodity index maintained by S&P Dow Jones Indices, covering energy, metals, and agriculture. Its heavy energy weighting (typically 50–70%) means it closely tracks oil market dynamics. Widely used as a benchmark for broad commodity exposure and as an inflation sensitivity gauge. Quoted in index points, updated daily with closing prices.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r IDX SPGSCI, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("idx_spgsci"))
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+```
+
+```{=html}
+</div>
+```
+
+#### *Bloomberg Commodity Index*
+
+```{r IDX BCOM TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Investing.com — <a href="https://www.investing.com/indices/bloomberg-commodity" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "The Bloomberg Commodity Index (BCOM) tracks a diversified basket of commodity futures across energy, metals, and agriculture, with sector caps limiting any single group to 33% and any single commodity to 15%. Its more balanced weighting relative to the S&P GSCI makes it a preferred benchmark for diversified commodity exposure without undue energy concentration. Quoted in index points, updated daily with closing prices.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r IDX BCOM, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("idx_bcom"))
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+```
+
+```{=html}
+</div>
+```
+
+<!-- ####################################################################### -->
+<!-- Prices  -->
+<!-- ####################################################################### -->
+
+## Prices
+
+```{=html}
+<div class="company-hero">
+  <div class="co-body">
+    <div class="masthead-title">Prices</div>
+  </div>
+</div>
+```
+
+### Gold
+
+```{r METALS GOLD TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo — <a href="https://finance.yahoo.com/quote/GC=F/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "Gold futures (COMEX front contract) represent the primary global benchmark for the precious metal. Gold serves as a safe-haven asset, inflation hedge, and monetary reserve, making it sensitive to real interest rates, the U.S. dollar, geopolitical risk, and central bank demand. Quoted in USD per troy ounce, updated daily with closing prices.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r METALS GOLD, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("fut_gold"))
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+```
+
+```{=html}
+</div>
+```
+
+### Silver
+
+```{r METALS SILVER TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo — <a href="https://finance.yahoo.com/quote/SI=F/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "Silver futures (COMEX front contract) combine monetary and industrial characteristics, making silver more volatile than gold. Demand is driven by both investment flows and industrial applications including solar panels, electronics, and medical devices. Particularly sensitive to global manufacturing activity alongside traditional precious metal drivers. Quoted in USD per troy ounce, updated daily with closing prices.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r METALS SILVER, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("fut_silver"))
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+```
+
+```{=html}
+</div>
+```
+
+### Copper
+
+```{r METALS COPPER TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo — <a href="https://finance.yahoo.com/quote/HG=F/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "Copper futures (COMEX front contract) are widely regarded as a leading indicator of global economic activity given the metal's pervasive use in construction, electrical infrastructure, and manufacturing. Prices are heavily influenced by Chinese demand, global industrial output, and mine supply from major producers such as Chile and Peru. Quoted in USD per pound, updated daily with closing prices.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r METALS COPPER, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("fut_copper"))
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+```
+
+```{=html}
+</div>
+```
+
+### Platinum
+
+```{r METALS PLATINUM TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo — <a href="https://finance.yahoo.com/quote/PL=F/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "Platinum futures track one of the rarest precious metals, with applications concentrated in automotive catalytic converters, jewelry, and industrial processes. Supply is highly concentrated in South Africa and Russia, creating significant geopolitical supply risk. Prices are sensitive to automotive sector trends and the ongoing energy transition. Quoted in USD per troy ounce, updated daily with closing prices.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r METALS PLATINUM, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("fut_platinum"))
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+```
+
+```{=html}
+</div>
+```
+
+### Palladium
+
+```{r METALS PALLADIUM TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo — <a href="https://finance.yahoo.com/quote/PA=F/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "Palladium futures track a precious metal primarily used in gasoline-engine catalytic converters, with supply overwhelmingly concentrated in Russia and South Africa. It has been among the most volatile precious metals, driven by automotive demand trends, emission regulation tightening, and ongoing substitution dynamics with platinum. Quoted in USD per troy ounce, updated daily with closing prices.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r METALS PALLADIUM, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("fut_palladium"))
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+```
+
+```{=html}
+</div>
+```
+
+### Aluminium
+
+```{r METALS ALU TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Yahoo — <a href="https://finance.yahoo.com/quote/ALI=F/" target="_blank">link</a>',
+  frequency = "Daily",
+  adjustment = "Not Adjusted",
+  about = "Aluminium futures (COMEX front contract) track the world's most widely used non-ferrous metal, with applications spanning transportation, construction, packaging, and electrical cables. Prices are heavily influenced by Chinese smelter output, energy costs (aluminium smelting is extremely energy-intensive), and global industrial demand. Quoted in USD per pound, updated daily with closing prices.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r METALS ALU, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(c("fut_aluminium"))
+
+# Compute sma 
+data <- compute_moving_average(df = data, date_col = "date", value_col = "value")
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE)),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+```
+
+```{=html}
+</div>
+```

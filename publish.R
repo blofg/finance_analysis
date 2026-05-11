@@ -19,6 +19,15 @@ market_reports <- list(
   "commodities_report_html.html"                 = file.path(path_main, "html/market_reports/output")
 )
 
+# Commodities reports
+market_reports <- list(
+  "gold_fundamentals_report_html.html"           = file.path(path_main, "html/commodities_reports/output"),
+  "energy_commodities_report_html.html"          = file.path(path_main, "html/commodities_reports/output"),
+  "soft_commodities_report_html.html"            = file.path(path_main, "html/commodities_reports/output"),
+  "hard_commodities_report_html.html"            = file.path(path_main, "html/commodities_reports/output"),
+  
+)
+
 # Share reports: Magnificent 7 
 mag7_reports <- list(
   "magnificent_aapl_report_html.html"  = file.path(path_main, "html/share_reports/mag7/output"),

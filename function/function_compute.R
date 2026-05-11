@@ -328,10 +328,6 @@ compute_time_render <- function(file, output_dir, label, llm_analysis = FALSE) {
 
 
 
-
-
-
-
 build_sml <- function(ids, benchmark_id, risk_free_rate = 0.02, frontier = TRUE, n_portfolios = 5000, plot = TRUE) {
   #-----------------------------------------------------------------------------
   # Function : Build Security Market Line (SML) and Markowitz Efficient Frontier
