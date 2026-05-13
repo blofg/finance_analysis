@@ -3,9 +3,9 @@ title: "Hard Commodities Report"
 output:
   html_document:
     toc: true
-    toc_depth: 3
+    toc_depth: 6
     toc_float:
-      collapsed: false
+      collapsed: true
       smooth_scroll: true
     theme: flatly
     highlight: kate
@@ -99,27 +99,11 @@ chart_note <- function(text) {
 
 ## Abstract
 
-```{=html}
-<div class="company-hero">
-  <div class="co-body">
-    <div class="masthead-title">Abstract</div>
-  </div>
-</div>
-```
-
 <!-- ####################################################################### -->
 <!-- World Commodities  -->
 <!-- ####################################################################### -->
 
 ## World Commodities
-
-```{=html}
-<div class="company-hero">
-  <div class="co-body">
-    <div class="masthead-title">World Commodities</div>
-  </div>
-</div>
-```
 
 ```{r COMMODITIES TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
 series_info_box(
@@ -281,14 +265,6 @@ tagList(
 <!-- ####################################################################### -->
 
 ## Prices
-
-```{=html}
-<div class="company-hero">
-  <div class="co-body">
-    <div class="masthead-title">Prices</div>
-  </div>
-</div>
-```
 
 ### Gold
 

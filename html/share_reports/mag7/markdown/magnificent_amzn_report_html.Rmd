@@ -3,9 +3,9 @@ title: "Magnificent 7 - Amazon"
 output:
   html_document:
     toc: true
-    toc_depth: 3
+    toc_depth: 6
     toc_float:
-      collapsed: false
+      collapsed: true
       smooth_scroll: true
     theme: flatly
     highlight: kate
@@ -97,14 +97,6 @@ chart_note <- function(text) {
 ## Abstract
 
 ```{=html}
-<div class="company-hero">
-  <div class="co-body">
-    <div class="masthead-title">Abstract</div>
-  </div>
-</div>
-```
-
-```{=html}
 <div class="abstract-box">
 <p>This report delivers a structured equity analysis of one of the <strong>Magnificent 7</strong>: Amazon. The seven mega-cap companies that collectively account for a disproportionate share of global equity index performance. Together, they represent a unique intersection of hardware, software, cloud infrastructure, artificial intelligence, and consumer platforms, making their dynamics essential reading for any equity investor.</p>
 
@@ -132,14 +124,6 @@ chart_note <- function(text) {
 <!-- ####################################################################### -->
 
 ## Performance Overview
-
-```{=html}
-<div class="company-hero">
-  <div class="co-body">
-    <div class="masthead-title">Performance Overview</div>
-  </div>
-</div>
-```
 
 ```{=html}
 <div class="perf-section">
@@ -174,14 +158,6 @@ div(style = "display: flex; justify-content: center;",
 <!-- ####################################################################### -->
 
 ## Correlation Overview
-
-```{=html}
-<div class="company-hero">
-  <div class="co-body">
-    <div class="masthead-title">Correlation Overview</div>
-  </div>
-</div>
-```
 
 ### Full
 
@@ -224,14 +200,6 @@ produce_correlation_table(ids = c("AAPL", "MSFT", "NVDA", "GOOGL", "AMZN", "META
 <!-- ####################################################################### -->
 
 ## Amazon
-
-```{=html}
-<div class="company-hero">
-  <div class="co-body">
-    <div class="masthead-title">Amazon</div>
-  </div>
-</div>
-```
 
 ```{r AMZN TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
 series_info_box(

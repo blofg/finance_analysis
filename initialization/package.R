@@ -43,7 +43,7 @@ packages <- c(
   "fredr", "cli", "dygraphs", "magrittr", "highcharter", "lubridate",
   "DT", "rollama", "tidychatmodels", "rmarkdown","htmltools", "eurostat",
   "tidyverse", "gt", "scales", "rsdmx", "knitr", "sandwich", "lmtest", "ecb",
-  "yahoofinancer", "shiny")
+  "yahoofinancer", "shiny", "gie")
 
 
 ################################################################################

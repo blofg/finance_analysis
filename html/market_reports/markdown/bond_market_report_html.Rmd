@@ -3,9 +3,9 @@ title: "Bond Market Report"
 output:
   html_document:
     toc: true
-    toc_depth: 3
+    toc_depth: 6
     toc_float:
-      collapsed: false
+      collapsed: true
       smooth_scroll: true
     theme: flatly
     highlight: kate
@@ -99,14 +99,6 @@ chart_note <- function(text) {
 ## Abstract
 
 ```{=html}
-<div class="company-hero">
-  <div class="co-body">
-    <div class="masthead-title">Abstract</div>
-  </div>
-</div>
-```
-
-```{=html}
 <div class="abstract-box">
 <p>This report provides a comprehensive overview of fixed income markets through a structured set of policy rate, interbank, and sovereign yield indicators covering the two major bond markets.</p>
 
@@ -121,14 +113,6 @@ chart_note <- function(text) {
 ```
 
 ## Credit Ratings
-
-```{=html}
-<div class="company-hero">
-  <div class="co-body">
-    <div class="masthead-title">Credit Ratings</div>
-  </div>
-</div>
-```
 
 ```{r}
 HTML('
@@ -186,14 +170,6 @@ gt_table
 
 ## Europe 
 
-```{=html}
-<div class="company-hero">
-  <div class="co-body">
-    <div class="masthead-title">Europe</div>
-  </div>
-</div>
-```
-
 ### ECB & Euribor Rates
 
 ```{r ECB RATE TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
@@ -235,7 +211,7 @@ series_info_box(
 ```{r ECB RATE, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
 
 # Get series
-data <- get_series(name = c("ea20_mrr_es","ea20_depfr_es","ea20_mlr_es","ea20_euribor1w", "ea20_euribor1m", "ea20_euribor3m", "ea20_euribor6m", "ea20_euribor12m" ))
+data <- get_series(name = c("ea20_mrr_fd","ea20_depfr_fd","ea20_mlr_fd","ea21_euribor1w", "ea21_euribor1m", "ea21_euribor3m", "ea21_euribor6m", "ea21_euribor12m" ))
 
 # Plot serie
 div(style = "display: flex; justify-content: center;",
@@ -787,14 +763,6 @@ div(style = "display: flex; justify-content: center;",
 
 ## United States
 
-```{=html}
-<div class="company-hero">
-  <div class="co-body">
-    <div class="masthead-title">United States</div>
-  </div>
-</div>
-```
-
 ### FED & SOFR Rates
 
 ```{r US FED RATE TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
@@ -1187,15 +1155,6 @@ div(style = "display: flex; justify-content: center;",
 
 
 ## Emerging Markets 
-
-```{=html}
-<div class="company-hero">
-  <div class="co-body">
-    <div class="masthead-title">Emerging Markets</div>
-  </div>
-</div>
-```
-
 
 ### BofA Rates
 

@@ -5,7 +5,7 @@ output:
     toc: true
     toc_depth: 4
     toc_float:
-      collapsed: false
+      collapsed: true
       smooth_scroll: true
     theme: flatly
     highlight: kate
@@ -100,14 +100,6 @@ chart_note <- function(text) {
 ## Abstract
 
 ```{=html}
-<div class="company-hero">
-  <div class="co-body">
-    <div class="masthead-title">Abstract</div>
-  </div>
-</div>
-```
-
-```{=html}
 <div class="abstract-box">
 <p>This report provides a comprehensive overview of global equity markets through a structured set of price and trend indicators covering the world's major stock indices.</p>
 
@@ -126,14 +118,6 @@ chart_note <- function(text) {
 <!-- ####################################################################### -->
 
 ## World Equity Indices
-
-```{=html}
-<div class="company-hero">
-  <div class="co-body">
-    <div class="masthead-title">World Equity Indices</div>
-  </div>
-</div>
-```
 
 ```{r EQUITY INDICES TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
 series_info_box(
@@ -312,7 +296,7 @@ div(style = "display: flex; justify-content: center;",
 </div>
 ```
 
-### Index
+### Indices
 
 #### *MSCI World*
 

@@ -3,9 +3,9 @@ title: "World Financial and Macro Report"
 output:
   html_document:
     toc: true
-    toc_depth: 3
+    toc_depth: 6
     toc_float:
-      collapsed: false
+      collapsed: true
       smooth_scroll: true
     theme: flatly
     highlight: kate
@@ -105,14 +105,6 @@ chart_note <- function(text) {
 ```
 
 ```{=html}
-<div class="company-hero">
-  <div class="co-body">
-    <div class="masthead-title">Abstract</div>
-  </div>
-</div>
-```
-
-```{=html}
 <div class="abstract-box">
 <p>This report provides a comprehensive overview of the global economy through a structured set of macroeconomic and market indicators, enabling cross-country comparisons across the world's major economies.</p>
 <ul>
@@ -129,14 +121,6 @@ chart_note <- function(text) {
 <!-- ####################################################################### -->
 
 ## Macro
-
-```{=html}
-<div class="company-hero">
-  <div class="co-body">
-    <div class="masthead-title">Macro</div>
-  </div>
-</div>
-```
 
 ### World GDP
 
@@ -235,18 +219,10 @@ div(style = "display: flex; justify-content: center;",
 ```
 
 <!-- ####################################################################### -->
-<!-- Index  -->
+<!-- Indices  -->
 <!-- ####################################################################### -->
 
-## Index
-
-```{=html}
-<div class="company-hero">
-  <div class="co-body">
-    <div class="masthead-title">Index</div>
-  </div>
-</div>
-```
+## Indices
 
 ### Economic Policy Index
 
@@ -326,10 +302,6 @@ div(style = "display: flex; justify-content: center;",
 </div>
 ```
 
-<!-- ####################################################################### -->
-<!-- Index  -->
-<!-- ####################################################################### -->
-
 ### MSCI World
 
 ```{r MSCI TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
@@ -389,18 +361,10 @@ tagList(
 
 
 <!-- ####################################################################### -->
-<!-- Indicator  -->
+<!-- Indicators  -->
 <!-- ####################################################################### -->
 
-## Indicator
-
-```{=html}
-<div class="company-hero">
-  <div class="co-body">
-    <div class="masthead-title">Indicator</div>
-  </div>
-</div>
-```
+## Indicators
 
 ### KOF Global Barometer 
 

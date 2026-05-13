@@ -3,9 +3,9 @@ title: "Crypto Report"
 output:
   html_document:
     toc: true
-    toc_depth: 3
+    toc_depth: 6
     toc_float:
-      collapsed: false
+      collapsed: true
       smooth_scroll: true
     theme: flatly
     highlight: kate
@@ -98,14 +98,6 @@ chart_note <- function(text) {
 ## Abstract
 
 ```{=html}
-<div class="company-hero">
-  <div class="co-body">
-    <div class="masthead-title">Abstract</div>
-  </div>
-</div>
-```
-
-```{=html}
 <div class="abstract-box">
 <p>This report provides a focused overview of the cryptocurrency market through a structured set of sentiment and price indicators for the major digital assets.</p>
 
@@ -123,14 +115,6 @@ chart_note <- function(text) {
 <!-- ####################################################################### -->
 
 ## Crypto Assets
-
-```{=html}
-<div class="company-hero">
-  <div class="co-body">
-    <div class="masthead-title">Crypto Asset</div>
-  </div>
-</div>
-```
 
 ### Table
 
@@ -255,18 +239,10 @@ tagList(
 ```
 
 <!-- ####################################################################### -->
-<!-- Index  -->
+<!-- Indices  -->
 <!-- ####################################################################### -->
 
-## Index
-
-```{=html}
-<div class="company-hero">
-  <div class="co-body">
-    <div class="masthead-title">Index</div>
-  </div>
-</div>
-```
+## Indices
 
 ### Crypto Fear & Greed Index
 

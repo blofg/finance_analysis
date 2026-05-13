@@ -3,9 +3,9 @@ title: "Gold Fundamentals Report"
 output:
   html_document:
     toc: true
-    toc_depth: 3
+    toc_depth: 6
     toc_float:
-      collapsed: false
+      collapsed: true
       smooth_scroll: true
     theme: flatly
     highlight: kate
@@ -99,14 +99,6 @@ chart_note <- function(text) {
 ## Abstract
 
 ```{=html}
-<div class="company-hero">
-  <div class="co-body">
-    <div class="masthead-title">Abstract</div>
-  </div>
-</div>
-```
-
-```{=html}
 <div class="abstract-box">
 <p>This report provides an in-depth analysis of the fundamental drivers behind gold prices through a structured set of demand, monetary, and risk indicators.</p>
 
@@ -129,14 +121,6 @@ chart_note <- function(text) {
 <!-- ####################################################################### -->
 
 ## Fundamental Drivers
-
-```{=html}
-<div class="company-hero">
-  <div class="co-body">
-    <div class="masthead-title">Fundamental Drivers</div>
-  </div>
-</div>
-```
 
 ### Investment Demand
 

@@ -3,9 +3,9 @@ title: "Key Index and Indicator Report"
 output:
   html_document:
     toc: true
-    toc_depth: 3
+    toc_depth: 6
     toc_float:
-      collapsed: false
+      collapsed: true
       smooth_scroll: true
     theme: flatly
     highlight: kate
@@ -105,14 +105,6 @@ rating <- fromJSON(content(resp, as = "text", encoding = "UTF-8"))
 ## Abstract
 
 ```{=html}
-<div class="company-hero">
-  <div class="co-body">
-    <div class="masthead-title">Abstract</div>
-  </div>
-</div>
-```
-
-```{=html}
 <div class="abstract-box">
 <p>This report provides an overview of key cross-asset sentiment and activity indicators, tracking investor psychology and global trade dynamics through two complementary lenses.</p>
 
@@ -132,14 +124,6 @@ rating <- fromJSON(content(resp, as = "text", encoding = "UTF-8"))
 ## Greed & Fear Indices
 
 ### Greed & Fear Index
-
-```{=html}
-<div class="company-hero">
-  <div class="co-body">
-    <div class="masthead-title">Greed and Fear Index</div>
-  </div>
-</div>
-```
 
 ```{r GF IND TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
 series_info_box(
@@ -676,14 +660,6 @@ tagList(
 
 ## Freight Indices
 
-```{=html}
-<div class="company-hero">
-  <div class="co-body">
-    <div class="masthead-title">Freight Index</div>
-  </div>
-</div>
-```
-
 ### Baltic Dry Index
 
 ```{r BDI TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
@@ -745,15 +721,6 @@ include_graphics("https://www.sse.net.cn/index/indexImg?name=scfi&type=english")
 <!-- ####################################################################### -->
 
 ## Volatility & Stress Indices
-
-```{=html}
-<div class="company-hero">
-  <div class="co-body">
-    <div class="masthead-title">Volatility Index</div>
-  </div>
-</div>
-```
-
 
 ### CBOE Volatility Index
 
@@ -940,15 +907,6 @@ div(style = "display: flex; justify-content: center;",
 
 ## Advanced Indicators
 
-```{=html}
-<div class="company-hero">
-  <div class="co-body">
-    <div class="masthead-title">Advanced Indicators</div>
-  </div>
-</div>
-```
-
-
 ### Semiconductor Index
 
 ```{r SOX TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
@@ -983,15 +941,6 @@ div(style = "display: flex; justify-content: center;",
 <!-- ####################################################################### -->
 
 ## Sentiment Indicators
-
-```{=html}
-<div class="company-hero">
-  <div class="co-body">
-    <div class="masthead-title">Sentiment Indicators</div>
-  </div>
-</div>
-```
-
 
 ### ISM PMI Index
 
@@ -1179,14 +1128,6 @@ div(style = "display: flex; justify-content: center;",
 
 ## Geopolitics Indices
 
-```{=html}
-<div class="company-hero">
-  <div class="co-body">
-    <div class="masthead-title">Geopolitics & Uncertainty</div>
-  </div>
-</div>
-```
-
 ### Policy Uncertainty Index
 
 ```{r EPU TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
@@ -1270,14 +1211,6 @@ div(style = "display: flex; justify-content: center;",
 <!-- ####################################################################### -->
 
 ## Currency Index 
-
-```{=html}
-<div class="company-hero">
-  <div class="co-body">
-    <div class="masthead-title">Currency Index</div>
-  </div>
-</div>
-```
 
 ### Nominal Broad US Dollar Index
 

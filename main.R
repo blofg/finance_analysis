@@ -47,9 +47,9 @@ compute_time_data("database/database_ccc.R",       "CoinMarketCap database loadi
 compute_time_data("database/database_imf.R",       "IMF database loading")                          # |IMF database loading|
 compute_time_data("database/database_epu.R",       "Economic Policy Uncertainty database loading")  # |Economic Policy Uncertainty database loading|
 compute_time_data("database/database_gpr.R",       "Geopolitical Risk Index database loading")      # |Geopolitical Risk Index database loading|
-compute_time_data("database/database_eia.R",       "EIA database loading")                          # |EIA Index database loading|
+compute_time_data("database/database_eia.R",       "EIA database loading")                          # |EIA database loading|
+compute_time_data("database/database_gie.R",       "GIE database loading")                          # |GIE database loading|
 compute_time_data("database/database_all.R",       "All database interactive view")                 # |Data from all sources loading|
-
 
 # Running time 
 end_time <- Sys.time()
@@ -75,10 +75,10 @@ compute_time_render("html/market_reports/markdown/crypto_report_html.Rmd",      
 compute_time_render("html/market_reports/markdown/bond_market_report_html.Rmd",                "html/market_reports/output/", "Bond market report markdown")         # |Bond market report markdown|
 
 # Commodity reports
-compute_time_render("html/commodity_reports/markdown/gold_fundamentals_report_html.Rmd",       "html/commodity_reports/output/", "Gold fundamentals index markdown")           # |Gold fundamentals index markdown|
-compute_time_render("html/commodity_reports/markdown/soft_commodities_report_html.Rmd",        "html/commodity_reports/output/", "Soft commodities market report markdown")    # |Soft Commodities market report markdown|
-compute_time_render("html/commodity_reports/markdown/hard_commodities_report_html.Rmd",        "html/commodity_reports/output/", "Hard commodities market report markdown")    # |Hard Commodities market report markdown|
-compute_time_render("html/commodity_reports/markdown/energy_commodities_report_html.Rmd",      "html/commodity_reports/output/", "Energy Commodities market report markdown")  # |Energy Commodities market report markdown|
+compute_time_render("html/commodities_reports/markdown/gold_fundamentals_report_html.Rmd",       "html/commodities_reports/output/", "Gold fundamentals index markdown")           # |Gold fundamentals index markdown|
+compute_time_render("html/commodities_reports/markdown/soft_commodities_report_html.Rmd",        "html/commodities_reports/output/", "Soft commodities market report markdown")    # |Soft Commodities market report markdown|
+compute_time_render("html/commodities_reports/markdown/hard_commodities_report_html.Rmd",        "html/commodities_reports/output/", "Hard commodities market report markdown")    # |Hard Commodities market report markdown|
+compute_time_render("html/commodities_reports/markdown/energy_commodities_report_html.Rmd",      "html/commodities_reports/output/", "Energy Commodities market report markdown")  # |Energy Commodities market report markdown|
 
 # Share reports
 compute_time_render("html/share_reports/mag7/markdown/magnificent_aapl_report_html.Rmd",  "html/share_reports/mag7/output/", "Magnificent Apple report markdown")     # |Magnificent Apple report markdown|

@@ -65,238 +65,6 @@ reformate_data_yahoo     <- function(serie_id, tribble){
     result
   }, error = function(e) {message(paste0(serie_id, " failed")); NULL })
 }
-reformate_data_kof       <- function(tribble){
-  #-----------------------------------------------------------------------------
-  # Function : Reformat data from KOF source
-  # 1. Input : source  = data source 
-  # 2. Input : tribble = mapping inputs table 
-  # Output   : dataframe for the chosen serie(s) with standardized format 
-  #-----------------------------------------------------------------------------
-  # KOF Swiss Barometer
-  kof_barometer_swiss <- tryCatch({
-      download.file(kof_barometer_swiss_link, kof_barometer_swiss_path, method = "curl")
-      result <- read_excel(kof_barometer_swiss_path) %>%
-        rename(value = kofbarometer) %>%
-        mutate(date = paste0(date,"-01"), date = as.Date(date)) %>%
-        mutate(id = "KOFBCH", name = "kof_bar_ch") %>%
-        mutate(value = as.numeric(value)) %>%
-        left_join(tribble %>% select(id, label, source, unit, frequency, adjustment), by = "id")
-      message("KOF Swiss Barometer fetched successfully")
-      result
-    }, error = function(e) {message("KOF Swiss Barometer failed"); NULL })
-  # KOF Global Barometer
-  kof_barometer_global <- tryCatch({
-      download.file(kof_barometer_global_link, kof_barometer_global_path, method = "curl")
-      result <- read_excel(kof_barometer_global_path) %>%
-        select(-gdp_reference) %>%
-        rename(kof_bar_gl_coinci = globalbaro_coincident, kof_bar_gl_lead = globalbaro_leading) %>%
-        pivot_longer(cols = -date, names_to = "name", values_to = "value") %>%
-        mutate(date = paste0(date,"-01"), date = as.Date(date)) %>%
-        mutate(id = case_when(name == "kof_bar_gl_coinci" ~ "KOFBGLCO", name == "kof_bar_gl_lead" ~ "KOFBGLLE")) %>%
-        mutate(value = as.numeric(value)) %>%
-        left_join(tribble %>% select(id, label, source, unit, frequency, adjustment), by = "id")
-      message("KOF Global Barometer fetched successfully")
-      result
-    }, error = function(e) { message("KOF Global Barometer failed"); NULL })
-  # KOF Business Sentiment Indicator 
-  kof_indicator_sbusiness <- tryCatch({
-      download.file(kof_indicator_sbusiness_link, kof_indicator_sbusiness_path, method = "curl")
-      result <- read_excel(kof_indicator_sbusiness_path) %>%
-        select(date, ch.kof.bts_total.ng08.fx.q_ql_ass_bs.balance.d11) %>%
-        rename(value = ch.kof.bts_total.ng08.fx.q_ql_ass_bs.balance.d11) %>%
-        mutate(date = paste0(date,"-01"), date = as.Date(date)) %>%
-        mutate(id = "KOFBSI", name = "kof_ind_busen") %>%
-        mutate(value = as.numeric(value)) %>%
-        left_join(tribble %>% select(id, label, source, unit, frequency, adjustment), by = "id")
-      message("KOF Business Sentiment Indicator fetched successfully")
-      result
-    }, error = function(e) {message("KOF Business Sentiment Indicator failed"); NULL })
-  # KOF Economic Sentiment Indicator 
-  kof_indicator_seconomic <- tryCatch({
-      download.file(kof_indicator_seconomic_link, kof_indicator_seconomic_path, method = "curl")
-      result <- read_excel(kof_indicator_seconomic_path) %>%
-        rename(kof_ind_ch_es = ch.kof.esi.index, kof_ind_eu_es = eu.ec.esi.eu.esi) %>%
-        pivot_longer(cols = -date, names_to = "name", values_to = "value") %>%
-        mutate(date = paste0(date,"-01"), date = as.Date(date)) %>%
-        mutate(id = case_when(name == "kof_ind_ch_es" ~ "KOFESCH", name == "kof_ind_eu_es" ~ "KOFESEU")) %>%
-        mutate(value = as.numeric(value)) %>%
-        left_join(tribble %>% select(id, label, source, unit, frequency, adjustment), by = "id")
-      message("KOF Economic Sentiment Indicator fetched successfully")
-      result
-    }, error = function(e) {message("KOF Economic Sentiment Indicator failed"); NULL })
-  df <- rbind(kof_barometer_swiss, kof_barometer_global, kof_indicator_seconomic,  kof_indicator_sbusiness) %>% 
-    distinct(id, date, .keep_all = TRUE) %>%
-    na.omit()
-  return(df)
-}
-reformate_data_kofnc     <- function(tribble){
-  #-----------------------------------------------------------------------------
-  # Function : Reformat data from KOF Nowcasting source
-  # 1. Input : source  = data source 
-  # 2. Input : tribble = mapping inputs table 
-  # Output   : dataframe for the chosen serie(s) with standardized format 
-  #-----------------------------------------------------------------------------
-  # KOF nowcasting lab
-  kof_nowcasting <- tryCatch({
-    download.file(kof_nowcasting_link, kof_nowcasting_path, method = "curl")
-    result <- read.csv(kof_nowcasting_path, stringsAsFactors = FALSE) %>%
-      rename(publication_date = kofcast_datestamp, variable = target_variable, date = target_period) %>%
-      mutate(target_period = date) %>%
-      mutate(name = paste0(country,"_", variable,"nc"), id = toupper(paste0(country,variable,"nc"))) %>%
-      mutate(date = as.Date(as.yearqtr(date, format = "Q%q %Y")), publication_date = as.Date(publication_date, format = "%d.%m.%Y")) %>%
-      select(-country, -variable) %>%
-      mutate(value = as.numeric(value))
-      message("KOF Nowcasting Lab fetched successfully")
-    result
-  }, error = function(e) {message("KOF Nowcasting Lab failed"); NULL })
- 
-}
-reformate_data_shiller   <- function(tribble){
-  #-----------------------------------------------------------------------------
-  # Function : Reformat data from Shiller source
-  # 1. Input : tribble = mapping inputs table 
-  # Output   : dataframe for the chosen serie(s) with standardized format 
-  #-----------------------------------------------------------------------------
-  # Shiller Series
-  #-----------------------------------------------------------------------------
-  shiller <- tryCatch({
-    # Scrape the link 
-    page <- read_html(capeshiller_url)
-    # Construct the URL 
-    capeshiller_url <- page %>%
-      html_elements("a[href*='ie_data']") %>%
-      html_attr("href") %>%
-      first()
-    # Add https
-    capeshiller_url <- paste0("https:", capeshiller_url)
-    # Download 
-    download.file(capeshiller_url, destfile = capeshiller_path, mode = "wb")
-    result <- read_excel(capeshiller_path, sheet = "Data", skip = 7) %>%
-      select(Date, CAPE) %>%
-      rename(date = Date, value = CAPE) %>%
-      mutate(date = sprintf("%.2f", as.numeric(date)), year = as.integer(substr(date, 1, 4)), month = as.integer(substr(date, 6, 7)), date = as.Date(sprintf("%d-%02d-01", year, month)), id = "CSHR") %>%
-      mutate(value = as.numeric(value)) %>%
-      select(date, value, id) %>%
-      left_join(tribble %>% select(id, name, label, source, unit, frequency, adjustment), by = "id") %>% 
-      distinct(id, date, .keep_all = TRUE) %>%
-      na.omit()
-    message(paste0("Shiller fetched successfully"))
-    result
-  }, error = function(e) {message(paste0("Shiller failed")); NULL })
-}
-reformate_data_stoxx     <- function(tribble){
-  #-----------------------------------------------------------------------------
-  # Function : Reformat data from SOXX source
-  # 1. Input : tribble = mapping inputs table 
-  # Output   : dataframe for the chosen serie(s) with standardized format 
-  #-----------------------------------------------------------------------------
-  # SOXX Series
-  #-----------------------------------------------------------------------------
-  # VSTOXX 50
-  vstoxx50 <- tryCatch({
-    result <- read_delim(vstoxx_url, delim = ";", col_types = cols(Date = col_character(), Symbol = col_character(), Indexvalue = col_double()), locale = locale(decimal_mark = ".")) %>%
-      mutate(Date = as.Date(Date, format = "%d.%m.%Y")) %>%
-      rename(date = Date, value = Indexvalue, id = Symbol) %>%
-      left_join(tribble %>% select(id, name, label, source, unit, frequency, adjustment), by = "id") %>% 
-      distinct(id, date, .keep_all = TRUE) %>%
-      na.omit()
-    message(paste0("VSTOXX 50 fetched successfully"))
-    result
-  }, error = function(e) {
-    message(paste0("VSTOXX 50 failed")); NULL })
-}
-reformate_data_oecd      <- function(tribble){
-  #-----------------------------------------------------------------------------
-  # Function : Reformat data from OECD source
-  # 1. Input : tribble = mapping inputs table 
-  # Output   : dataframe for the chosen serie(s) with standardized format 
-  #-----------------------------------------------------------------------------
-  # OECD Series
-  #-----------------------------------------------------------------------------
-  # Contributions to national year-on-year inflation by COICOP 1999 divisions from OECD database
-  oecd_inflation <- tryCatch({
-    result <- read.csv(oecd_api_key) %>%
-      mutate(id = paste0(REF_AREA,"CPIOECD")) %>%
-      rename(frequency = FREQ, value = OBS_VALUE, date = TIME_PERIOD) %>%
-      filter(Transformation == "Growth rate, over 1 year") %>%
-      select(id, value, frequency, date) %>%
-      mutate(value = as.numeric(value), date = as.Date(paste0(date,"-01"))) %>%
-      left_join(tribble %>% select(id, name, label, source, unit, frequency, adjustment), by = "id") %>%
-      filter(!is.na(label)) %>% 
-      distinct(id, date, .keep_all = TRUE) %>%
-      na.omit()
-    message(paste0("Inflation (COICOP 1999) from OECD fetched successfully"))
-    result
-  }, error = function(e) { message(paste0("Inflation (COICOP 1999) from OECD failed")); NULL })
-}
-reformate_data_buffet    <- function(tribble){
-  #-----------------------------------------------------------------------------
-  # Function : Reformat data from Buffet source
-  # 1. Input : tribble  = mapping inputs table 
-  # Output   : dataframe for the chosen serie(s) with standardized format 
-  #-----------------------------------------------------------------------------
-  # Buffet Series
-  #-----------------------------------------------------------------------------
-  # GDP
-  gdp <- tryCatch({
-    fredr(series_id = "GDP") %>% select(date, gdp = value)
-  }, error = function(e) { message("GDP failed"); NULL })
-  # Wilshire 5000
-  wilshire <- tryCatch({
-    result <- get_prices("^FTW5000") %>%
-      select(date = time, wil_5000 = Close) %>%
-      mutate(gdp = gdp$gdp[findInterval(date, gdp$date)], value = wil_5000 / gdp) %>%
-      select(date, value) %>%
-      mutate(id = "BUFFWILR") %>%
-      select(id, date, value) %>%
-      left_join(tribble %>% select(id, name, label, source, unit, frequency, adjustment), by = "id")
-    message(paste0("BUFFWILR fetched successfully"))
-    result
-  }, error = function(e) { message("BUFFWILR failed"); NULL })
-  # SP500
-  sp500 <- tryCatch({
-    result <- get_prices("^GSPC") %>%
-      select(date = time, sp500 = Close) %>%
-      mutate(gdp = gdp$gdp[findInterval(date, gdp$date)], value = sp500 / gdp) %>%
-      select(date, value) %>%
-      mutate(id = "BUFFSP500R") %>%
-      select(id, date, value) %>%
-      left_join(tribble %>% select(id, name, label, source, unit, frequency, adjustment), by = "id")
-    message(paste0("BUFFSP500R fetched successfully"))
-    result
-  }, error = function(e) { message("BUFFSP500R failed"); NULL })
-  # Dow Jones
-  dow <- tryCatch({
-    result <- get_prices("^DJI") %>%
-      select(date = time, dow = Close) %>%
-      mutate(gdp = gdp$gdp[findInterval(date, gdp$date)], value = dow / gdp) %>%
-      select(date, value) %>%
-      mutate(id = "BUFFDJR") %>%
-      select(id, date, value) %>%
-      left_join(tribble %>% select(id, name, label, source, unit, frequency, adjustment), by = "id")
-    message(paste0("BUFFDJR fetched successfully"))
-    result
-  }, error = function(e) { message("BUFFDJR failed"); NULL })
-  # Corporate Equities / GDP
-  corp_eq <- tryCatch({
-    result <- fredr(series_id = "BOGZ1LM893064105Q") %>%
-      select(date, corp_equi = value) %>%
-      left_join(gdp, by = "date") %>%
-      mutate(gdp = gdp * 1000) %>% 
-      mutate(value = corp_equi / gdp) %>%
-      select(date, value) %>%
-      mutate(id = "BUFFCORER") %>%
-      select(id, date, value) %>%
-      left_join(tribble %>% select(id, name, label, source, unit, frequency, adjustment), by = "id")
-    message(paste0("BUFFCORER fetched successfully"))
-    result
-  }, error = function(e) { message("BUFFCORER failed"); NULL })
-  # Rbind all the buffet database
-  df <- rbind(wilshire, sp500, dow, corp_eq) %>% 
-    distinct(id, date, .keep_all = TRUE) %>%
-    na.omit()
-  return(df)
-}
 reformate_data_eurostat  <- function(tribble){
   #-----------------------------------------------------------------------------
   # Function : Reformat data from eurostat source
@@ -467,7 +235,7 @@ reformate_data_ecb       <- function(tribble){
   #-----------------------------------------------------------------------------
   # AAA-rated government bonds — Spot rates (zero-coupon)
   #-----------------------------------------------------------------------------
-  ecb_yc_aaa_sr_3m  <- tryCatch(get_ecb_yield(id = "YC.B.U2.EUR.4F.G_N_A.SV_C_YM.SR_3M")  %>% mutate(id = paste0("ECB_YC_AAA_",id)) %>% left_join(tribble %>% select(id, name, label, source, unit, adjustment, frequency), by = "id"), error = function(e) NULL)
+  ecb_yc_aaa_sr_3m  <- tryCatch(get_ecb_yield(id = "YC.B.U2.EUR.4F.G_N_A.SV_C_YM.SR_3M", days_back = 7)  %>% mutate(id = paste0("ECB_YC_AAA_",id)) %>% left_join(tribble %>% select(id, name, label, source, unit, adjustment, frequency), by = "id"), error = function(e) NULL)
   ecb_yc_aaa_sr_4m  <- tryCatch(get_ecb_yield(id = "YC.B.U2.EUR.4F.G_N_A.SV_C_YM.SR_4M")  %>% mutate(id = paste0("ECB_YC_AAA_",id)) %>% left_join(tribble %>% select(id, name, label, source, unit, adjustment, frequency), by = "id"), error = function(e) NULL)
   ecb_yc_aaa_sr_5m  <- tryCatch(get_ecb_yield(id = "YC.B.U2.EUR.4F.G_N_A.SV_C_YM.SR_5M")  %>% mutate(id = paste0("ECB_YC_AAA_",id)) %>% left_join(tribble %>% select(id, name, label, source, unit, adjustment, frequency), by = "id"), error = function(e) NULL)
   ecb_yc_aaa_sr_6m  <- tryCatch(get_ecb_yield(id = "YC.B.U2.EUR.4F.G_N_A.SV_C_YM.SR_6M")  %>% mutate(id = paste0("ECB_YC_AAA_",id)) %>% left_join(tribble %>% select(id, name, label, source, unit, adjustment, frequency), by = "id"), error = function(e) NULL)
@@ -727,6 +495,361 @@ reformate_data_euribor   <- function(tribble){
     na.omit()
   return(df)
 }
+reformate_data_imf       <- function(tribble){
+  #-----------------------------------------------------------------------------
+  # Function : Reformat data from IMF Source
+  # 1. Input : tribble    = mapping inputs table 
+  # Output   : dataframe for the chosen series with standardized format
+  #-----------------------------------------------------------------------------
+  # IMF Series
+  #-----------------------------------------------------------------------------
+  area_key <- paste(imf_geo_area, collapse = "+")
+  set_config(config(ssl_verifypeer = 0L))
+  # Gold Reserves at Market Value (SDR)
+  gold_market_value <- tryCatch({
+    result <- as.data.frame(
+      readSDMX(providerId = "IMF_DATA", resource = "data", flowRef = "IMF.STA,IL", key = paste0(area_key, ".RGOLDMV_REVS."))) %>%
+      rename(geo = COUNTRY, frequency = FREQUENCY, value = OBS_VALUE, date = TIME_PERIOD) %>%
+      filter(frequency == "M") %>%
+      mutate(id = paste0("RGOLDMV_REVS",geo), adjustment = "NA", value = as.numeric(value), date = as.Date(paste0(substr(date, 1, 4), "-", substr(date, 7, 8), "-01"))) %>%
+      select(id, value, date, adjustment) %>%
+      left_join(tribble %>% select(id, name, label, source, unit, frequency), by = "id")
+    message("Gold Reserves at Market Value fetched successfully")
+    result
+  }, error = function(e) { message("Gold Reserves at Market Value failed"); NULL })
+  # Gold Reserves Volume (Fine Troy Ounces)
+  gold_volume_reserve <- tryCatch({
+    result <- as.data.frame(
+      readSDMX(providerId = "IMF_DATA", resource = "data", flowRef = "IMF.STA,IL", key = paste0(area_key, ".RGV_REVS."))) %>%
+      rename(geo = COUNTRY, frequency = FREQUENCY, value = OBS_VALUE, date = TIME_PERIOD) %>%
+      filter(frequency == "M") %>%
+      mutate(id = paste0("RGV_REVS",geo), adjustment = "NA", value = as.numeric(value), date = as.Date(paste0(substr(date, 1, 4), "-", substr(date, 7, 8), "-01"))) %>%
+      select(id, value, date, adjustment) %>%
+      left_join(tribble %>% select(id, name, label, source, unit, frequency), by = "id")
+    message("Gold Reserves Volume fetched successfully")
+    result
+  }, error = function(e) { message("Gold Reserves Volume failed"); NULL })
+  # M2 Broad Money (Depository Corporations Survey)
+  m2_broad_money <- tryCatch({
+    result <- as.data.frame(
+      readSDMX(providerId = "IMF_DATA", resource = "data", flowRef = "IMF.STA,MFS_DC", key = paste0(area_key,".DCORP_L_BM"))) %>%
+      rename(geo = COUNTRY, frequency = FREQUENCY, value = OBS_VALUE, date = TIME_PERIOD) %>%
+      filter(frequency == "M") %>%
+      mutate(id = paste0("DCORP_L_BM", geo), adjustment = "NA", value = as.numeric(value), date = as.Date(paste0(substr(date, 1, 4), "-", substr(date, 7, 8), "-01"))) %>%
+      select(id, value, date, adjustment) %>%
+      left_join(tribble %>% select(id, name, label, source, unit, frequency), by = "id")
+    message("M2 Broad Money fetched successfully")
+    result
+  }, error = function(e) { message("M2 Broad Money failed"); NULL })
+  df <- rbind(gold_market_value, gold_volume_reserve, m2_broad_money) %>% 
+    distinct(id, date, .keep_all = TRUE) %>%
+    na.omit()
+  return(df)
+}
+reformate_data_oecd      <- function(tribble){
+  #-----------------------------------------------------------------------------
+  # Function : Reformat data from OECD source
+  # 1. Input : tribble = mapping inputs table 
+  # Output   : dataframe for the chosen serie(s) with standardized format 
+  #-----------------------------------------------------------------------------
+  # OECD Series
+  #-----------------------------------------------------------------------------
+  # Contributions to national year-on-year inflation by COICOP 1999 divisions from OECD database
+  oecd_inflation <- tryCatch({
+    result <- read.csv(oecd_api_key) %>%
+      mutate(id = paste0(REF_AREA,"CPIOECD")) %>%
+      rename(frequency = FREQ, value = OBS_VALUE, date = TIME_PERIOD) %>%
+      filter(Transformation == "Growth rate, over 1 year") %>%
+      select(id, value, frequency, date) %>%
+      mutate(value = as.numeric(value), date = as.Date(paste0(date,"-01"))) %>%
+      left_join(tribble %>% select(id, name, label, source, unit, frequency, adjustment), by = "id") %>%
+      filter(!is.na(label)) %>% 
+      distinct(id, date, .keep_all = TRUE) %>%
+      na.omit()
+    message(paste0("Inflation (COICOP 1999) from OECD fetched successfully"))
+    result
+  }, error = function(e) { message(paste0("Inflation (COICOP 1999) from OECD failed")); NULL })
+}
+reformate_data_investing <- function(tribble){
+  #-----------------------------------------------------------------------------
+  # Function : Reformat data from Investing source
+  # 1. Input : tribble    = mapping inputs table 
+  # Output   : dataframe for the chosen serie(s) with standardized format 
+  #-----------------------------------------------------------------------------
+  # Investing Series
+  #-----------------------------------------------------------------------------
+  # Baltic Dry Index
+  bdi <- tryCatch({
+    result <- get_investing_market_series(id = 940793, date_from = "1985-01-01", date_to = Sys.Date()) %>%
+      mutate(id = "BDIINV") %>%
+      left_join(tribble %>% select(id, name, label, source, unit), by = "id")
+    message("Baltic Dry Index fetched successfully")
+    result
+  }, error = function(e) { message("Baltic Dry Index failed"); NULL })
+  timeout(10)
+  # Bloomberg Commodity
+  bcom <- tryCatch({
+    result <- get_investing_market_series(id = 948434, date_from = "1970-01-01", date_to = Sys.Date()) %>%
+      mutate(id = "BCOM") %>%
+      left_join(tribble %>% select(id, name, label, source, unit), by = "id")
+    message("BBloomberg Commodity Index fetched successfully")
+    result
+  }, error = function(e) { message("Bloomberg Commodity Index failed"); NULL })
+  timeout(10)
+  # ISM Manufacturing Purchasing Managers Index PMI
+  ism <- tryCatch({
+    result <- get_investing_indicator_series(id = 173, date_from = "1970-01-01", date_to = Sys.Date()) %>%
+      mutate(id = "ISMPMIINV") %>%
+      left_join(tribble %>% select(id, name, label, source, unit), by = "id")
+    message("ISM Manufacturing PMI fetched successfully")
+    result
+  }, error = function(e) { message("ISM Manufacturing PMI failed"); NULL })
+  timeout(10)
+  # ZEW Economic Sentiment Index 
+  zew <- tryCatch({
+    result <- get_investing_indicator_series(id = 144, date_from = "1970-01-01", date_to = Sys.Date()) %>%
+      mutate(id = "ZEWINV") %>%
+      left_join(tribble %>% select(id, name, label, source, unit), by = "id")
+    message("ZEW Economic Sentiment Index fetched successfully")
+    result
+  }, error = function(e) { message("ZEW Economic Sentiment Index failed"); NULL })
+  # US Crude Oil Inventories
+  uswtiinv <- tryCatch({
+    result <- get_investing_indicator_series(id = 75, date_from = "1970-01-01", date_to = Sys.Date()) %>%
+      mutate(id = "COINVUS") %>%
+      left_join(tribble %>% select(id, name, label, source, unit), by = "id")
+    message("US Crude Oil Inventories fetched successfully")
+    result
+  }, error = function(e) { message("US Crude Oil Inventories failed"); NULL })
+  # Rig count Baker Hughes 
+  ricbh <- tryCatch({
+    result <- get_investing_indicator_series(id = 1652, date_from = "1970-01-01", date_to = Sys.Date()) %>%
+      mutate(id = "RICBH") %>%
+      left_join(tribble %>% select(id, name, label, source, unit), by = "id")
+    message("Rig count Baker Hughes fetched successfully")
+    result
+  }, error = function(e) { message("Rig count Baker Hughes failed"); NULL })
+  # Rig count Baker Hughes 
+  ngstorus <- tryCatch({
+    result <- get_investing_indicator_series(id = 386, date_from = "1970-01-01", date_to = Sys.Date()) %>%
+      mutate(id = "NGSTORUS") %>%
+      left_join(tribble %>% select(id, name, label, source, unit), by = "id")
+    message("US Natural Gas Storage fetched successfully")
+    result
+  }, error = function(e) { message("US Natural Gas Storage failed"); NULL })
+  df <- rbind(bdi, ism, zew, bcom, uswtiinv, ricbh, ngstorus) %>% 
+    distinct(id, date, .keep_all = TRUE) %>%
+    na.omit()
+  return(df)
+}
+reformate_data_kof       <- function(tribble){
+  #-----------------------------------------------------------------------------
+  # Function : Reformat data from KOF source
+  # 1. Input : source  = data source 
+  # 2. Input : tribble = mapping inputs table 
+  # Output   : dataframe for the chosen serie(s) with standardized format 
+  #-----------------------------------------------------------------------------
+  # KOF Swiss Barometer
+  kof_barometer_swiss <- tryCatch({
+      download.file(kof_barometer_swiss_link, kof_barometer_swiss_path, method = "curl")
+      result <- read_excel(kof_barometer_swiss_path) %>%
+        rename(value = kofbarometer) %>%
+        mutate(date = paste0(date,"-01"), date = as.Date(date)) %>%
+        mutate(id = "KOFBCH", name = "kof_bar_ch") %>%
+        mutate(value = as.numeric(value)) %>%
+        left_join(tribble %>% select(id, label, source, unit, frequency, adjustment), by = "id")
+      message("KOF Swiss Barometer fetched successfully")
+      result
+    }, error = function(e) {message("KOF Swiss Barometer failed"); NULL })
+  # KOF Global Barometer
+  kof_barometer_global <- tryCatch({
+      download.file(kof_barometer_global_link, kof_barometer_global_path, method = "curl")
+      result <- read_excel(kof_barometer_global_path) %>%
+        select(-gdp_reference) %>%
+        rename(kof_bar_gl_coinci = globalbaro_coincident, kof_bar_gl_lead = globalbaro_leading) %>%
+        pivot_longer(cols = -date, names_to = "name", values_to = "value") %>%
+        mutate(date = paste0(date,"-01"), date = as.Date(date)) %>%
+        mutate(id = case_when(name == "kof_bar_gl_coinci" ~ "KOFBGLCO", name == "kof_bar_gl_lead" ~ "KOFBGLLE")) %>%
+        mutate(value = as.numeric(value)) %>%
+        left_join(tribble %>% select(id, label, source, unit, frequency, adjustment), by = "id")
+      message("KOF Global Barometer fetched successfully")
+      result
+    }, error = function(e) { message("KOF Global Barometer failed"); NULL })
+  # KOF Business Sentiment Indicator 
+  kof_indicator_sbusiness <- tryCatch({
+      download.file(kof_indicator_sbusiness_link, kof_indicator_sbusiness_path, method = "curl")
+      result <- read_excel(kof_indicator_sbusiness_path) %>%
+        select(date, ch.kof.bts_total.ng08.fx.q_ql_ass_bs.balance.d11) %>%
+        rename(value = ch.kof.bts_total.ng08.fx.q_ql_ass_bs.balance.d11) %>%
+        mutate(date = paste0(date,"-01"), date = as.Date(date)) %>%
+        mutate(id = "KOFBSI", name = "kof_ind_busen") %>%
+        mutate(value = as.numeric(value)) %>%
+        left_join(tribble %>% select(id, label, source, unit, frequency, adjustment), by = "id")
+      message("KOF Business Sentiment Indicator fetched successfully")
+      result
+    }, error = function(e) {message("KOF Business Sentiment Indicator failed"); NULL })
+  # KOF Economic Sentiment Indicator 
+  kof_indicator_seconomic <- tryCatch({
+      download.file(kof_indicator_seconomic_link, kof_indicator_seconomic_path, method = "curl")
+      result <- read_excel(kof_indicator_seconomic_path) %>%
+        rename(kof_ind_ch_es = ch.kof.esi.index, kof_ind_eu_es = eu.ec.esi.eu.esi) %>%
+        pivot_longer(cols = -date, names_to = "name", values_to = "value") %>%
+        mutate(date = paste0(date,"-01"), date = as.Date(date)) %>%
+        mutate(id = case_when(name == "kof_ind_ch_es" ~ "KOFESCH", name == "kof_ind_eu_es" ~ "KOFESEU")) %>%
+        mutate(value = as.numeric(value)) %>%
+        left_join(tribble %>% select(id, label, source, unit, frequency, adjustment), by = "id")
+      message("KOF Economic Sentiment Indicator fetched successfully")
+      result
+    }, error = function(e) {message("KOF Economic Sentiment Indicator failed"); NULL })
+  df <- rbind(kof_barometer_swiss, kof_barometer_global, kof_indicator_seconomic,  kof_indicator_sbusiness) %>% 
+    distinct(id, date, .keep_all = TRUE) %>%
+    na.omit()
+  return(df)
+}
+reformate_data_kofnc     <- function(tribble){
+  #-----------------------------------------------------------------------------
+  # Function : Reformat data from KOF Nowcasting source
+  # 1. Input : source  = data source 
+  # 2. Input : tribble = mapping inputs table 
+  # Output   : dataframe for the chosen serie(s) with standardized format 
+  #-----------------------------------------------------------------------------
+  # KOF nowcasting lab
+  kof_nowcasting <- tryCatch({
+    download.file(kof_nowcasting_link, kof_nowcasting_path, method = "curl")
+    result <- read.csv(kof_nowcasting_path, stringsAsFactors = FALSE) %>%
+      rename(publication_date = kofcast_datestamp, variable = target_variable, date = target_period) %>%
+      mutate(target_period = date) %>%
+      mutate(name = paste0(country,"_", variable,"nc"), id = toupper(paste0(country,variable,"nc"))) %>%
+      mutate(date = as.Date(as.yearqtr(date, format = "Q%q %Y")), publication_date = as.Date(publication_date, format = "%d.%m.%Y")) %>%
+      select(-country, -variable) %>%
+      mutate(value = as.numeric(value))
+      message("KOF Nowcasting Lab fetched successfully")
+    result
+  }, error = function(e) {message("KOF Nowcasting Lab failed"); NULL })
+ 
+}
+reformate_data_shiller   <- function(tribble){
+  #-----------------------------------------------------------------------------
+  # Function : Reformat data from Shiller source
+  # 1. Input : tribble = mapping inputs table 
+  # Output   : dataframe for the chosen serie(s) with standardized format 
+  #-----------------------------------------------------------------------------
+  # Shiller Series
+  #-----------------------------------------------------------------------------
+  shiller <- tryCatch({
+    # Scrape the link 
+    page <- read_html(capeshiller_url)
+    # Construct the URL 
+    capeshiller_url <- page %>%
+      html_elements("a[href*='ie_data']") %>%
+      html_attr("href") %>%
+      first()
+    # Add https
+    capeshiller_url <- paste0("https:", capeshiller_url)
+    # Download 
+    download.file(capeshiller_url, destfile = capeshiller_path, mode = "wb")
+    result <- read_excel(capeshiller_path, sheet = "Data", skip = 7) %>%
+      select(Date, CAPE) %>%
+      rename(date = Date, value = CAPE) %>%
+      mutate(date = sprintf("%.2f", as.numeric(date)), year = as.integer(substr(date, 1, 4)), month = as.integer(substr(date, 6, 7)), date = as.Date(sprintf("%d-%02d-01", year, month)), id = "CSHR") %>%
+      mutate(value = as.numeric(value)) %>%
+      select(date, value, id) %>%
+      left_join(tribble %>% select(id, name, label, source, unit, frequency, adjustment), by = "id") %>% 
+      distinct(id, date, .keep_all = TRUE) %>%
+      na.omit()
+    message(paste0("Shiller fetched successfully"))
+    result
+  }, error = function(e) {message(paste0("Shiller failed")); NULL })
+}
+reformate_data_stoxx     <- function(tribble){
+  #-----------------------------------------------------------------------------
+  # Function : Reformat data from SOXX source
+  # 1. Input : tribble = mapping inputs table 
+  # Output   : dataframe for the chosen serie(s) with standardized format 
+  #-----------------------------------------------------------------------------
+  # SOXX Series
+  #-----------------------------------------------------------------------------
+  # VSTOXX 50
+  vstoxx50 <- tryCatch({
+    result <- read_delim(vstoxx_url, delim = ";", col_types = cols(Date = col_character(), Symbol = col_character(), Indexvalue = col_double()), locale = locale(decimal_mark = ".")) %>%
+      mutate(Date = as.Date(Date, format = "%d.%m.%Y")) %>%
+      rename(date = Date, value = Indexvalue, id = Symbol) %>%
+      left_join(tribble %>% select(id, name, label, source, unit, frequency, adjustment), by = "id") %>% 
+      distinct(id, date, .keep_all = TRUE) %>%
+      na.omit()
+    message(paste0("VSTOXX 50 fetched successfully"))
+    result
+  }, error = function(e) {
+    message(paste0("VSTOXX 50 failed")); NULL })
+}
+reformate_data_buffet    <- function(tribble){
+  #-----------------------------------------------------------------------------
+  # Function : Reformat data from Buffet source
+  # 1. Input : tribble  = mapping inputs table 
+  # Output   : dataframe for the chosen serie(s) with standardized format 
+  #-----------------------------------------------------------------------------
+  # Buffet Series
+  #-----------------------------------------------------------------------------
+  # GDP
+  gdp <- tryCatch({
+    fredr(series_id = "GDP") %>% select(date, gdp = value)
+  }, error = function(e) { message("GDP failed"); NULL })
+  # Wilshire 5000
+  wilshire <- tryCatch({
+    result <- get_prices("^FTW5000") %>%
+      select(date = time, wil_5000 = Close) %>%
+      mutate(gdp = gdp$gdp[findInterval(date, gdp$date)], value = wil_5000 / gdp) %>%
+      select(date, value) %>%
+      mutate(id = "BUFFWILR") %>%
+      select(id, date, value) %>%
+      left_join(tribble %>% select(id, name, label, source, unit, frequency, adjustment), by = "id")
+    message(paste0("BUFFWILR fetched successfully"))
+    result
+  }, error = function(e) { message("BUFFWILR failed"); NULL })
+  # SP500
+  sp500 <- tryCatch({
+    result <- get_prices("^GSPC") %>%
+      select(date = time, sp500 = Close) %>%
+      mutate(gdp = gdp$gdp[findInterval(date, gdp$date)], value = sp500 / gdp) %>%
+      select(date, value) %>%
+      mutate(id = "BUFFSP500R") %>%
+      select(id, date, value) %>%
+      left_join(tribble %>% select(id, name, label, source, unit, frequency, adjustment), by = "id")
+    message(paste0("BUFFSP500R fetched successfully"))
+    result
+  }, error = function(e) { message("BUFFSP500R failed"); NULL })
+  # Dow Jones
+  dow <- tryCatch({
+    result <- get_prices("^DJI") %>%
+      select(date = time, dow = Close) %>%
+      mutate(gdp = gdp$gdp[findInterval(date, gdp$date)], value = dow / gdp) %>%
+      select(date, value) %>%
+      mutate(id = "BUFFDJR") %>%
+      select(id, date, value) %>%
+      left_join(tribble %>% select(id, name, label, source, unit, frequency, adjustment), by = "id")
+    message(paste0("BUFFDJR fetched successfully"))
+    result
+  }, error = function(e) { message("BUFFDJR failed"); NULL })
+  # Corporate Equities / GDP
+  corp_eq <- tryCatch({
+    result <- fredr(series_id = "BOGZ1LM893064105Q") %>%
+      select(date, corp_equi = value) %>%
+      left_join(gdp, by = "date") %>%
+      mutate(gdp = gdp * 1000) %>% 
+      mutate(value = corp_equi / gdp) %>%
+      select(date, value) %>%
+      mutate(id = "BUFFCORER") %>%
+      select(id, date, value) %>%
+      left_join(tribble %>% select(id, name, label, source, unit, frequency, adjustment), by = "id")
+    message(paste0("BUFFCORER fetched successfully"))
+    result
+  }, error = function(e) { message("BUFFCORER failed"); NULL })
+  # Rbind all the buffet database
+  df <- rbind(wilshire, sp500, dow, corp_eq) %>% 
+    distinct(id, date, .keep_all = TRUE) %>%
+    na.omit()
+  return(df)
+}
 reformate_data_cnn       <- function(tribble){
   #-----------------------------------------------------------------------------
   # Function : Reformat data from CNN source
@@ -824,121 +947,6 @@ reformate_data_cnn       <- function(tribble){
     message("Yield Spread: Junk Bonds vs. Investment grade  fetched successfully"); result
   }, error = function(e) { message("Yield Spread: Junk Bonds vs. Investment grade  failed"); NULL })
   df <- rbind(greatfear_index, sp500_indicator, sp500ma_indicator, stock_price_strength, stock_price_breadth, put_call_options, market_volatility_vix, market_volatility_vix_50, safe_haven_demand, junk_bond_demand) %>% 
-    distinct(id, date, .keep_all = TRUE) %>%
-    na.omit()
-  return(df)
-}
-reformate_data_investing <- function(tribble){
-  #-----------------------------------------------------------------------------
-  # Function : Reformat data from Investing source
-  # 1. Input : tribble    = mapping inputs table 
-  # Output   : dataframe for the chosen serie(s) with standardized format 
-  #-----------------------------------------------------------------------------
-  # Investing Series
-  #-----------------------------------------------------------------------------
-  # Baltic Dry Index
-  bdi <- tryCatch({
-    result <- get_investing_market_series(id = 940793, date_from = "1985-01-01", date_to = Sys.Date()) %>%
-      mutate(id = "BDIINV") %>%
-      left_join(tribble %>% select(id, name, label, source, unit), by = "id")
-    message("Baltic Dry Index fetched successfully")
-    result
-  }, error = function(e) { message("Baltic Dry Index failed"); NULL })
-  timeout(10)
-  # Bloomberg Commodity
-  bcom <- tryCatch({
-    result <- get_investing_market_series(id = 948434, date_from = "1985-01-01", date_to = Sys.Date()) %>%
-      mutate(id = "BCOM") %>%
-      left_join(tribble %>% select(id, name, label, source, unit), by = "id")
-    message("BBloomberg Commodity Index fetched successfully")
-    result
-  }, error = function(e) { message("Bloomberg Commodity Index failed"); NULL })
-  timeout(10)
-  # ISM Manufacturing Purchasing Managers Index PMI
-  ism <- tryCatch({
-    result <- get_investing_indicator_series(id = 173, date_from = "1970-01-01", date_to = Sys.Date()) %>%
-      mutate(id = "ISMPMIINV") %>%
-      left_join(tribble %>% select(id, name, label, source, unit), by = "id")
-    message("ISM Manufacturing PMI fetched successfully")
-    result
-  }, error = function(e) { message("ISM Manufacturing PMI failed"); NULL })
-  timeout(10)
-  # ZEW Economic Sentiment Index 
-  zew <- tryCatch({
-    result <- get_investing_indicator_series(id = 144, date_from = "1970-01-01", date_to = Sys.Date()) %>%
-      mutate(id = "ZEWINV") %>%
-      left_join(tribble %>% select(id, name, label, source, unit), by = "id")
-    message("ZEW Economic Sentiment Index fetched successfully")
-    result
-  }, error = function(e) { message("ZEW Economic Sentiment Index failed"); NULL })
-  # US Crude Oil Inventories
-  uswtiinv <- tryCatch({
-    result <- get_investing_indicator_series(id = 75, date_from = "1970-01-01", date_to = Sys.Date()) %>%
-      mutate(id = "ZEWINV") %>%
-      left_join(tribble %>% select(id, name, label, source, unit), by = "id")
-    message("US Crude Oil Inventories fetched successfully")
-    result
-  }, error = function(e) { message("US Crude Oil Inventories failed"); NULL })
-  # Rig count Baker Hughes 
-  uswtiinv <- tryCatch({
-    result <- get_investing_indicator_series(id = 75, date_from = "1970-01-01", date_to = Sys.Date()) %>%
-      mutate(id = "RICBH") %>%
-      left_join(tribble %>% select(id, name, label, source, unit), by = "id")
-    message("Rig count Baker Hughes fetched successfully")
-    result
-  }, error = function(e) { message("•	Rig count Baker Hughes failed"); NULL })
-  df <- rbind(bdi, ism, zew, bcom, uswtiinv) %>% 
-    distinct(id, date, .keep_all = TRUE) %>%
-    na.omit()
-  return(df)
-}
-reformate_data_imf       <- function(tribble){
-  #-----------------------------------------------------------------------------
-  # Function : Reformat data from IMF Source
-  # 1. Input : tribble    = mapping inputs table 
-  # Output   : dataframe for the chosen series with standardized format
-  #-----------------------------------------------------------------------------
-  # IMF Series
-  #-----------------------------------------------------------------------------
-  area_key <- paste(imf_geo_area, collapse = "+")
-  set_config(config(ssl_verifypeer = 0L))
-  # Gold Reserves at Market Value (SDR)
-  gold_market_value <- tryCatch({
-    result <- as.data.frame(
-      readSDMX(providerId = "IMF_DATA", resource = "data", flowRef = "IMF.STA,IL", key = paste0(area_key, ".RGOLDMV_REVS."))) %>%
-      rename(geo = COUNTRY, frequency = FREQUENCY, value = OBS_VALUE, date = TIME_PERIOD) %>%
-      filter(frequency == "M") %>%
-      mutate(id = paste0("RGOLDMV_REVS",geo), adjustment = "NA", value = as.numeric(value), date = as.Date(paste0(substr(date, 1, 4), "-", substr(date, 7, 8), "-01"))) %>%
-      select(id, value, date, adjustment) %>%
-      left_join(tribble %>% select(id, name, label, source, unit, frequency), by = "id")
-    message("Gold Reserves at Market Value fetched successfully")
-    result
-  }, error = function(e) { message("Gold Reserves at Market Value failed"); NULL })
-  # Gold Reserves Volume (Fine Troy Ounces)
-  gold_volume_reserve <- tryCatch({
-    result <- as.data.frame(
-      readSDMX(providerId = "IMF_DATA", resource = "data", flowRef = "IMF.STA,IL", key = paste0(area_key, ".RGV_REVS."))) %>%
-      rename(geo = COUNTRY, frequency = FREQUENCY, value = OBS_VALUE, date = TIME_PERIOD) %>%
-      filter(frequency == "M") %>%
-      mutate(id = paste0("RGV_REVS",geo), adjustment = "NA", value = as.numeric(value), date = as.Date(paste0(substr(date, 1, 4), "-", substr(date, 7, 8), "-01"))) %>%
-      select(id, value, date, adjustment) %>%
-      left_join(tribble %>% select(id, name, label, source, unit, frequency), by = "id")
-    message("Gold Reserves Volume fetched successfully")
-    result
-  }, error = function(e) { message("Gold Reserves Volume failed"); NULL })
-  # M2 Broad Money (Depository Corporations Survey)
-  m2_broad_money <- tryCatch({
-    result <- as.data.frame(
-      readSDMX(providerId = "IMF_DATA", resource = "data", flowRef = "IMF.STA,MFS_DC", key = paste0(area_key,".DCORP_L_BM"))) %>%
-      rename(geo = COUNTRY, frequency = FREQUENCY, value = OBS_VALUE, date = TIME_PERIOD) %>%
-      filter(frequency == "M") %>%
-      mutate(id = paste0("DCORP_L_BM", geo), adjustment = "NA", value = as.numeric(value), date = as.Date(paste0(substr(date, 1, 4), "-", substr(date, 7, 8), "-01"))) %>%
-      select(id, value, date, adjustment) %>%
-      left_join(tribble %>% select(id, name, label, source, unit, frequency), by = "id")
-    message("M2 Broad Money fetched successfully")
-    result
-  }, error = function(e) { message("M2 Broad Money failed"); NULL })
-  df <- rbind(gold_market_value, gold_volume_reserve, m2_broad_money) %>% 
     distinct(id, date, .keep_all = TRUE) %>%
     na.omit()
   return(df)
@@ -1078,18 +1086,7 @@ reformate_data_eia       <- function(tribble){
   #-----------------------------------------------------------------------------
   # Fetch raw data from Crude Oil Production
   copr <- tryCatch({
-    result <- fromJSON(content(GET(paste0(
-      "https://api.eia.gov/v2/international/data/?api_key=", Sys.getenv("EIA_API_KEY_INTER"),
-      "&frequency=monthly&data[0]=value&sort[0][column]=period&sort[0][direction]=desc",
-      "&offset=0&length=100000",
-      "&facets[countryRegionId][]=OPEC&facets[countryRegionId][]=USA&facets[countryRegionId][]=RUS",
-      "&facets[countryRegionId][]=CHN&facets[countryRegionId][]=SAU&facets[countryRegionId][]=IRQ",
-      "&facets[countryRegionId][]=IRN&facets[countryRegionId][]=ARE&facets[countryRegionId][]=KWT",
-      "&facets[countryRegionId][]=VEN&facets[countryRegionId][]=NGA&facets[countryRegionId][]=LBY",
-      "&facets[countryRegionId][]=DZA&facets[countryRegionId][]=NOR&facets[countryRegionId][]=CAN",
-      "&facets[countryRegionId][]=MEX&facets[countryRegionId][]=BRA&facets[countryRegionId][]=KAZ",
-      "&facets[productId][]=57")), "text", encoding = "UTF-8"))$response$data
-
+    result <- fromJSON(content(GET(eia_url), "text", encoding = "UTF-8"))$response$data
     # All countries and OPEC aggregate in a single request (length=100000 to get full history)
     result <- result %>%
       mutate(date  = as.Date(paste0(period, "-01")),value = as.numeric(value),id = paste0("COPR_",countryRegionId)) %>% 
@@ -1103,4 +1100,38 @@ reformate_data_eia       <- function(tribble){
     na.omit()
   return(df)
 }
-  
+reformate_data_gie       <- function(from, to, tribble) {
+  #-----------------------------------------------------------------------------
+  # Function : Reformat data from Gaz Infrastructure Europe (GIE)
+  # 1. Input : from    = start date (character "YYYY-MM-DD")
+  # 2. Input : to      = end date   (character "YYYY-MM-DD")
+  # 3. Input : tribble = mapping inputs table
+  # Output   : dataframe in standardized long format for the requested date range
+  #-----------------------------------------------------------------------------
+  # Fetch raw data from GIE API for all countries
+  gie_data <- map(gie_geo_area, function(country) {
+    tryCatch(
+      gie_load(country = country, from = from, to = to, size = 300, timeout = 5, database = "agsi", verbose = FALSE, apikey = Sys.getenv("GIE_API_KEY")),
+      error   = function(e) { message(paste0(country, " failed: ", e$message)); NULL },
+      warning = function(w) { message(paste0(country, " warning: ", w$message)); NULL })}) %>%
+    keep(~ is.data.frame(.x) && nrow(.x) > 0) %>%
+    bind_rows()
+  # Reformat raw data into standardized long format and join with mapping table
+  df <- gie_data %>%
+    select(code, gasDayStart, gasInStorage, workingGasVolume, injection, withdrawal, netWithdrawal, consumption) %>%
+    mutate(fillRate = gasInStorage / workingGasVolume * 100) %>%
+    pivot_longer(cols = c(gasInStorage, workingGasVolume, injection, withdrawal, netWithdrawal, consumption, fillRate), names_to = "variable", values_to = "value") %>%
+    mutate(id = paste0("GAZ", case_when(variable == "gasInStorage" ~ "IS", variable == "workingGasVolume" ~ "WGV", variable == "injection" ~ "INJ", variable == "withdrawal" ~ "WIT", variable == "netWithdrawal" ~ "NWIT", variable == "consumption" ~ "CONS", variable == "fillRate" ~ "FILL"), code), date = as.Date(gasDayStart)) %>%
+    select(id, value, date) %>%
+    left_join(tribble %>% select(id, label, name, source, unit, frequency, adjustment), by = "id") %>%
+    distinct(id, date, .keep_all = TRUE) %>%
+    na.omit()
+  return(df)
+}
+
+
+
+
+
+
+

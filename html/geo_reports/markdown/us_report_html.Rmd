@@ -3,9 +3,9 @@ title: "US Financial and Macro Report"
 output:
   html_document:
     toc: true
-    toc_depth: 3
+    toc_depth: 6
     toc_float:
-      collapsed: false
+      collapsed: true
       smooth_scroll: true
     theme: flatly
     highlight: kate
@@ -102,14 +102,6 @@ chart_note <- function(text) {
 ## Abstract
 
 ```{=html}
-<div class="company-hero">
-  <div class="co-body">
-    <div class="masthead-title">Abstract</div>
-  </div>
-</div>
-```
-
-```{=html}
 <div class="abstract-box">
 <p>This report provides a comprehensive overview of the United States economy and financial markets through a structured set of macroeconomic, financial, and market indicators.</p>
 <ul>
@@ -128,15 +120,9 @@ chart_note <- function(text) {
 
 ## Macro
 
-```{=html}
-<div class="company-hero">
-  <div class="co-body">
-    <div class="masthead-title">Macro</div>
-  </div>
-</div>
-```
+### National Accounts 
 
-### Real GDP
+#### *Real GDP*
 
 ```{r US GDP TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
 series_info_box(
@@ -185,261 +171,7 @@ div(style = "display: flex; justify-content: center;",
 </div>
 ```
 
-### Inflation
-
-```{r US INF TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
-series_info_box(
-  source_html = 'FRED — <a href="https://fred.stlouisfed.org/" target="_blank">link</a> and OECD — <a href="https://data-explorer.oecd.org/vis?tm=cpi&pg=0&snb=25&df[ds]=dsDisseminateFinalDMZ&df[id]=DSD_PRICES%40DF_PRICES_ALL&df[ag]=OECD.SDD.TPS&df[vs]=1.0&dq=.M.N.CPI.._T.N.GY%2B_Z&lom=LASTNPERIODS&lo=13&to[TIME_PERIOD]=false" target="_blank">link</a>',
-  frequency = "Monthly",
-  adjustment = "Seasonally Adjusted for FRED series and Not Seasonally Adjusted for OECD series",
-  about = paste0(
-  '1) <b>CPI — <a href="https://fred.stlouisfed.org/series/CPIAUCSL" target="_blank">CPIAUCSL</a></b>. ',
-  'US Consumer Price Index is published by the Bureau of Labor Statistics (BLS), measuring monthly price changes paid by urban consumers (~88% of the total US population) for a fixed basket of goods and services. The basket covers food, clothing, shelter, fuels, transportation fares, service fees, and sales taxes. Prices are collected monthly from about 4,000 housing units and approximately 26,000 retail establishments across 87 urban areas. It uses a Laspeyres methodology (fixed base-year basket), which can overstate inflation by not accounting for substitution effects. Released monthly, indexed to 1982–84 = 100, seasonally adjusted. It is the primary benchmark for cost-of-living adjustments (COLA), Social Security indexation, and inflation-linked bond pricing (TIPS).',
-  'and serves as the headline inflation indicator. Name of the series on the graph: <code>us_cpi_pc1_fd</code>.',
-  '<br><br>',
-  '2) <b>Core CPI — <a href="https://fred.stlouisfed.org/series/CPILFESL" target="_blank">CPILFESL</a></b>. ',
-  'US Core CPI is also published by the BLS, which strips out food and energy prices from the headline CPI due to their high volatility and supply-shock sensitivity. It captures the more persistent, demand-driven component of inflation and is a cleaner signal of underlying price pressure. It retains the same Laspeyres methodology and urban consumer coverage as CPIAUCSL, with shelter remaining the dominant component. Released monthly alongside headline CPI. Closely watched by the Fed as a policy signal, though the Fed officially targets PCE, Core CPI nonetheless remains a key cross-reference for inflation assessment and market expectations on rate decisions. Name of the series on the graph: <code>us_ccpi_pc1_fd</code>.',
-  '<br><br>',
-  '3) <b>PCE Price Index — <a href="https://fred.stlouisfed.org/series/PCEPI" target="_blank">PCEPI</a></b>. ',
-  'US Personal Consumption Expenditures Price Index is published by the Bureau of Economic Analysis (BEA). Unlike CPI, it uses a chain-weighted (Fisher index) methodology, meaning the consumption basket updates dynamically with actual spending behavior, capturing substitution effects and making it less prone to upward bias. Its coverage is broader than CPI, including expenditures made on behalf of consumers (e.g., employer-sponsored healthcare), giving healthcare a significantly higher weight than in CPI. It is the Fed\'s official inflation target (2%), making it the single most policy-relevant price index in the US Released monthly, data goes back to 1959. Core PCE (excluding food & energy) is particularly scrutinized at every FOMC meeting. Name of the series on the graph: <code>us_pce_pc1_fd</code>.',
-  'and uses a chain-weighted methodology, making it particularly relevant for monetary policy analysis. ',
-  '<br><br>',
-  '4) <b>OECD Consumer Price Index — <a href="https://data-explorer.oecd.org/vis?tm=cpi&pg=0&snb=25&df[ds]=dsDisseminateFinalDMZ&df[id]=DSD_PRICES%40DF_PRICES_ALL&df[ag]=OECD.SDD.TPS&df[vs]=1.0&dq=.M.N.CPI.._T.N.GY%2B_Z&lom=LASTNPERIODS&lo=13&to[TIME_PERIOD]=false">OECD CPI</a></b>. ',
-  'The OECD CPI is a harmonized measure of consumer price inflation published by the Organisation for Economic Cooperation and Development, covering its 38 member countries as well as several partner economies. It is constructed using a consistent statistical framework, the HICP methodology (Harmonised Index of Consumer Prices) for European members and standardized equivalents for others, ensuring cross-country comparability that national CPIs alone cannot provide. It aggregates individual country CPIs using harmonized basket abouts and weight structures, allowing direct inflation comparisons across the US, Eurozone, Japan, UK, and emerging OECD members. It is a key tool for international macro analysis, sovereign debt assessment, and global monetary policy comparison. Name of the series on the graph: <code>us_cpi_oecd</code>.'))
-```
-
-```{=html}
-<div class="perf-section">
-```
-
-```{r US INF, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
-
-# Get series
-data <- get_series(name = c("us_cpi_oecd","us_cpi_pc1_fd", "us_ccpi_pc1_fd", "us_pce_pc1_fd"))
-
-# Plot serie
-div(style = "display: flex; justify-content: center;",
-    produce_interactive_plot(df = data, sma = FALSE, title = "US, Consumer Price Inflation Measures, Percent Change from Year Ago, Seasonally Adjusted"))
-
-```
-
-```{=html}
-</div>
-```
-
-### Unemployment
-
-```{r US EMP TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
-series_info_box(
-  source_html = 'FRED — <a href="https://fred.stlouisfed.org/series/UNRATE" target="_blank">link</a>',
-  frequency = "Monthly",
-  adjustment = "Seasonally Adjusted",
-  about = "Unemployment Rate is a measure of the number of unemployed as a percentage of the labor force, published by the Bureau of Labor Statistics from the Current Population Survey (Household Survey). It is restricted to people 16 years of age and older, residing in one of the 50 states or the District of Columbia, who do not reside in institutions (e.g., penal and mental facilities, homes for the aged), and who are not on active duty in the Armed Forces. Also defined as the U-3 measure of labor underutilization, the narrowest of the Bureau of Labor Statistics\'s labor underutilization measures. Reported as a percent, seasonally adjusted, and released monthly. It is one of the most watched macroeconomic indicators, serving as a key input for Fed monetary policy decisions and business cycle analysis.")
-```
-
-```{=html}
-<div class="perf-section">
-```
-
-```{r US EMP, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
-
-# Get series
-data <- get_series(name = "us_unrate_fd")
-
-# Plot serie
-div(style = "display: flex; justify-content: center;",
-    produce_interactive_plot(df = data, sma = FALSE))
-
-```
-
-```{=html}
-</div>
-```
-
-### Non Farm Payroll 
-
-```{r US NFP TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
-series_info_box(
-  source_html = 'FRED — <a href="https://fred.stlouisfed.org/series/PAYEMS" target="_blank">link</a>',
-  frequency = "Monthly",
-  adjustment = "Seasonally Adjusted",
-  about = "All Employees, Total Nonfarm is a measure of the total number of US workers in the economy, published by the Bureau of Labor Statistics from the Current Employment Statistics (Establishment Survey). It excludes proprietors, private household employees, unpaid volunteers, farm employees, and the unincorporated self-employed, and accounts for approximately 80% of the workers who contribute to GDP. Reported in thousands of persons, seasonally adjusted, and released monthly. It is one of the most closely watched labor market indicators, as it directly reflects the number of jobs added or lost in the economy each month, a key input for Fed monetary policy decisions, business cycle analysis, and recession dating by the NBER.")
-```
-
-```{=html}
-<div class="perf-section">
-```
-
-```{r US NFP NBR, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
-
-# Get series
-data <- get_series(name = "us_nfp_fd")
-
-# Plot serie
-div(style = "display: flex; justify-content: center;",
-    produce_interactive_plot(df = data, sma = FALSE))
-
-```
-
-```{=html}
-</div>
-```
-
-```{=html}
-<div class="perf-section">
-```
-
-```{r US NFP PCY, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
-
-# Get series
-data <- get_series(name = "us_nfp_pc1_fd")
-
-# Plot serie
-div(style = "display: flex; justify-content: center;",
-    produce_interactive_plot(df = data, sma = FALSE))
-
-```
-
-```{=html}
-</div>
-```
-
-### AFP Non Farm Payroll (Private)
-
-```{r US NFP AFPTXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
-series_info_box(
-  source_html = 'FRED — <a href="https://fred.stlouisfed.org/series/ADPWNUSNERSA" target="_blank">link</a>',
-  frequency = "Weekly",
-  adjustment = "Seasonally Adjusted",
-  about = "Total Nonfarm Private Payroll Employment is a measure of total US. private-sector employment published by Automatic Data Processing, Inc. (ADP) from its National Employment Report (NER). Unlike the Bureau of Labor Statistics\' establishment survey, which covers both public and private workers, this series is restricted to private-sector nonfarm payroll employment only, derived from ADP\'s proprietary payroll processing data covering a large sample of US businesses, it covers private-sector workers across all major industries, including goods-producing sectors such as manufacturing and construction, and service-providing sectors such as trade, education, healthcare, and leisure and hospitality, while explicitly excluding government employees and farm workers. The series is benchmarked annually to Quarterly Census of Employment and Wages (QCEW) data through the prior year\'s March figures, a standard revision process carried out each February. Reported in number of persons, seasonally adjusted, released weekly. Widely used as a high-frequency, private-sector complement to the official BLS monthly employment report, providing more timely signals on labor market conditions between official government releases.")
-```
-
-```{=html}
-<div class="perf-section">
-```
-
-```{r US NFP AFP NBR, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
-
-# Get series
-data <- get_series(name = "us_adpnfp_fd")
-
-# Plot serie
-div(style = "display: flex; justify-content: center;",
-    produce_interactive_plot(df = data, sma = FALSE))
-
-```
-
-```{=html}
-</div>
-```
-
-```{=html}
-<div class="perf-section">
-```
-
-```{r US NFP AFP PCY, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
-
-# Get series
-data <- get_series(name = "us_adpnfp_pc1_fd")
-
-# Plot serie
-div(style = "display: flex; justify-content: center;",
-    produce_interactive_plot(df = data, sma = FALSE))
-
-```
-
-```{=html}
-</div>
-```
-
-### Job Openings
-
-```{r US JO TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
-series_info_box(
-  source_html = 'FRED — <a href="https://fred.stlouisfed.org/series/JTSJOL" target="_blank">link</a>',
-  frequency = "Monthly",
-  adjustment = "Seasonally Adjusted",
-  about = "Total Nonfarm Job Openings are a measure of all jobs that are not filled on the last business day of the month. A job is considered open if a specific position exists and there is work available for it, the job can be started within 30 days, and there is active recruiting for the position.Total Nonfarm Job Openings are measured by the Job Openings and Labor Turnover Survey (JOLTS) and published by the Bureau of Labor Statistics (BLS). These data are a unique economic indicator of unmet demand for labor and labor shortages. Economists, government officials, and researchers use Job Openings as a measure of tightness within job markets.")
-```
-
-```{=html}
-<div class="perf-section">
-```
-
-```{r US JO, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
-
-# Get series
-data <- get_series(name = "us_jtsjo_fd")
-
-# Plot serie
-div(style = "display: flex; justify-content: center;",
-    produce_interactive_plot(df = data, sma = FALSE))
-
-```
-
-```{=html}
-</div>
-```
-
-### Unemployment Claims 
-
-```{r US UNEMPC TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
-series_info_box(
-  source_html = 'FRED — <a href="https://fred.stlouisfed.org/series/CCSA" target="_blank">link</a>',
-  frequency = "Weekly",
-  adjustment = "Seasonally Adjusted",
-  about = "Continued Claims (Insured Unemployment) is the number of people who have already filed an initial unemployment claim and who have experienced a week of unemployment and then filed a continued claim to receive benefits for that week. Unlike initial claims which capture new job losses, continued claims reflect the stock of people remaining on unemployment benefits, making it a measure of how difficult it is for displaced workers to find new employment. Data are based on the week of unemployment, not the week the initial claim was filed. Published by the US Employment and Training Administration, reported as a number of persons, seasonally adjusted, and released weekly (ending Saturday). It is a high-frequency labor market indicator closely watched alongside initial claims to assess the persistence of unemployment and the overall health of the labor market.")
-```
-
-```{=html}
-<div class="perf-section">
-```
-
-```{r US UNEMPC, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
-
-# Get series
-data <- get_series(name = "us_unemplcla_fd")
-
-# Plot serie
-div(style = "display: flex; justify-content: center;",
-    produce_interactive_plot(df = data, sma = FALSE))
-
-```
-
-```{=html}
-</div>
-```
-
-<!-- ### Personal Consumption Expenditures -->
-
-<!-- ```{r US PCETOT TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE} -->
-<!-- series_info_box( -->
-<!--   source_html = 'FRED — <a href="https://fred.stlouisfed.org/series/USPCE" target="_blank">link</a>', -->
-<!--   frequency = "Annual", -->
-<!--   adjustment = "Not Adjusted", -->
-<!--   about = "Personal Consumption Expenditures is a measure of total household spending on goods and services published by the US Bureau of Economic Analysis from its Personal Consumption Expenditures by State release. It covers spending by households based on their state of residence across all fifty states and the District of Columbia, encompassing three broad categories: durable goods (e.g., vehicles, appliances), nondurable goods (e.g., food, clothing, energy), and services (e.g., healthcare, housing, transportation), with services representing the largest share. Reported in millions of dollars, not seasonally adjusted, released annually.") -->
-<!-- ``` -->
-
-<!-- ```{=html} -->
-<!-- <div class="perf-section"> -->
-<!-- ``` -->
-
-<!-- ```{r US PCETOT, echo=FALSE, results='asis', warning=FALSE, message=FALSE} -->
-
-<!-- # Get series -->
-<!-- data <- get_series(name = "us_pcetot_pc1_fd") -->
-
-<!-- # Plot serie -->
-<!-- div(style = "display: flex; justify-content: center;", -->
-<!--     produce_interactive_plot(df = data, sma = FALSE)) -->
-
-<!-- ``` -->
-
-<!-- ```{=html} -->
-<!-- </div> -->
-<!-- ``` -->
-
-### Real Investment
+#### *Real Investment*
 
 ```{r US RI TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
 series_info_box(
@@ -504,7 +236,7 @@ div(style = "display: flex; justify-content: center;",
 </div>
 ```
 
-### Household Savings
+#### *Household Savings*
 
 ```{r US HS TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
 series_info_box(
@@ -534,7 +266,267 @@ div(style = "display: flex; justify-content: center;",
 </div>
 ```
 
-### Governement Surplus/Deficit
+
+### Inflation
+
+#### *CPI & PCE*
+
+```{r US INF TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'FRED — <a href="https://fred.stlouisfed.org/" target="_blank">link</a> and OECD — <a href="https://data-explorer.oecd.org/vis?tm=cpi&pg=0&snb=25&df[ds]=dsDisseminateFinalDMZ&df[id]=DSD_PRICES%40DF_PRICES_ALL&df[ag]=OECD.SDD.TPS&df[vs]=1.0&dq=.M.N.CPI.._T.N.GY%2B_Z&lom=LASTNPERIODS&lo=13&to[TIME_PERIOD]=false" target="_blank">link</a>',
+  frequency = "Monthly",
+  adjustment = "Seasonally Adjusted for FRED series and Not Seasonally Adjusted for OECD series",
+  about = paste0(
+  '1) <b>CPI — <a href="https://fred.stlouisfed.org/series/CPIAUCSL" target="_blank">CPIAUCSL</a></b>. ',
+  'US Consumer Price Index is published by the Bureau of Labor Statistics (BLS), measuring monthly price changes paid by urban consumers (~88% of the total US population) for a fixed basket of goods and services. The basket covers food, clothing, shelter, fuels, transportation fares, service fees, and sales taxes. Prices are collected monthly from about 4,000 housing units and approximately 26,000 retail establishments across 87 urban areas. It uses a Laspeyres methodology (fixed base-year basket), which can overstate inflation by not accounting for substitution effects. Released monthly, indexed to 1982–84 = 100, seasonally adjusted. It is the primary benchmark for cost-of-living adjustments (COLA), Social Security indexation, and inflation-linked bond pricing (TIPS).',
+  'and serves as the headline inflation indicator. Name of the series on the graph: <code>us_cpi_pc1_fd</code>.',
+  '<br><br>',
+  '2) <b>Core CPI — <a href="https://fred.stlouisfed.org/series/CPILFESL" target="_blank">CPILFESL</a></b>. ',
+  'US Core CPI is also published by the BLS, which strips out food and energy prices from the headline CPI due to their high volatility and supply-shock sensitivity. It captures the more persistent, demand-driven component of inflation and is a cleaner signal of underlying price pressure. It retains the same Laspeyres methodology and urban consumer coverage as CPIAUCSL, with shelter remaining the dominant component. Released monthly alongside headline CPI. Closely watched by the Fed as a policy signal, though the Fed officially targets PCE, Core CPI nonetheless remains a key cross-reference for inflation assessment and market expectations on rate decisions. Name of the series on the graph: <code>us_ccpi_pc1_fd</code>.',
+  '<br><br>',
+  '3) <b>PCE Price Index — <a href="https://fred.stlouisfed.org/series/PCEPI" target="_blank">PCEPI</a></b>. ',
+  'US Personal Consumption Expenditures Price Index is published by the Bureau of Economic Analysis (BEA). Unlike CPI, it uses a chain-weighted (Fisher index) methodology, meaning the consumption basket updates dynamically with actual spending behavior, capturing substitution effects and making it less prone to upward bias. Its coverage is broader than CPI, including expenditures made on behalf of consumers (e.g., employer-sponsored healthcare), giving healthcare a significantly higher weight than in CPI. It is the Fed\'s official inflation target (2%), making it the single most policy-relevant price index in the US Released monthly, data goes back to 1959. Core PCE (excluding food & energy) is particularly scrutinized at every FOMC meeting. Name of the series on the graph: <code>us_pce_pc1_fd</code>.',
+  'and uses a chain-weighted methodology, making it particularly relevant for monetary policy analysis. ',
+  '<br><br>',
+  '4) <b>OECD Consumer Price Index — <a href="https://data-explorer.oecd.org/vis?tm=cpi&pg=0&snb=25&df[ds]=dsDisseminateFinalDMZ&df[id]=DSD_PRICES%40DF_PRICES_ALL&df[ag]=OECD.SDD.TPS&df[vs]=1.0&dq=.M.N.CPI.._T.N.GY%2B_Z&lom=LASTNPERIODS&lo=13&to[TIME_PERIOD]=false">OECD CPI</a></b>. ',
+  'The OECD CPI is a harmonized measure of consumer price inflation published by the Organisation for Economic Cooperation and Development, covering its 38 member countries as well as several partner economies. It is constructed using a consistent statistical framework, the HICP methodology (Harmonised Index of Consumer Prices) for European members and standardized equivalents for others, ensuring cross-country comparability that national CPIs alone cannot provide. It aggregates individual country CPIs using harmonized basket abouts and weight structures, allowing direct inflation comparisons across the US, Eurozone, Japan, UK, and emerging OECD members. It is a key tool for international macro analysis, sovereign debt assessment, and global monetary policy comparison. Name of the series on the graph: <code>us_cpi_oecd</code>.'))
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US INF, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = c("us_cpi_oecd","us_cpi_pc1_fd", "us_ccpi_pc1_fd", "us_pce_pc1_fd"))
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, title = "US, Consumer Price Inflation Measures, Percent Change from Year Ago, Seasonally Adjusted"))
+
+```
+
+```{=html}
+</div>
+```
+
+### Labor Market 
+
+#### *Unemployment*
+
+```{r US EMP TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'FRED — <a href="https://fred.stlouisfed.org/series/UNRATE" target="_blank">link</a>',
+  frequency = "Monthly",
+  adjustment = "Seasonally Adjusted",
+  about = "Unemployment Rate is a measure of the number of unemployed as a percentage of the labor force, published by the Bureau of Labor Statistics from the Current Population Survey (Household Survey). It is restricted to people 16 years of age and older, residing in one of the 50 states or the District of Columbia, who do not reside in institutions (e.g., penal and mental facilities, homes for the aged), and who are not on active duty in the Armed Forces. Also defined as the U-3 measure of labor underutilization, the narrowest of the Bureau of Labor Statistics\'s labor underutilization measures. Reported as a percent, seasonally adjusted, and released monthly. It is one of the most watched macroeconomic indicators, serving as a key input for Fed monetary policy decisions and business cycle analysis.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US EMP, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "us_unrate_fd")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE))
+
+```
+
+```{=html}
+</div>
+```
+
+#### *Non Farm Payroll*
+
+```{r US NFP TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'FRED — <a href="https://fred.stlouisfed.org/series/PAYEMS" target="_blank">link</a>',
+  frequency = "Monthly",
+  adjustment = "Seasonally Adjusted",
+  about = "All Employees, Total Nonfarm is a measure of the total number of US workers in the economy, published by the Bureau of Labor Statistics from the Current Employment Statistics (Establishment Survey). It excludes proprietors, private household employees, unpaid volunteers, farm employees, and the unincorporated self-employed, and accounts for approximately 80% of the workers who contribute to GDP. Reported in thousands of persons, seasonally adjusted, and released monthly. It is one of the most closely watched labor market indicators, as it directly reflects the number of jobs added or lost in the economy each month, a key input for Fed monetary policy decisions, business cycle analysis, and recession dating by the NBER.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US NFP NBR, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "us_nfp_fd")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE))
+
+```
+
+```{=html}
+</div>
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US NFP PCY, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "us_nfp_pc1_fd")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE))
+
+```
+
+```{=html}
+</div>
+```
+
+#### *AFP Non Farm Payroll (Private)*
+
+```{r US NFP AFPTXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'FRED — <a href="https://fred.stlouisfed.org/series/ADPWNUSNERSA" target="_blank">link</a>',
+  frequency = "Weekly",
+  adjustment = "Seasonally Adjusted",
+  about = "Total Nonfarm Private Payroll Employment is a measure of total US. private-sector employment published by Automatic Data Processing, Inc. (ADP) from its National Employment Report (NER). Unlike the Bureau of Labor Statistics\' establishment survey, which covers both public and private workers, this series is restricted to private-sector nonfarm payroll employment only, derived from ADP\'s proprietary payroll processing data covering a large sample of US businesses, it covers private-sector workers across all major industries, including goods-producing sectors such as manufacturing and construction, and service-providing sectors such as trade, education, healthcare, and leisure and hospitality, while explicitly excluding government employees and farm workers. The series is benchmarked annually to Quarterly Census of Employment and Wages (QCEW) data through the prior year\'s March figures, a standard revision process carried out each February. Reported in number of persons, seasonally adjusted, released weekly. Widely used as a high-frequency, private-sector complement to the official BLS monthly employment report, providing more timely signals on labor market conditions between official government releases.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US NFP AFP NBR, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "us_adpnfp_fd")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE))
+
+```
+
+```{=html}
+</div>
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US NFP AFP PCY, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "us_adpnfp_pc1_fd")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE))
+
+```
+
+```{=html}
+</div>
+```
+
+#### *Job Openings*
+
+```{r US JO TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'FRED — <a href="https://fred.stlouisfed.org/series/JTSJOL" target="_blank">link</a>',
+  frequency = "Monthly",
+  adjustment = "Seasonally Adjusted",
+  about = "Total Nonfarm Job Openings are a measure of all jobs that are not filled on the last business day of the month. A job is considered open if a specific position exists and there is work available for it, the job can be started within 30 days, and there is active recruiting for the position.Total Nonfarm Job Openings are measured by the Job Openings and Labor Turnover Survey (JOLTS) and published by the Bureau of Labor Statistics (BLS). These data are a unique economic indicator of unmet demand for labor and labor shortages. Economists, government officials, and researchers use Job Openings as a measure of tightness within job markets.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US JO, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "us_jtsjo_fd")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE))
+
+```
+
+```{=html}
+</div>
+```
+
+#### *Unemployment Claims*
+
+```{r US UNEMPC TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'FRED — <a href="https://fred.stlouisfed.org/series/CCSA" target="_blank">link</a>',
+  frequency = "Weekly",
+  adjustment = "Seasonally Adjusted",
+  about = "Continued Claims (Insured Unemployment) is the number of people who have already filed an initial unemployment claim and who have experienced a week of unemployment and then filed a continued claim to receive benefits for that week. Unlike initial claims which capture new job losses, continued claims reflect the stock of people remaining on unemployment benefits, making it a measure of how difficult it is for displaced workers to find new employment. Data are based on the week of unemployment, not the week the initial claim was filed. Published by the US Employment and Training Administration, reported as a number of persons, seasonally adjusted, and released weekly (ending Saturday). It is a high-frequency labor market indicator closely watched alongside initial claims to assess the persistence of unemployment and the overall health of the labor market.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US UNEMPC, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "us_unemplcla_fd")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE))
+
+```
+
+```{=html}
+</div>
+```
+
+<!-- ### Personal Consumption Expenditures -->
+
+<!-- ```{r US PCETOT TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE} -->
+<!-- series_info_box( -->
+<!--   source_html = 'FRED — <a href="https://fred.stlouisfed.org/series/USPCE" target="_blank">link</a>', -->
+<!--   frequency = "Annual", -->
+<!--   adjustment = "Not Adjusted", -->
+<!--   about = "Personal Consumption Expenditures is a measure of total household spending on goods and services published by the US Bureau of Economic Analysis from its Personal Consumption Expenditures by State release. It covers spending by households based on their state of residence across all fifty states and the District of Columbia, encompassing three broad categories: durable goods (e.g., vehicles, appliances), nondurable goods (e.g., food, clothing, energy), and services (e.g., healthcare, housing, transportation), with services representing the largest share. Reported in millions of dollars, not seasonally adjusted, released annually.") -->
+<!-- ``` -->
+
+<!-- ```{=html} -->
+<!-- <div class="perf-section"> -->
+<!-- ``` -->
+
+<!-- ```{r US PCETOT, echo=FALSE, results='asis', warning=FALSE, message=FALSE} -->
+
+<!-- # Get series -->
+<!-- data <- get_series(name = "us_pcetot_pc1_fd") -->
+
+<!-- # Plot serie -->
+<!-- div(style = "display: flex; justify-content: center;", -->
+<!--     produce_interactive_plot(df = data, sma = FALSE)) -->
+
+<!-- ``` -->
+
+<!-- ```{=html} -->
+<!-- </div> -->
+<!-- ``` -->
+### Fiscal
+
+#### *Governement Surplus/Deficit*
 
 ```{r US GOVS TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
 series_info_box(
@@ -564,7 +556,7 @@ div(style = "display: flex; justify-content: center;",
 </div>
 ```
 
-### Governement Debt 
+#### *Governement Debt* 
 
 ```{r US GOVD TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
 series_info_box(
@@ -614,7 +606,9 @@ div(style = "display: flex; justify-content: center;",
 </div>
 ```
 
-### Housing Prices
+### Housing Market
+
+#### *Housing Prices*
 
 ```{r US HP TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
 series_info_box(
@@ -663,54 +657,12 @@ div(style = "display: flex; justify-content: center;",
 </div>
 ```
 
-### KOF Forecast
-
-```{r US KOF FOR TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
-series_info_box(
-  source_html = 'KOF Nowcasting Lab — <a href="https://nowcastinglab.org/map" target="_blank">link</a>',
-  frequency  = "Daily",
-  adjustment = "Seasonally Adjusted",
-  about = "KOF Nowcasting Lab provides continuously updated real-time estimates of current-quarter and next-quarter real GDP growth for a range of economies including Switzerland, the euro area, Germany, France, Italy, Spain, the United Kingdom, and several others, developed by the KOF Swiss Economic Institute at ETH Zurich. The platform is fully automated with no human judgmental input, updating estimates up to three times daily as new data releases enter the system. It combines four classes of mixed-frequency econometric models fed with approximately 250 daily and monthly macroeconomic and financial series, with individual model forecasts pooled using forecast combination techniques and weaker predictors filtered via elastic net regularization. The core premise is that high-frequency indicators such as business surveys, trade statistics, and financial data are published weeks ahead of the official quarterly GDP release, which arrives with a lag of six to eight weeks after quarter-end in most economies, allowing the models to progressively refine estimates as the information set expands throughout the quarter. The website displays uncertainty bands, individual model outputs, the contribution of each release to forecast revisions, and historical forecast errors.")
-
-```
-
-```{=html}
-<div class="perf-section">
-```
-
-```{r US KOF FOR, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
-
-# Get series
-data <- get_kof_nowcast(id = "USGDPNC", last_quarter = 2) %>% 
-  rename(date = publication_date, quarter_forecast = date) %>% 
-  mutate(name = paste0(name," ",target_period), id = paste0(id,"_",target_period))
-
-# Plot serie
-tagList(
-  div(style = "display: flex; justify-content: center;",
-      produce_interactive_plot(df = data, sma = TRUE,title = paste0("KOF Nowcast for US in ", paste0(unique(data$target_period), collapse = " / "), ", Percent Change from Previous Period, Seasonally Adjusted"))),
-  div(style = "text-align: center;",
-      HTML("<small><em>Note : The x-axis represents the forecast's date of publication for a specific quarter</em></small>")))
-
-```
-
-```{=html}
-</div>
-```
 
 <!-- ####################################################################### -->
-<!-- Federal Rerserve  -->
+<!-- Federal Reserve  -->
 <!-- ####################################################################### -->
 
 ## Monetary Policy
-
-```{=html}
-<div class="company-hero">
-  <div class="co-body">
-    <div class="masthead-title">Monetary Policy</div>
-  </div>
-</div>
-```
 
 ### FED & SOFR Rates
 
@@ -782,18 +734,10 @@ div(style = "display: flex; justify-content: center;",
 ```
 
 <!-- ####################################################################### -->
-<!-- Index  -->
+<!-- Indices  -->
 <!-- ####################################################################### -->
 
-## Index
-
-```{=html}
-<div class="company-hero">
-  <div class="co-body">
-    <div class="masthead-title">Index</div>
-  </div>
-</div>
-```
+## Indices
 
 ### US Equity Indices
 
@@ -1312,18 +1256,10 @@ div(style = "display: flex; justify-content: center;",
 ```
 
 <!-- ####################################################################### -->
-<!-- Ratio  -->
+<!-- Ratios  -->
 <!-- ####################################################################### -->
 
-## Ratio
-
-```{=html}
-<div class="company-hero">
-  <div class="co-body">
-    <div class="masthead-title">Ratio</div>
-  </div>
-</div>
-```
+## Ratios
 
 ### Shiller
 
@@ -1481,18 +1417,10 @@ div(style = "display: flex; justify-content: center;",
 ```
 
 <!-- ####################################################################### -->
-<!-- Commodity  -->
+<!-- Commodities  -->
 <!-- ####################################################################### -->
 
-## Commodity
-
-```{=html}
-<div class="company-hero">
-  <div class="co-body">
-    <div class="masthead-title">Commodity</div>
-  </div>
-</div>
-```
+## Commodities
 
 ### Oil
 
@@ -1571,15 +1499,6 @@ tagList(
 <!-- ####################################################################### -->
 
 ## Advanced Indicators
-
-```{=html}
-<div class="company-hero">
-  <div class="co-body">
-    <div class="masthead-title">Advanced Indicators</div>
-  </div>
-</div>
-```
-
 
 ### Walmart
 
@@ -1688,14 +1607,6 @@ tagList(
 <!-- ####################################################################### -->
 
 ## Exchange Rates
-
-```{=html}
-<div class="company-hero">
-  <div class="co-body">
-    <div class="masthead-title">Exchange Rates</div>
-  </div>
-</div>
-```
 
 ### EUR/USD
 
@@ -1822,6 +1733,43 @@ tagList(
       produce_interactive_plot(df = data, sma = TRUE)),
   div(style = "text-align: center;",
       HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+
+```
+
+```{=html}
+</div>
+```
+
+## Forecasts
+
+### GDP Forecasts
+
+```{r US KOF FOR TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'KOF Nowcasting Lab — <a href="https://nowcastinglab.org/map" target="_blank">link</a>',
+  frequency  = "Daily",
+  adjustment = "Seasonally Adjusted",
+  about = "KOF Nowcasting Lab provides continuously updated real-time estimates of current-quarter and next-quarter real GDP growth for a range of economies including Switzerland, the euro area, Germany, France, Italy, Spain, the United Kingdom, and several others, developed by the KOF Swiss Economic Institute at ETH Zurich. The platform is fully automated with no human judgmental input, updating estimates up to three times daily as new data releases enter the system. It combines four classes of mixed-frequency econometric models fed with approximately 250 daily and monthly macroeconomic and financial series, with individual model forecasts pooled using forecast combination techniques and weaker predictors filtered via elastic net regularization. The core premise is that high-frequency indicators such as business surveys, trade statistics, and financial data are published weeks ahead of the official quarterly GDP release, which arrives with a lag of six to eight weeks after quarter-end in most economies, allowing the models to progressively refine estimates as the information set expands throughout the quarter. The website displays uncertainty bands, individual model outputs, the contribution of each release to forecast revisions, and historical forecast errors.")
+
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r US KOF FOR, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_kof_nowcast(id = "USGDPNC", last_quarter = 2) %>% 
+  rename(date = publication_date, quarter_forecast = date) %>% 
+  mutate(name = paste0(name," ",target_period), id = paste0(id,"_",target_period))
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE,title = paste0("KOF Nowcast for US in ", paste0(unique(data$target_period), collapse = " / "), ", Percent Change from Previous Period, Seasonally Adjusted"))),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : The x-axis represents the forecast's date of publication for a specific quarter</em></small>")))
 
 ```
 

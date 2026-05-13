@@ -3,9 +3,9 @@ title: "Swiss Financial and Macro Report"
 output:
   html_document:
     toc: true
-    toc_depth: 3
+    toc_depth: 6
     toc_float:
-      collapsed: false
+      collapsed: true
       smooth_scroll: true
     theme: flatly
     highlight: kate
@@ -100,14 +100,6 @@ chart_note <- function(text) {
 ## Abstract
 
 ```{=html}
-<div class="company-hero">
-  <div class="co-body">
-    <div class="masthead-title">Abstract</div>
-  </div>
-</div>
-```
-
-```{=html}
 <div class="abstract-box">
 <p>This report provides a comprehensive overview of the Swiss economy and financial markets through a structured set of macroeconomic, financial, and market indicators.</p>
 <ul>
@@ -125,15 +117,9 @@ chart_note <- function(text) {
 
 ## Macro
 
-```{=html}
-<div class="company-hero">
-  <div class="co-body">
-    <div class="masthead-title">Macro</div>
-  </div>
-</div>
-```
+### National Accounts
 
-### Real GDP
+#### *Real GDP*
 
 ```{r CH GDP TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
 series_info_box(
@@ -162,71 +148,7 @@ div(style = "display: flex; justify-content: center;",
 </div>
 ```
 
-### Inflation
-
-```{r CH HICP TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
-
-series_info_box(
-  source_html = 'Eurostat — <a href="https://ec.europa.eu/eurostat/databrowser/view/PRC_HICP_MANR__custom_3761882/bookmark/table?lang=en&bookmarkId=4ad27e6f-358a-4a3d-82a0-587d69a833eb&c=1667558907980" target="_blank">link</a> and OECD — <a href="https://data-explorer.oecd.org/vis?tm=cpi&pg=0&snb=25&df[ds]=dsDisseminateFinalDMZ&df[id]=DSD_PRICES%40DF_PRICES_ALL&df[ag]=OECD.SDD.TPS&df[vs]=1.0&dq=.M.N.CPI.._T.N.GY%2B_Z&lom=LASTNPERIODS&lo=13&to[TIME_PERIOD]=false" target="_blank">link</a>',
-  frequency = "Monthly",
-  adjustment = "Not Adjusted",
-  about = paste0(
-  '1) <b> HICP</b> — Inflation measured by the Harmonised Index of Consumer Prices (HICP) reflects the change over time in the prices paid by households for a representative basket of goods and services. The HICP is compiled using a common methodology across European countries to ensure cross-country comparability. In the <code>PRC_HICP_MANR</code> dataset, inflation is expressed as the annual rate of change. This indicator is widely used to assess price stability and serves as the reference measure for monetary policy in the euro area.',
-  '<br><br>',
-  '2) <b>OECD Consumer Price Index</b> — ',
-  'The OECD CPI is a harmonized measure of consumer price inflation published by the Organisation for Economic Cooperation and Development, covering its 38 member countries as well as several partner economies. It is constructed using a consistent statistical framework, the HICP methodology (Harmonised Index of Consumer Prices) for European members and standardized equivalents for others, ensuring cross-country comparability that national CPIs alone cannot provide. It aggregates individual country CPIs using harmonized basket abouts and weight structures, allowing direct inflation comparisons across the US, Eurozone, Japan, UK, and emerging OECD members. It is a key tool for international macro analysis, sovereign debt assessment, and global monetary policy comparison.'))
-
-```
-
-```{=html}
-<div class="perf-section">
-```
-
-```{r CH HICP, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
-
-# Get series
-data <- get_series(name = c("ch_hicp_pc1_es", "ch_cpi_oecd"))
-
-# Plot serie
-div(style = "display: flex; justify-content: center;",
-    produce_interactive_plot(df = data, sma = FALSE, title = "Switzerland, Consumer Price Inflation Measures, Percent Change from Year Ago, Not Adjusted"))
-
-```
-
-```{=html}
-</div>
-```
-
-### Unemployment
-
-```{r CH UNEMP TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
-series_info_box(
-  source_html = 'Eurostat — <a href="https://ec.europa.eu/eurostat/databrowser/bookmark/2feeff57-57c9-4278-a50b-7e2279d699c2?lang=en" target="_blank">link</a>',
-  frequency = "Monthly",
-  adjustment = "Not Adjusted",
-  about = "The unemployment rate measures the share of the labour force that is without work, actively seeking employment, and available to start working. It is calculated according to the International Labour Organization (ILO) definition to ensure international comparability. Expressed as a percentage of the total labour force, the indicator provides a key measure of labour market conditions and economic slack. It is widely used to assess the health of the economy and to inform economic and monetary policy decisions.")
-```
-
-```{=html}
-<div class="perf-section">
-```
-
-```{r CH UNEMP, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
-
-# Get series
-data <- get_series(name = "ch_unemp_es")
-
-# Plot serie
-div(style = "display: flex; justify-content: center;",
-    produce_interactive_plot(df = data, sma = FALSE, title = "Switzerland, Unemployment Rate, Percent of Active Population, Not Adjusted"))
-
-```
-
-```{=html}
-</div>
-```
-
-### Real Total Consumption
+#### *Real Total Consumption*
 
 ```{r CH RTC TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
 series_info_box(
@@ -255,7 +177,7 @@ div(style = "display: flex; justify-content: center;",
 </div>
 ```
 
-### Real Investment
+#### *Real Investment*
 
 ```{r CH RI TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
 series_info_box(
@@ -308,7 +230,78 @@ div(style = "display: flex; justify-content: center;",
 </div>
 ```
 
-### Governement Surplus/Deficit
+
+### Inflation
+
+#### *HICP*
+
+```{r CH HICP TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+series_info_box(
+  source_html = 'Eurostat — <a href="https://ec.europa.eu/eurostat/databrowser/view/PRC_HICP_MANR__custom_3761882/bookmark/table?lang=en&bookmarkId=4ad27e6f-358a-4a3d-82a0-587d69a833eb&c=1667558907980" target="_blank">link</a> and OECD — <a href="https://data-explorer.oecd.org/vis?tm=cpi&pg=0&snb=25&df[ds]=dsDisseminateFinalDMZ&df[id]=DSD_PRICES%40DF_PRICES_ALL&df[ag]=OECD.SDD.TPS&df[vs]=1.0&dq=.M.N.CPI.._T.N.GY%2B_Z&lom=LASTNPERIODS&lo=13&to[TIME_PERIOD]=false" target="_blank">link</a>',
+  frequency = "Monthly",
+  adjustment = "Not Adjusted",
+  about = paste0(
+  '1) <b> HICP</b> — Inflation measured by the Harmonised Index of Consumer Prices (HICP) reflects the change over time in the prices paid by households for a representative basket of goods and services. The HICP is compiled using a common methodology across European countries to ensure cross-country comparability. In the <code>PRC_HICP_MANR</code> dataset, inflation is expressed as the annual rate of change. This indicator is widely used to assess price stability and serves as the reference measure for monetary policy in the euro area.',
+  '<br><br>',
+  '2) <b>OECD Consumer Price Index</b> — ',
+  'The OECD CPI is a harmonized measure of consumer price inflation published by the Organisation for Economic Cooperation and Development, covering its 38 member countries as well as several partner economies. It is constructed using a consistent statistical framework, the HICP methodology (Harmonised Index of Consumer Prices) for European members and standardized equivalents for others, ensuring cross-country comparability that national CPIs alone cannot provide. It aggregates individual country CPIs using harmonized basket abouts and weight structures, allowing direct inflation comparisons across the US, Eurozone, Japan, UK, and emerging OECD members. It is a key tool for international macro analysis, sovereign debt assessment, and global monetary policy comparison.'))
+
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r CH HICP, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = c("ch_hicp_pc1_es", "ch_cpi_oecd"))
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, title = "Switzerland, Consumer Price Inflation Measures, Percent Change from Year Ago, Not Adjusted"))
+
+```
+
+```{=html}
+</div>
+```
+
+### Labor Market
+
+#### *Unemployment*
+
+```{r CH UNEMP TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'Eurostat — <a href="https://ec.europa.eu/eurostat/databrowser/bookmark/2feeff57-57c9-4278-a50b-7e2279d699c2?lang=en" target="_blank">link</a>',
+  frequency = "Monthly",
+  adjustment = "Not Adjusted",
+  about = "The unemployment rate measures the share of the labour force that is without work, actively seeking employment, and available to start working. It is calculated according to the International Labour Organization (ILO) definition to ensure international comparability. Expressed as a percentage of the total labour force, the indicator provides a key measure of labour market conditions and economic slack. It is widely used to assess the health of the economy and to inform economic and monetary policy decisions.")
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r CH UNEMP, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_series(name = "ch_unemp_es")
+
+# Plot serie
+div(style = "display: flex; justify-content: center;",
+    produce_interactive_plot(df = data, sma = FALSE, title = "Switzerland, Unemployment Rate, Percent of Active Population, Not Adjusted"))
+
+```
+
+```{=html}
+</div>
+```
+
+### Fiscal
+
+#### *Governement Surplus/Deficit*
 
 ```{r CH GOVS TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
 series_info_box(
@@ -356,7 +349,9 @@ div(style = "display: flex; justify-content: center;",
 </div>
 ```
 
-### Housing Prices
+### Housing Market
+
+#### *Housing Prices*
 
 ```{r CH HP TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
 series_info_box(
@@ -385,54 +380,11 @@ div(style = "display: flex; justify-content: center;",
 </div>
 ```
 
-### KOF Forecast
-
-```{r CH KOF FOR TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
-series_info_box(
-  source_html = 'KOF Nowcasting Lab — <a href="https://nowcastinglab.org/map" target="_blank">link</a>',
-  frequency  = "Daily",
-  adjustment = "Seasonally Adjusted",
-  about = "KOF Nowcasting Lab provides continuously updated real-time estimates of current-quarter and next-quarter real GDP growth for a range of economies including Switzerland, the euro area, Germany, France, Italy, Spain, the United Kingdom, and several others, developed by the KOF Swiss Economic Institute at ETH Zurich. The platform is fully automated with no human judgmental input, updating estimates up to three times daily as new data releases enter the system. It combines four classes of mixed-frequency econometric models fed with approximately 250 daily and monthly macroeconomic and financial series, with individual model forecasts pooled using forecast combination techniques and weaker predictors filtered via elastic net regularization. The core premise is that high-frequency indicators such as business surveys, trade statistics, and financial data are published weeks ahead of the official quarterly GDP release, which arrives with a lag of six to eight weeks after quarter-end in most economies, allowing the models to progressively refine estimates as the information set expands throughout the quarter. The website displays uncertainty bands, individual model outputs, the contribution of each release to forecast revisions, and historical forecast errors.")
-
-```
-
-```{=html}
-<div class="perf-section">
-```
-
-```{r CH KOF FOR, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
-
-# Get series
-data <- get_kof_nowcast(id = "CHGDPNC", last_quarter = 2) %>% 
-  rename(date = publication_date, quarter_forecast = date) %>% 
-  mutate(name = paste0(name," ",target_period), id = paste0(id,"_",target_period))
-
-# Plot serie
-tagList(
-  div(style = "display: flex; justify-content: center;",
-      produce_interactive_plot(df = data, sma = TRUE,title = paste0("KOF Nowcast for Switzerland in ", paste0(unique(data$target_period), collapse = " / "), ", Percent Change from Previous Period, Seasonally Adjusted"))),
-  div(style = "text-align: center;",
-      HTML("<small><em>Note : The x-axis represents the forecast's date of publication for a specific quarter</em></small>")))
-
-```
-
-```{=html}
-</div>
-```
-
 <!-- ####################################################################### -->
-<!-- Index  -->
+<!-- Indices  -->
 <!-- ####################################################################### -->
 
-## Index
-
-```{=html}
-<div class="company-hero">
-  <div class="co-body">
-    <div class="masthead-title">Index</div>
-  </div>
-</div>
-```
+## Indices
 
 ### Swiss Equity Indices
 
@@ -586,19 +538,10 @@ div(style = "display: flex; justify-content: center;",
 ```
 
 <!-- ####################################################################### -->
-<!-- Indicator  -->
+<!-- Indicators  -->
 <!-- ####################################################################### -->
 
-## Indicator
-
-```{=html}
-<div class="company-hero">
-  <div class="co-body">
-    <div class="masthead-title">Indicator</div>
-  </div>
-</div>
-```
-
+## Indicators
 
 ### KOF Swiss Barometer 
 
@@ -687,14 +630,6 @@ div(style = "display: flex; justify-content: center;",
 <!-- ####################################################################### -->
 
 ## Exchange Rates
-
-```{=html}
-<div class="company-hero">
-  <div class="co-body">
-    <div class="masthead-title">Exchange Rates</div>
-  </div>
-</div>
-```
 
 ### USD/CHF
 
@@ -824,6 +759,43 @@ tagList(
       produce_interactive_plot(df = data, sma = TRUE)),
   div(style = "text-align: center;",
       HTML("<small><em>Note : Simple Moving Averages are computed with the last 20, 50 and 200 closing prices</em></small>")))
+
+```
+
+```{=html}
+</div>
+```
+
+## Forecasts
+
+### GDP Forecasts
+
+```{r CH KOF FOR TXT, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+series_info_box(
+  source_html = 'KOF Nowcasting Lab — <a href="https://nowcastinglab.org/map" target="_blank">link</a>',
+  frequency  = "Daily",
+  adjustment = "Seasonally Adjusted",
+  about = "KOF Nowcasting Lab provides continuously updated real-time estimates of current-quarter and next-quarter real GDP growth for a range of economies including Switzerland, the euro area, Germany, France, Italy, Spain, the United Kingdom, and several others, developed by the KOF Swiss Economic Institute at ETH Zurich. The platform is fully automated with no human judgmental input, updating estimates up to three times daily as new data releases enter the system. It combines four classes of mixed-frequency econometric models fed with approximately 250 daily and monthly macroeconomic and financial series, with individual model forecasts pooled using forecast combination techniques and weaker predictors filtered via elastic net regularization. The core premise is that high-frequency indicators such as business surveys, trade statistics, and financial data are published weeks ahead of the official quarterly GDP release, which arrives with a lag of six to eight weeks after quarter-end in most economies, allowing the models to progressively refine estimates as the information set expands throughout the quarter. The website displays uncertainty bands, individual model outputs, the contribution of each release to forecast revisions, and historical forecast errors.")
+
+```
+
+```{=html}
+<div class="perf-section">
+```
+
+```{r CH KOF FOR, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+
+# Get series
+data <- get_kof_nowcast(id = "CHGDPNC", last_quarter = 2) %>% 
+  rename(date = publication_date, quarter_forecast = date) %>% 
+  mutate(name = paste0(name," ",target_period), id = paste0(id,"_",target_period))
+
+# Plot serie
+tagList(
+  div(style = "display: flex; justify-content: center;",
+      produce_interactive_plot(df = data, sma = TRUE,title = paste0("KOF Nowcast for Switzerland in ", paste0(unique(data$target_period), collapse = " / "), ", Percent Change from Previous Period, Seasonally Adjusted"))),
+  div(style = "text-align: center;",
+      HTML("<small><em>Note : The x-axis represents the forecast's date of publication for a specific quarter</em></small>")))
 
 ```
 
